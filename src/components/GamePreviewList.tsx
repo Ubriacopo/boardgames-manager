@@ -8,6 +8,7 @@ type GamePreviewListProps = {
     usedCapacity: number;
     bggMetadataByGameId: Record<string, BggGameMetadata>;
     onRemoveGame: (gameId: string) => void;
+    onSellGame: (gameId: string) => void;
 };
 
 export function GamePreviewList({
@@ -16,6 +17,7 @@ export function GamePreviewList({
                                     usedCapacity,
                                     bggMetadataByGameId,
                                     onRemoveGame,
+                                    onSellGame,
                                 }: GamePreviewListProps) {
     const capacity = selectedBox?.capacity ?? 0;
 
@@ -43,6 +45,7 @@ export function GamePreviewList({
                                 game={game}
                                 metadata={bggMetadataByGameId[game.id]}
                                 onRemoveGame={onRemoveGame}
+                                onSellGame={onSellGame}
                             />
                         </li>
                     ))}
@@ -56,12 +59,14 @@ function GamePreviewCard({
                              game,
                              metadata,
                              onRemoveGame,
+                             onSellGame,
                          }: {
     game: BoardGame;
     metadata: BggGameMetadata | undefined;
     onRemoveGame: (gameId: string) => void;
+    onSellGame: (gameId: string) => void;
 }) {
-    const rating = metadata?.avgRating?.toFixed(1);
+    const rating = metadata?.avgRating;
     const subtitle = metadata?.themes.slice(0, 3).join(' · ');
 
     return (
@@ -80,9 +85,22 @@ function GamePreviewCard({
                         {game.name}
                     </a>
                     <span>
-                        {rating && <strong>{rating}</strong>}
+                        {typeof rating === 'number' && (
+                            <span className={`rating-chip ${getRatingClassName(rating)}`}>
+                                {rating.toFixed(1)}
+                            </span>
+                        )}
                         <button type="button" onClick={() => onRemoveGame(game.id)}>
                             Remove
+                        </button>
+                        <button
+                            type="button"
+                            className="sell-game-button"
+                            aria-label={`Sell ${game.name}`}
+                            title="Sell game"
+                            onClick={() => onSellGame(game.id)}
+                        >
+                            $
                         </button>
                     </span>
                 </div>
@@ -105,4 +123,20 @@ function GamePreviewCard({
             </div>
         </article>
     );
+}
+
+function getRatingClassName(rating: number) {
+  if (rating < 5) {
+    return 'is-low';
+  }
+
+  if (rating < 7) {
+    return 'is-mid';
+  }
+
+  if (rating > 8) {
+    return 'is-top';
+  }
+
+  return 'is-high';
 }

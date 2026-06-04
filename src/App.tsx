@@ -208,6 +208,30 @@ export default function App() {
     }
   }
 
+  async function sellGame(gameId: string) {
+    const previousBoardGames = boardGames;
+    const gameToSell = boardGames.find((game) => game.id === gameId);
+
+    if (!gameToSell) {
+      setErrorMessage('Selected game was not found.');
+      return;
+    }
+
+    setErrorMessage(null);
+    setBoardGames((currentBoardGames) =>
+      currentBoardGames.filter((game) => game.id !== gameId),
+    );
+    setSelectedGameId((currentGameId) => (currentGameId === gameId ? null : currentGameId));
+
+    const { error } = await supabase.from('board_games').delete().eq('id', gameId);
+
+    if (error) {
+      setBoardGames(previousBoardGames);
+      setSelectedGameId(gameId);
+      setErrorMessage(error.message);
+    }
+  }
+
   async function addGame(game: BggGameMetadata) {
     setErrorMessage(null);
 
@@ -272,6 +296,7 @@ export default function App() {
             bggMetadataByGameId={bggMetadataByGameId}
             onToggleOpen={() => setIsUnassignedOpen((isOpen) => !isOpen)}
             onSelectGame={setSelectedGameId}
+            onSellGame={(gameId) => void sellGame(gameId)}
           />
 
           <div className="kallax-area">
@@ -290,6 +315,7 @@ export default function App() {
               usedCapacity={selectedBoxUsedCapacity}
               bggMetadataByGameId={bggMetadataByGameId}
               onRemoveGame={(gameId) => void removeGameFromBox(gameId)}
+              onSellGame={(gameId) => void sellGame(gameId)}
             />
           </div>
         </div>

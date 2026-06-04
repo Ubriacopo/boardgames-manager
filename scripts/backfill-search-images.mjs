@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 
+loadEnvFile('.env');
 loadEnvFile('src/.env');
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
@@ -79,7 +80,10 @@ async function findGoogleImage(game) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Google image search failed with status ${response.status}`);
+    const errorBody = await response.text();
+    throw new Error(
+      `Google image search failed with status ${response.status}: ${errorBody}`,
+    );
   }
 
   const data = await response.json();

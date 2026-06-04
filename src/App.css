@@ -269,16 +269,14 @@
 }
 
 .unassigned-game {
-  width: 100%;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg);
   color: var(--text-h);
-  cursor: grab;
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: 12px;
+  gap: 8px;
   padding: 10px;
   text-align: left;
   transition:
@@ -286,14 +284,29 @@
     box-shadow 0.18s ease;
 }
 
-.unassigned-game:active {
-  cursor: grabbing;
-}
-
 .unassigned-game:hover,
 .unassigned-game.is-selected {
   border-color: #1f7a72;
   box-shadow: 0 0 0 3px rgba(31, 122, 114, 0.14);
+}
+
+.unassigned-game-main {
+  align-items: start;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: grab;
+  display: grid;
+  font: inherit;
+  gap: 12px;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.unassigned-game-main:active {
+  cursor: grabbing;
 }
 
 .unassigned-game-cover,
@@ -340,11 +353,18 @@
 }
 
 .unassigned-game small {
+  align-items: flex-end;
   color: var(--text);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
   font: inherit;
+  white-space: nowrap;
+}
+
+.unassigned-game-meta > span:last-child {
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .kallax-grid {
@@ -529,17 +549,39 @@
   gap: 6px;
 }
 
-.game-card-heading strong {
+.rating-chip {
   background: #1f7a72;
   border-radius: 999px;
   color: #fff;
+  display: inline-flex;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  justify-content: center;
   line-height: 1;
+  min-width: 34px;
   padding: 5px 7px;
 }
 
-.game-card-heading button {
+.rating-chip.is-low {
+  background: #b42318;
+}
+
+.rating-chip.is-mid {
+  background: #d3a72f;
+  color: #1c1712;
+}
+
+.rating-chip.is-high {
+  background: #1f7a72;
+}
+
+.rating-chip.is-top {
+  background: #0f3f2e;
+}
+
+.game-card-heading button,
+.sell-game-button {
   border: 1px solid rgba(159, 51, 31, 0.28);
   border-radius: 999px;
   background: rgba(159, 51, 31, 0.08);
@@ -550,6 +592,19 @@
   font-weight: 750;
   line-height: 1;
   padding: 5px 8px;
+}
+
+.sell-game-button {
+  align-items: center;
+  display: inline-flex;
+  font-weight: 900;
+  height: 26px;
+  justify-content: center;
+  min-width: 26px;
+}
+
+.sell-game-button:hover {
+  background: rgba(159, 51, 31, 0.16);
 }
 
 .game-preview-card a {
