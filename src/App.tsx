@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { AddGameDialog } from './components/AddGameDialog';
 import { GamePreviewList } from './components/GamePreviewList';
+import { GameSearchDialog } from './components/GameSearchDialog';
 import { KallaxGrid } from './components/KallaxGrid';
 import { UnassignedGamesList } from './components/UnassignedGamesList';
 import type { BoardGame } from './entities/BoardGame';
@@ -29,6 +30,7 @@ export default function App() {
   const [bggMetadataByGameId, setBggMetadataByGameId] = useState<Record<string, BggGameMetadata>>({});
   const [gridShape, setGridShape] = useState<GridShape>('square');
   const [isAddGameOpen, setIsAddGameOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUnassignedOpen, setIsUnassignedOpen] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -122,6 +124,26 @@ export default function App() {
   const unassignedGames = boardGames.filter((game) => game.box === null);
   const existingBggIds = boardGames.map((game) => game.bgg_id);
   const gridShapeConfig = getGridShapeConfig(gridShape);
+  const assignedGameCount = boardGames.length - unassignedGames.length;
+  const averageRating = getAverageRating(boardGames, bggMetadataByGameId);
+
+  function selectGame(gameId: string) {
+    const game = boardGames.find((candidateGame) => candidateGame.id === gameId);
+
+    if (!game) {
+      setErrorMessage('Selected game was not found.');
+      return;
+    }
+
+    setErrorMessage(null);
+    setSelectedGameId(gameId);
+
+    if (game.box === null) {
+      setIsUnassignedOpen(true);
+    } else {
+      setSelectedBoxId(game.box);
+    }
+  }
 
   async function assignGameToBox(boxId: number, gameId: string) {
     const containerBox = containerBoxes.find((box) => box.id === boxId);
@@ -272,6 +294,14 @@ export default function App() {
           <button
             type="button"
             className="secondary-button"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            Search
+          </button>
+
+          <button
+            type="button"
+            className="secondary-button"
             onClick={() => setGridShape(getNextGridShape)}
           >
             Grid: {gridShapeConfig.label}
@@ -282,6 +312,27 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      <section className="library-summary" aria-label="Library summary">
+        <span>
+          <strong>{boardGames.length}</strong>
+          games owned
+        </span>
+        <span>
+          <strong>{assignedGameCount}</strong>
+          in Kallax
+        </span>
+        <span>
+          <strong>{unassignedGames.length}</strong>
+          unassigned
+        </span>
+        {averageRating !== null && (
+          <span>
+            <strong>{averageRating.toFixed(1)}</strong>
+            avg rating
+          </span>
+        )}
+      </section>
 
       {isLoading && <p>Loading board games...</p>}
 
@@ -295,7 +346,7 @@ export default function App() {
             selectedGameId={selectedGameId}
             bggMetadataByGameId={bggMetadataByGameId}
             onToggleOpen={() => setIsUnassignedOpen((isOpen) => !isOpen)}
-            onSelectGame={setSelectedGameId}
+            onSelectGame={selectGame}
             onSellGame={(gameId) => void sellGame(gameId)}
           />
 
@@ -313,7 +364,9 @@ export default function App() {
               selectedBox={selectedBox}
               games={selectedBoxGames}
               usedCapacity={selectedBoxUsedCapacity}
+              selectedGameId={selectedGameId}
               bggMetadataByGameId={bggMetadataByGameId}
+              onSelectGame={selectGame}
               onRemoveGame={(gameId) => void removeGameFromBox(gameId)}
               onSellGame={(gameId) => void sellGame(gameId)}
             />
@@ -327,12 +380,36 @@ export default function App() {
         onClose={() => setIsAddGameOpen(false)}
         onAddGame={addGame}
       />
+
+      <GameSearchDialog
+        isOpen={isSearchOpen}
+        games={boardGames}
+        boxes={containerBoxes}
+        bggMetadataByGameId={bggMetadataByGameId}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectGame={selectGame}
+      />
     </main>
   );
 }
 
 function getUsedCapacity(games: BoardGame[]) {
   return games.reduce((total, game) => total + game.size, 0);
+}
+
+function getAverageRating(
+  games: BoardGame[],
+  bggMetadataByGameId: Record<string, BggGameMetadata>,
+) {
+  const ratings = games
+    .map((game) => bggMetadataByGameId[game.id]?.avgRating)
+    .filter((rating): rating is number => typeof rating === 'number');
+
+  if (ratings.length === 0) {
+    return null;
+  }
+
+  return ratings.reduce((total, rating) => total + rating, 0) / ratings.length;
 }
 
 function getNextGridShape(currentShape: GridShape): GridShape {

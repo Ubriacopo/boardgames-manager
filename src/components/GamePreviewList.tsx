@@ -6,7 +6,9 @@ type GamePreviewListProps = {
     selectedBox: ContainerBox | null;
     games: BoardGame[];
     usedCapacity: number;
+    selectedGameId: string | null;
     bggMetadataByGameId: Record<string, BggGameMetadata>;
+    onSelectGame: (gameId: string) => void;
     onRemoveGame: (gameId: string) => void;
     onSellGame: (gameId: string) => void;
 };
@@ -15,7 +17,9 @@ export function GamePreviewList({
                                     selectedBox,
                                     games,
                                     usedCapacity,
+                                    selectedGameId,
                                     bggMetadataByGameId,
+                                    onSelectGame,
                                     onRemoveGame,
                                     onSellGame,
                                 }: GamePreviewListProps) {
@@ -44,6 +48,8 @@ export function GamePreviewList({
                             <GamePreviewCard
                                 game={game}
                                 metadata={bggMetadataByGameId[game.id]}
+                                isSelected={selectedGameId === game.id}
+                                onSelectGame={onSelectGame}
                                 onRemoveGame={onRemoveGame}
                                 onSellGame={onSellGame}
                             />
@@ -58,11 +64,15 @@ export function GamePreviewList({
 function GamePreviewCard({
                              game,
                              metadata,
+                             isSelected,
+                             onSelectGame,
                              onRemoveGame,
                              onSellGame,
                          }: {
     game: BoardGame;
     metadata: BggGameMetadata | undefined;
+    isSelected: boolean;
+    onSelectGame: (gameId: string) => void;
     onRemoveGame: (gameId: string) => void;
     onSellGame: (gameId: string) => void;
 }) {
@@ -70,7 +80,18 @@ function GamePreviewCard({
     const subtitle = metadata?.themes.slice(0, 3).join(' · ');
 
     return (
-        <article className="game-preview-card">
+        <article
+            className={`game-preview-card${isSelected ? ' is-selected' : ''}`}
+            role="button"
+            tabIndex={0}
+            onClick={() => onSelectGame(game.id)}
+            onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelectGame(game.id);
+                }
+            }}
+        >
             <div className="game-cover">
                 {game.image_url ? (
                     <img src={game.image_url} alt="" loading="lazy"/>
@@ -81,16 +102,27 @@ function GamePreviewCard({
 
             <div>
                 <div className="game-card-heading">
-                    <a href={game.bgg_url} target="_blank" rel="noreferrer">
+                    <a
+                        href={game.bgg_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(event) => event.stopPropagation()}
+                    >
                         {game.name}
                     </a>
-                    <span>
+                    <span className="game-card-actions">
                         {typeof rating === 'number' && (
                             <span className={`rating-chip ${getRatingClassName(rating)}`}>
                                 {rating.toFixed(1)}
                             </span>
                         )}
-                        <button type="button" onClick={() => onRemoveGame(game.id)}>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRemoveGame(game.id);
+                            }}
+                        >
                             Remove
                         </button>
                         <button
@@ -98,7 +130,10 @@ function GamePreviewCard({
                             className="sell-game-button"
                             aria-label={`Sell ${game.name}`}
                             title="Sell game"
-                            onClick={() => onSellGame(game.id)}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onSellGame(game.id);
+                            }}
                         >
                             $
                         </button>
