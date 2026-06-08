@@ -18,8 +18,11 @@ import { supabase } from './utils/supabase';
 const DEFAULT_BOX_CAPACITY = 8;
 const DEFAULT_BOX_COUNT = 16;
 
-type GridShape = 'square' | 'four-by-two' | 'two-by-four';
 type AuthMode = 'sign-in' | 'sign-up';
+type GridLayout = {
+  rowCount: number;
+  columnCount: number;
+};
 
 type Library = {
   id: string;
@@ -41,9 +44,14 @@ export default function App() {
   const [boardGames, setBoardGames] = useState<BoardGame[]>([]);
   const [containerBoxes, setContainerBoxes] = useState<Array<ContainerBox & { capacity: number }>>([]);
   const [bggMetadataByGameId, setBggMetadataByGameId] = useState<Record<string, BggGameMetadata>>({});
-  const [gridShape, setGridShape] = useState<GridShape>('square');
+  const [customGridLayout, setCustomGridLayout] = useState<GridLayout | null>(null);
+  const [draftGridLayout, setDraftGridLayout] = useState<GridLayout>({
+    rowCount: 4,
+    columnCount: 4,
+  });
   const [isAddGameOpen, setIsAddGameOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isGridLayoutOpen, setIsGridLayoutOpen] = useState(false);
   const [isUnassignedOpen, setIsUnassignedOpen] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -224,7 +232,11 @@ export default function App() {
   const selectedBoxUsedCapacity = getUsedCapacity(selectedBoxGames);
   const unassignedGames = boardGames.filter((game) => game.box === null);
   const existingBggIds = boardGames.map((game) => game.bgg_id);
-  const gridShapeConfig = getGridShapeConfig(gridShape);
+  const autoGridLayout = getDefaultGridLayout(containerBoxes.length);
+  const gridLayout = customGridLayout ?? autoGridLayout;
+  const gridLayoutLabel = customGridLayout
+    ? `${customGridLayout.columnCount}x${customGridLayout.rowCount}`
+    : `Auto ${autoGridLayout.columnCount}x${autoGridLayout.rowCount}`;
   const assignedGameCount = boardGames.length - unassignedGames.length;
   const averageRating = getAverageRating(boardGames, bggMetadataByGameId);
 
@@ -418,10 +430,13 @@ export default function App() {
           <button
             type="button"
             className="secondary-button"
-            onClick={() => setGridShape(getNextGridShape)}
+            onClick={() => {
+              setDraftGridLayout(customGridLayout ?? autoGridLayout);
+              setIsGridLayoutOpen(true);
+            }}
             disabled={isLoading}
           >
-            Grid: {gridShapeConfig.label}
+            Grid: {gridLayoutLabel}
           </button>
 
           <button
@@ -479,8 +494,8 @@ export default function App() {
           <div className="kallax-area">
             <KallaxGrid
               boxes={kallaxBoxes}
-              columnCount={gridShapeConfig.columnCount}
-              rowCount={gridShapeConfig.rowCount}
+              columnCount={gridLayout.columnCount}
+              rowCount={gridLayout.rowCount}
               selectedBoxId={selectedBoxId}
               onSelectBox={setSelectedBoxId}
               onDropGame={(boxId, gameId) => void assignGameToBox(boxId, gameId)}
@@ -507,6 +522,24 @@ export default function App() {
         onAddGame={addGame}
       />
 
+      <GridLayoutDialog
+        isOpen={isGridLayoutOpen}
+        boxCount={containerBoxes.length}
+        draftLayout={draftGridLayout}
+        autoLayout={autoGridLayout}
+        onDraftChange={setDraftGridLayout}
+        onClose={() => setIsGridLayoutOpen(false)}
+        onApply={(nextLayout) => {
+          setCustomGridLayout(nextLayout);
+          setIsGridLayoutOpen(false);
+        }}
+        onUseAuto={() => {
+          setCustomGridLayout(null);
+          setDraftGridLayout(autoGridLayout);
+          setIsGridLayoutOpen(false);
+        }}
+      />
+
       <GameSearchDialog
         isOpen={isSearchOpen}
         games={boardGames}
@@ -516,6 +549,114 @@ export default function App() {
         onSelectGame={selectGame}
       />
     </main>
+  );
+}
+
+function GridLayoutDialog({
+  isOpen,
+  boxCount,
+  draftLayout,
+  autoLayout,
+  onDraftChange,
+  onClose,
+  onApply,
+  onUseAuto,
+}: {
+  isOpen: boolean;
+  boxCount: number;
+  draftLayout: GridLayout;
+  autoLayout: GridLayout;
+  onDraftChange: (layout: GridLayout) => void;
+  onClose: () => void;
+  onApply: (layout: GridLayout) => void;
+  onUseAuto: () => void;
+}) {
+  if (!isOpen) {
+    return null;
+  }
+
+  const capacity = draftLayout.rowCount * draftLayout.columnCount;
+  const canApply = capacity >= boxCount;
+
+  function submitLayout(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (canApply) {
+      onApply(draftLayout);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section
+        className="grid-layout-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="grid-layout-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header>
+          <div>
+            <p className="eyebrow">Shelf layout</p>
+            <h2 id="grid-layout-title">Customize grid shape</h2>
+            <p className="muted">
+              Auto uses {autoLayout.columnCount} columns x {autoLayout.rowCount} rows for {boxCount} cubes.
+            </p>
+          </div>
+          <button type="button" className="dialog-close-button" onClick={onClose}>
+            Close
+          </button>
+        </header>
+
+        <form className="grid-layout-form" onSubmit={submitLayout}>
+          <label className="game-search-field">
+            Rows
+            <input
+              type="number"
+              min={1}
+              value={draftLayout.rowCount}
+              onChange={(event) =>
+                onDraftChange({
+                  ...draftLayout,
+                  rowCount: getPositiveInteger(event.target.value),
+                })
+              }
+              required
+            />
+          </label>
+
+          <label className="game-search-field">
+            Columns
+            <input
+              type="number"
+              min={1}
+              value={draftLayout.columnCount}
+              onChange={(event) =>
+                onDraftChange({
+                  ...draftLayout,
+                  columnCount: getPositiveInteger(event.target.value),
+                })
+              }
+              required
+            />
+          </label>
+
+          <p className={canApply ? 'muted' : 'error'}>
+            {draftLayout.columnCount}x{draftLayout.rowCount} holds {capacity} cubes.
+            {!canApply && ` You need at least ${boxCount}.`}
+          </p>
+
+          <div className="grid-layout-actions">
+            <button type="submit" className="add-game-button" disabled={!canApply}>
+              Apply layout
+            </button>
+            <button type="button" className="secondary-button" onClick={onUseAuto}>
+              Use auto
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
   );
 }
 
@@ -689,26 +830,20 @@ function getAverageRating(
   return ratings.reduce((total, rating) => total + rating, 0) / ratings.length;
 }
 
-function getNextGridShape(currentShape: GridShape): GridShape {
-  if (currentShape === 'square') {
-    return 'four-by-two';
-  }
+function getDefaultGridLayout(boxCount: number): GridLayout {
+  const safeBoxCount = Math.max(1, boxCount);
+  const columnCount = Math.ceil(Math.sqrt(safeBoxCount));
+  const rowCount = Math.ceil(safeBoxCount / columnCount);
 
-  if (currentShape === 'four-by-two') {
-    return 'two-by-four';
-  }
-
-  return 'square';
+  return { rowCount, columnCount };
 }
 
-function getGridShapeConfig(shape: GridShape) {
-  if (shape === 'four-by-two') {
-    return { label: '4x2', columnCount: 4, rowCount: 2 };
+function getPositiveInteger(value: string) {
+  const parsedValue = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsedValue)) {
+    return 1;
   }
 
-  if (shape === 'two-by-four') {
-    return { label: '2x4', columnCount: 2, rowCount: 4 };
-  }
-
-  return { label: 'Square', columnCount: undefined, rowCount: undefined };
+  return Math.max(1, parsedValue);
 }

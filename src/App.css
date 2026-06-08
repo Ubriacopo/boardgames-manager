@@ -102,7 +102,8 @@
 }
 
 .add-game-dialog,
-.game-search-dialog {
+.game-search-dialog,
+.grid-layout-dialog {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -116,7 +117,8 @@
 }
 
 .add-game-dialog header,
-.game-search-dialog header {
+.game-search-dialog header,
+.grid-layout-dialog header {
   align-items: flex-start;
   display: flex;
   gap: 20px;
@@ -162,6 +164,23 @@
   display: grid;
   gap: 12px;
   grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+}
+
+.grid-layout-form {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-layout-form p,
+.grid-layout-actions {
+  grid-column: 1 / -1;
+}
+
+.grid-layout-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .add-game-results {

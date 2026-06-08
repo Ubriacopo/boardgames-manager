@@ -26,9 +26,9 @@ export function KallaxGrid({
   onSelectBox,
   onDropGame,
 }: KallaxGridProps) {
-  const fallbackGridSize = Math.max(1, Math.ceil(Math.sqrt(boxes.length)));
-  const gridColumnCount = columnCount ?? fallbackGridSize;
-  const gridRowCount = rowCount ?? (columnCount ? Math.ceil(boxes.length / columnCount) : fallbackGridSize);
+  const fallbackGridLayout = getDefaultGridLayout(boxes.length);
+  const gridColumnCount = columnCount ?? fallbackGridLayout.columnCount;
+  const gridRowCount = rowCount ?? (columnCount ? Math.ceil(boxes.length / columnCount) : fallbackGridLayout.rowCount);
 
   return (
     <section
@@ -110,4 +110,12 @@ function shortenTitle(name: string) {
     .slice(0, 2)
     .map((word) => word.slice(0, 8))
     .join(' ');
+}
+
+function getDefaultGridLayout(boxCount: number) {
+  const safeBoxCount = Math.max(1, boxCount);
+  const columnCount = Math.ceil(Math.sqrt(safeBoxCount));
+  const rowCount = Math.ceil(safeBoxCount / columnCount);
+
+  return { rowCount, columnCount };
 }
