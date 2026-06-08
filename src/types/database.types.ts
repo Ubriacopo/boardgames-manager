@@ -7,13 +7,58 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      app_users: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      libraries: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "libraries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       board_games: {
         Row: {
           bgg_id: number | null
@@ -22,6 +67,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          library_id: string | null
           name: string
           release_year: number
           size: number
@@ -33,6 +79,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          library_id?: string | null
           name: string
           release_year: number
           size?: number
@@ -44,6 +91,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          library_id?: string | null
           name?: string
           release_year?: number
           size?: number
@@ -56,28 +104,49 @@ export type Database = {
             referencedRelation: "container_box"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "board_games_library_id_fkey"
+            columns: ["library_id"]
+            isOneToOne: false
+            referencedRelation: "libraries"
+            referencedColumns: ["id"]
+          },
         ]
       }
       container_box: {
         Row: {
           capacity: number | null
           created_at: string
+          description: string | null
           id: number
           label: string | null
+          library_id: string | null
         }
         Insert: {
           capacity?: number | null
           created_at?: string
+          description?: string | null
           id?: number
           label?: string | null
+          library_id?: string | null
         }
         Update: {
           capacity?: number | null
           created_at?: string
+          description?: string | null
           id?: number
           label?: string | null
+          library_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "container_box_library_id_fkey"
+            columns: ["library_id"]
+            isOneToOne: false
+            referencedRelation: "libraries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rating: {
         Row: {

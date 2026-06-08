@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import './App.css';
 import { AddGameDialog } from './components/AddGameDialog';
 import { GamePreviewList } from './components/GamePreviewList';
@@ -15,7 +16,17 @@ import {
 import { supabase } from './utils/supabase';
 
 const DEFAULT_BOX_CAPACITY = 8;
+const DEFAULT_BOX_COUNT = 16;
+
 type GridShape = 'square' | 'four-by-two' | 'two-by-four';
+type AuthMode = 'sign-in' | 'sign-up';
+
+type Library = {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+};
 
 type KallaxBox = ContainerBox & {
   capacity: number;
@@ -25,6 +36,8 @@ type KallaxBox = ContainerBox & {
 };
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [library, setLibrary] = useState<Library | null>(null);
   const [boardGames, setBoardGames] = useState<BoardGame[]>([]);
   const [containerBoxes, setContainerBoxes] = useState<Array<ContainerBox & { capacity: number }>>([]);
   const [bggMetadataByGameId, setBggMetadataByGameId] = useState<Record<string, BggGameMetadata>>({});
@@ -33,40 +46,116 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUnassignedOpen, setIsUnassignedOpen] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function getInitialData() {
-      const [boardGamesResult, containerBoxesResult] = await Promise.all([
-        supabase
-          .from('board_games')
-          .select('*')
-          .order('name', { ascending: true }),
-        supabase.from('container_box').select('*').order('id', { ascending: true }),
-      ]);
+    let isMounted = true;
 
-      if (boardGamesResult.error) {
-        setErrorMessage(boardGamesResult.error.message);
-      } else if (containerBoxesResult.error) {
-        setErrorMessage(containerBoxesResult.error.message);
-      } else {
-        setBoardGames(boardGamesResult.data);
-        const nextContainerBoxes = (containerBoxesResult.data as ContainerBox[]).map((box) => ({
-            ...box,
-            capacity: box.capacity ?? DEFAULT_BOX_CAPACITY,
-        }));
+    async function getInitialSession() {
+      const { data, error } = await supabase.auth.getSession();
 
-        setContainerBoxes(nextContainerBoxes);
-        setSelectedBoxId((currentBoxId) => currentBoxId ?? nextContainerBoxes[0]?.id ?? null);
+      if (!isMounted) {
+        return;
       }
 
-      setIsLoading(false);
+      if (error) {
+        setErrorMessage(error.message);
+      }
+
+      setSession(data.session);
+      setIsAuthLoading(false);
+    }
+
+    void getInitialSession();
+
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setLibrary(null);
+      setBoardGames([]);
+      setContainerBoxes([]);
+      setSelectedBoxId(null);
+      setSelectedGameId(null);
+      setErrorMessage(null);
+    });
+
+    return () => {
+      isMounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function getInitialData() {
+      if (!session) {
+        setLibrary(null);
+        setBoardGames([]);
+        setContainerBoxes([]);
+        setBggMetadataByGameId({});
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        const nextLibrary = await ensureCurrentUserLibrary(session);
+
+        if (isCancelled) {
+          return;
+        }
+
+        setLibrary(nextLibrary);
+
+        const [boardGamesResult, containerBoxesResult] = await Promise.all([
+          supabase
+            .from('board_games')
+            .select('*')
+            .eq('library_id', nextLibrary.id)
+            .order('name', { ascending: true }),
+          supabase
+            .from('container_box')
+            .select('*')
+            .eq('library_id', nextLibrary.id)
+            .order('id', { ascending: true }),
+        ]);
+
+        if (boardGamesResult.error) {
+          throw new Error(boardGamesResult.error.message);
+        }
+
+        if (containerBoxesResult.error) {
+          throw new Error(containerBoxesResult.error.message);
+        }
+
+        const nextContainerBoxes = (containerBoxesResult.data as ContainerBox[]).map((box) => ({
+          ...box,
+          capacity: box.capacity ?? DEFAULT_BOX_CAPACITY,
+        }));
+
+        setBoardGames(boardGamesResult.data);
+        setContainerBoxes(nextContainerBoxes);
+        setSelectedBoxId((currentBoxId) => currentBoxId ?? nextContainerBoxes[0]?.id ?? null);
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to load your library.');
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
     }
 
     void getInitialData();
-  }, []);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [session]);
 
   useEffect(() => {
     async function getBggMetadata() {
@@ -105,6 +194,18 @@ export default function App() {
 
     void getBggMetadata();
   }, [boardGames]);
+
+  if (isAuthLoading) {
+    return (
+      <main className="app-page auth-page">
+        <p>Checking session...</p>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return <AuthScreen errorMessage={errorMessage} onError={setErrorMessage} />;
+  }
 
   const kallaxBoxes: KallaxBox[] = containerBoxes.map((box) => {
     const gamesInBox = boardGames.filter((game) => game.box === box.id);
@@ -255,11 +356,16 @@ export default function App() {
   }
 
   async function addGame(game: BggGameMetadata) {
+    if (!library) {
+      throw new Error('Library is still loading.');
+    }
+
     setErrorMessage(null);
 
     const { data, error } = await supabase
       .from('board_games')
       .insert({
+        library_id: library.id,
         bgg_id: game.bggId,
         bgg_url: `https://boardgamegeek.com/boardgame/${game.bggId}`,
         name: game.name,
@@ -282,12 +388,21 @@ export default function App() {
     setIsUnassignedOpen(true);
   }
 
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setErrorMessage(error.message);
+    }
+  }
+
   return (
     <main className="app-page">
       <header className="app-header">
         <div>
           <p className="eyebrow">Boardgames Manager</p>
-          <h1>Kallax shelf</h1>
+          <h1>{library?.name ?? 'Kallax shelf'}</h1>
+          <p className="muted">Signed in as {session.user.email}</p>
         </div>
 
         <div className="header-actions">
@@ -295,6 +410,7 @@ export default function App() {
             type="button"
             className="secondary-button"
             onClick={() => setIsSearchOpen(true)}
+            disabled={isLoading}
           >
             Search
           </button>
@@ -303,12 +419,22 @@ export default function App() {
             type="button"
             className="secondary-button"
             onClick={() => setGridShape(getNextGridShape)}
+            disabled={isLoading}
           >
             Grid: {gridShapeConfig.label}
           </button>
 
-          <button type="button" className="add-game-button" onClick={() => setIsAddGameOpen(true)}>
+          <button
+            type="button"
+            className="add-game-button"
+            onClick={() => setIsAddGameOpen(true)}
+            disabled={isLoading || !library}
+          >
             Add game
+          </button>
+
+          <button type="button" className="secondary-button" onClick={() => void signOut()}>
+            Sign out
           </button>
         </div>
       </header>
@@ -334,7 +460,7 @@ export default function App() {
         )}
       </section>
 
-      {isLoading && <p>Loading board games...</p>}
+      {isLoading && <p>Loading your library...</p>}
 
       {errorMessage && <p className="error">Supabase error: {errorMessage}</p>}
 
@@ -391,6 +517,157 @@ export default function App() {
       />
     </main>
   );
+}
+
+function AuthScreen({
+  errorMessage,
+  onError,
+}: {
+  errorMessage: string | null;
+  onError: (message: string | null) => void;
+}) {
+  const [mode, setMode] = useState<AuthMode>('sign-in');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function submitAuth(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setStatusMessage(null);
+    onError(null);
+
+    const credentials = {
+      email: email.trim(),
+      password,
+    };
+
+    const { data, error } = mode === 'sign-in'
+      ? await supabase.auth.signInWithPassword(credentials)
+      : await supabase.auth.signUp(credentials);
+
+    if (error) {
+      onError(error.message);
+    } else if (mode === 'sign-up' && !data.session) {
+      setStatusMessage('Account created. Check your email to confirm it, then sign in.');
+    }
+
+    setIsSubmitting(false);
+  }
+
+  return (
+    <main className="app-page auth-page">
+      <section className="auth-card">
+        <p className="eyebrow">Boardgames Manager</p>
+        <h1>Your shelf, your library</h1>
+        <p className="muted">Sign in to load the board game library linked to your account.</p>
+
+        <form className="auth-form" onSubmit={(event) => void submitAuth(event)}>
+          <label className="game-search-field">
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+              required
+            />
+          </label>
+
+          <label className="game-search-field">
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+              minLength={6}
+              required
+            />
+          </label>
+
+          {errorMessage && <p className="error">{errorMessage}</p>}
+          {statusMessage && <p className="muted">{statusMessage}</p>}
+
+          <button type="submit" className="add-game-button" disabled={isSubmitting}>
+            {isSubmitting ? 'Working...' : mode === 'sign-in' ? 'Sign in' : 'Create account'}
+          </button>
+        </form>
+
+        <button
+          type="button"
+          className="secondary-button auth-mode-button"
+          onClick={() => {
+            setMode((currentMode) => (currentMode === 'sign-in' ? 'sign-up' : 'sign-in'));
+            setStatusMessage(null);
+            onError(null);
+          }}
+        >
+          {mode === 'sign-in' ? 'Need an account? Sign up' : 'Have an account? Sign in'}
+        </button>
+      </section>
+    </main>
+  );
+}
+
+async function ensureCurrentUserLibrary(session: Session): Promise<Library> {
+  const userId = session.user.id;
+  const email = session.user.email ?? null;
+
+  const { error: userError } = await supabase
+    .from('app_users')
+    .upsert({ id: userId, email }, { onConflict: 'id' });
+
+  if (userError) {
+    throw new Error(userError.message);
+  }
+
+  const { data: existingLibrary, error: librarySelectError } = await supabase
+    .from('libraries')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (librarySelectError) {
+    throw new Error(librarySelectError.message);
+  }
+
+  if (existingLibrary) {
+    await ensureDefaultBoxes(existingLibrary.id);
+    return existingLibrary;
+  }
+
+  const { data: newLibrary, error: libraryInsertError } = await supabase
+    .from('libraries')
+    .insert({ user_id: userId, name: 'My library' })
+    .select('*')
+    .single();
+
+  if (libraryInsertError) {
+    throw new Error(libraryInsertError.message);
+  }
+
+  await ensureDefaultBoxes(newLibrary.id);
+
+  return newLibrary;
+}
+
+async function ensureDefaultBoxes(libraryId: string) {
+  const boxes = Array.from({ length: DEFAULT_BOX_COUNT }, (_value, index) => ({
+    library_id: libraryId,
+    label: `Cube ${String(index + 1).padStart(2, '0')}`,
+    description: `Cube ${String(index + 1).padStart(2, '0')}`,
+    capacity: DEFAULT_BOX_CAPACITY,
+  }));
+
+  const { error } = await supabase
+    .from('container_box')
+    .upsert(boxes, { onConflict: 'library_id,label', ignoreDuplicates: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 function getUsedCapacity(games: BoardGame[]) {

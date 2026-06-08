@@ -20,20 +20,11 @@ export function AddGameDialog({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [addingBggId, setAddingBggId] = useState<number | null>(null);
+  const shouldShowResults = isOpen && query.trim().length >= 2;
+  const visibleResults = shouldShowResults ? results : [];
 
   useEffect(() => {
-    if (!isOpen) {
-      setQuery('');
-      setResults([]);
-      setErrorMessage(null);
-      setIsSearching(false);
-      setAddingBggId(null);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen || query.trim().length < 2) {
-      setResults([]);
+    if (!shouldShowResults) {
       return;
     }
 
@@ -68,10 +59,19 @@ export function AddGameDialog({
       isCancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [isOpen, query]);
+  }, [query, shouldShowResults]);
 
   if (!isOpen) {
     return null;
+  }
+
+  function closeDialog() {
+    setQuery('');
+    setResults([]);
+    setErrorMessage(null);
+    setIsSearching(false);
+    setAddingBggId(null);
+    onClose();
   }
 
   async function addGame(game: BggGameMetadata) {
@@ -80,7 +80,7 @@ export function AddGameDialog({
 
     try {
       await onAddGame(game);
-      onClose();
+      closeDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to add game.');
     } finally {
@@ -89,7 +89,7 @@ export function AddGameDialog({
   }
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+    <div className="modal-backdrop" role="presentation" onMouseDown={closeDialog}>
       <section
         className="add-game-dialog"
         role="dialog"
@@ -103,7 +103,7 @@ export function AddGameDialog({
             <h2 id="add-game-title">Add game</h2>
           </div>
 
-          <button type="button" className="dialog-close-button" onClick={onClose}>
+          <button type="button" className="dialog-close-button" onClick={closeDialog}>
             Close
           </button>
         </header>
@@ -123,7 +123,7 @@ export function AddGameDialog({
         {isSearching && <p className="muted">Searching...</p>}
 
         <ul className="add-game-results">
-          {results.map((game) => {
+          {visibleResults.map((game) => {
             const isExisting = existingBggIds.includes(game.bggId);
 
             return (

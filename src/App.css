@@ -1,7 +1,9 @@
 .app-page {
   box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   margin-left: calc((100% - 100vw) / 2);
-  min-height: 100svh;
+  height: 100svh;
   overflow: hidden;
   padding: 24px clamp(280px, 22vw, 420px);
   text-align: left;
@@ -240,6 +242,7 @@
 .shelf-layout {
   display: grid;
   gap: 12px;
+  min-height: 0;
 }
 
 .kallax-area {
@@ -247,6 +250,7 @@
   gap: 24px;
   align-items: start;
   justify-items: center;
+  min-height: 0;
   width: 100%;
 }
 
@@ -453,8 +457,8 @@
     linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 38%),
     #3c2c20;
   box-shadow: 0 18px 50px rgba(15, 10, 6, 0.18);
-  max-height: calc(100svh - 150px);
-  max-width: min(100%, 900px, calc((100svh - 150px) * var(--kallax-column-count) / var(--kallax-row-count)));
+  max-height: min(100%, calc(100svh - 230px));
+  max-width: min(100%, 900px, calc((100svh - 230px) * var(--kallax-column-count) / var(--kallax-row-count)));
   padding: clamp(8px, 1.3vw, 14px);
   width: 100%;
 }
@@ -764,6 +768,8 @@
 
 @media (max-width: 860px) {
   .app-page {
+    display: block;
+    height: auto;
     min-height: auto;
     overflow: visible;
     padding: 32px 20px;
@@ -837,4 +843,47 @@
   .box-game-preview {
     padding-inline: 4px;
   }
+}
+
+.auth-page {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100svh;
+  overflow: auto;
+  padding: 24px;
+}
+
+.auth-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
+  display: grid;
+  gap: 18px;
+  max-width: 520px;
+  padding: 32px;
+  text-align: left;
+  width: min(100%, 520px);
+}
+
+.auth-card h1 {
+  margin: 0;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-form .add-game-button,
+.auth-mode-button {
+  justify-self: start;
+}
+
+.add-game-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
