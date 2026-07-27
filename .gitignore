@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+src/.env
+src/environments/environment.generated.ts
+.angular
 
 # Editor directories and files
 .vscode/*

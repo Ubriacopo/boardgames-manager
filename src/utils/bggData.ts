@@ -69,7 +69,7 @@ async function loadAllBggMetadata() {
   const metadataById = new Map<number, BggGameMetadata>();
 
   gamesRows.forEach((row) => {
-    const bggId = toNumber(row.id);
+    const bggId = toNumber(row['id']);
 
     if (bggId === null) {
       return;
@@ -77,17 +77,17 @@ async function loadAllBggMetadata() {
 
     const themes = getRankTags(row);
     const mechanics: string[] = [];
-    const name = row.name ?? '';
+    const name = row['name'] ?? '';
 
     metadataById.set(bggId, {
       bggId,
       name,
-      yearPublished: toNumber(row.yearpublished),
-      rank: toNumber(row.rank),
-      avgRating: toNumber(row.average),
-      bayesAvgRating: toNumber(row.bayesaverage),
-      usersRated: toNumber(row.usersrated),
-      isExpansion: row.is_expansion === '1',
+      yearPublished: toNumber(row['yearpublished']),
+      rank: toNumber(row['rank']),
+      avgRating: toNumber(row['average']),
+      bayesAvgRating: toNumber(row['bayesaverage']),
+      usersRated: toNumber(row['usersrated']),
+      isExpansion: row['is_expansion'] === '1',
       themes,
       mechanics,
       searchText: [name, ...themes, ...mechanics].join(' ').toLowerCase(),

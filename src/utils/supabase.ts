@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database.types';
+import { environment } from '../environments/environment.generated';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+export const supabase = createClient<Database>(
+  environment.supabaseUrl || 'https://configuration-required.supabase.co',
+  environment.supabaseKey || 'configuration-required',
+);
