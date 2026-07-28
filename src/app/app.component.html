@@ -1,246 +1,49 @@
-<ng-container *ngIf="!isAuthLoading; else checkingSession">
-  <main *ngIf="!session; else libraryView" class="app-page auth-page">
-    <mat-card class="auth-card" appearance="outlined">
-      <mat-card-header>
-        <mat-card-subtitle>Boardgames Manager</mat-card-subtitle>
-        <mat-card-title>Your shelf, your library</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p class="muted">Sign in to load the board game library linked to your account.</p>
-        <form class="auth-form" (ngSubmit)="submitAuth()">
-          <mat-form-field appearance="outline">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" name="email" [(ngModel)]="email" autocomplete="email" required>
-            <mat-icon matSuffix>email</mat-icon>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Password</mat-label>
-            <input matInput type="password" name="password" [(ngModel)]="password"
-              [autocomplete]="authMode === 'sign-in' ? 'current-password' : 'new-password'"
-              minlength="6" required>
-            <mat-icon matSuffix>lock</mat-icon>
-          </mat-form-field>
-          <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-          <p *ngIf="authStatusMessage" class="muted">{{ authStatusMessage }}</p>
-          <button mat-flat-button type="submit" [disabled]="isSubmittingAuth">
-            <mat-icon>{{ authMode === 'sign-in' ? 'login' : 'person_add' }}</mat-icon>
-            {{ isSubmittingAuth ? 'Working…' : authMode === 'sign-in' ? 'Sign in' : 'Create account' }}
-          </button>
-        </form>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-button type="button" (click)="toggleAuthMode()">
-          {{ authMode === 'sign-in' ? 'Need an account? Sign up' : 'Have an account? Sign in' }}
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </main>
-</ng-container>
+<div class="min-h-dvh bg-canvas text-ink">
+  @if (auth.session()) {
+    <header class="sticky top-0 z-20 grid min-h-17 grid-cols-[1fr_auto] items-center border-b border-line bg-surface px-4 lg:min-h-19 lg:grid-cols-[1fr_auto_1fr] lg:px-[clamp(20px,5vw,76px)]">
+      <a routerLink="/library" class="flex w-max items-center gap-2.5 font-display text-xl font-bold" aria-label="Meeple House home">
+        <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white">
+          <mat-icon class="rotate-3">casino</mat-icon>
+        </span>
+        <span class="hidden sm:inline">Meeple House</span>
+      </a>
 
-<ng-template #checkingSession>
-  <main class="app-page auth-page loading-state">
-    <mat-spinner diameter="42"></mat-spinner>
-    <p>Checking session…</p>
-  </main>
-</ng-template>
+      <nav
+        aria-label="Main navigation"
+        class="fixed inset-x-0 bottom-0 z-30 flex min-h-16 items-center justify-center gap-[clamp(14px,8vw,52px)] border-t border-line bg-surface px-3.5 py-1 pb-[max(5px,env(safe-area-inset-bottom))] lg:static lg:gap-2 lg:border-0 lg:bg-transparent lg:p-0"
+      >
+        <a routerLink="/library" routerLinkActive="bg-mint! text-brand!"
+          class="flex items-center gap-1.5 rounded-full px-4 py-2.5 font-semibold text-muted">
+          <mat-icon class="!size-5 !text-xl">grid_view</mat-icon>
+          Library
+        </a>
+        <a
+          routerLink="/library"
+          class="-mt-7 flex size-15 items-center justify-center rounded-full border-5 border-canvas bg-accent p-0 text-white shadow-xl lg:hidden"
+          aria-label="Add a game"
+          (click)="library.addDialogOpen.set(true)"
+        >
+          <mat-icon class="!size-7 !text-[28px]">add</mat-icon>
+          <span class="sr-only">Add game</span>
+        </a>
+        <a routerLink="/games" routerLinkActive="bg-mint! text-brand!"
+          class="flex items-center gap-1.5 rounded-full px-4 py-2.5 font-semibold text-muted">
+          <mat-icon class="!size-5 !text-xl">explore</mat-icon>
+          Browse games
+        </a>
+      </nav>
 
-<ng-template #libraryView>
-  <main class="app-page">
-    <header class="app-header">
-      <div>
-        <p class="eyebrow">Boardgames Manager</p>
-        <h1>{{ library?.name ?? 'Kallax shelf' }}</h1>
-        <p class="muted">Signed in as {{ session?.user?.email }}</p>
-      </div>
-      <div class="header-actions">
-        <button mat-stroked-button type="button" (click)="isSearchOpen = true" [disabled]="isLoading">
-          <mat-icon>search</mat-icon> Search
+      <div class="flex items-center justify-end gap-2">
+        <button mat-flat-button class="session-button max-lg:!text-[0]" (click)="createSession()"
+          [disabled]="isCreatingSession || !library.games().length">
+          <mat-icon>group</mat-icon>
+          {{ isCreatingSession ? 'Starting…' : 'Start a session' }}
         </button>
-        <button mat-stroked-button type="button" (click)="openGridDialog()" [disabled]="isLoading">
-          <mat-icon>grid_view</mat-icon> Grid: {{ gridLayoutLabel }}
-        </button>
-        <button mat-flat-button type="button" (click)="openAddDialog()" [disabled]="isLoading || !library">
-          <mat-icon>add</mat-icon> Add game
-        </button>
-        <button mat-stroked-button type="button" (click)="signOut()">
-          <mat-icon>logout</mat-icon> Sign out
+        <button mat-icon-button aria-label="Sign out" (click)="auth.signOut()">
+          <mat-icon>logout</mat-icon>
         </button>
       </div>
     </header>
-
-    <section class="library-summary" aria-label="Library summary">
-      <span><strong>{{ boardGames.length }}</strong> games owned</span>
-      <span><strong>{{ assignedGameCount }}</strong> in Kallax</span>
-      <span><strong>{{ unassignedGames.length }}</strong> unassigned</span>
-      <span *ngIf="averageRating !== null"><strong>{{ averageRating | number:'1.1-1' }}</strong> avg rating</span>
-    </section>
-
-    <p *ngIf="errorMessage" class="error">Supabase error: {{ errorMessage }}</p>
-    <div *ngIf="isLoading" class="loading-state"><mat-spinner diameter="36"></mat-spinner><p>Loading your library…</p></div>
-
-    <div *ngIf="!isLoading" class="shelf-layout">
-      <aside class="unassigned-games-panel">
-        <button mat-button type="button" class="unassigned-toggle" (click)="isUnassignedOpen = !isUnassignedOpen"
-          [attr.aria-expanded]="isUnassignedOpen">
-          <span><span class="eyebrow">Unassigned</span><strong>Games outside Kallax</strong></span>
-          <span>{{ unassignedGames.length }}</span>
-        </button>
-        <ng-container *ngIf="isUnassignedOpen">
-          <p *ngIf="unassignedGames.length === 0" class="muted">All games are placed in the shelf.</p>
-          <div cdkDropList [cdkDropListData]="unassignedGames" class="unassigned-games-list">
-            <article *ngFor="let game of unassignedGames; trackBy: trackById"
-              cdkDrag [cdkDragData]="game.id" class="unassigned-game"
-              [class.is-selected]="selectedGameId === game.id">
-              <button type="button" class="unassigned-game-main" (click)="selectGame(game.id)">
-                <span class="unassigned-game-cover">
-                  <img *ngIf="game.image_url; else initial" [src]="game.image_url" alt="" loading="lazy">
-                  <ng-template #initial>{{ game.name.slice(0, 1) }}</ng-template>
-                </span>
-                <span class="unassigned-game-body">
-                  <span class="unassigned-game-title">{{ game.name }}</span>
-                  <span *ngIf="metadataByGameId[game.id]?.themes?.length" class="unassigned-game-subtitle">
-                    {{ metadataByGameId[game.id].themes.slice(0, 2).join(' · ') }}
-                  </span>
-                </span>
-                <small class="unassigned-game-meta">
-                  <span *ngIf="metadataByGameId[game.id]?.avgRating as rating"
-                    class="rating-chip" [ngClass]="ratingClass(rating)">{{ rating | number:'1.1-1' }}</span>
-                  <span>{{ game.release_year }}</span>
-                </small>
-              </button>
-              <button mat-icon-button type="button" class="sell-game-button" [attr.aria-label]="'Sell ' + game.name"
-                (click)="sellGame(game.id)"><mat-icon>sell</mat-icon></button>
-            </article>
-          </div>
-        </ng-container>
-      </aside>
-
-      <div class="kallax-area">
-        <section class="kallax-grid" aria-label="Kallax shelf"
-          [style.--kallax-column-count]="gridLayout.columnCount"
-          [style.--kallax-row-count]="gridLayout.rowCount">
-          <button *ngFor="let box of kallaxBoxes; trackBy: trackById" cdkDropList
-            type="button" class="kallax-box" [class.is-selected]="selectedBoxId === box.id"
-            [class.is-full]="box.usedCapacity >= box.capacity" (click)="selectedBoxId = box.id"
-            (cdkDropListDropped)="dropGame(box.id, $event)" [attr.aria-pressed]="selectedBoxId === box.id">
-            <span class="box-number">{{ box.description ?? '#' + box.id }}</span>
-            <span class="box-stack" [class.is-empty]="box.games.length === 0">
-              <span *ngFor="let game of box.games.slice(0, 7)" class="box-game-preview" [title]="game.name">
-                <span>{{ shortenTitle(game.name) }}</span>
-              </span>
-              <span *ngIf="box.games.length > 7" class="box-game-preview more-games">+{{ box.games.length - 7 }}</span>
-            </span>
-            <span class="box-count">{{ box.usedCapacity }}/{{ box.capacity }}</span>
-          </button>
-        </section>
-
-        <aside class="game-preview-panel">
-          <p class="eyebrow">{{ selectedBox?.description ?? (selectedBox ? '#' + selectedBox.id : 'No cube') }}</p>
-          <h2>Games preview</h2>
-          <p *ngIf="selectedBox" class="capacity-summary">
-            {{ usedCapacity(selectedBoxGames) }}/{{ selectedBox.capacity }} capacity used
-          </p>
-          <p *ngIf="!selectedBox" class="muted">Select a cube to preview its games.</p>
-          <p *ngIf="selectedBox && selectedBoxGames.length === 0" class="muted">No games in this cube.</p>
-          <ul *ngIf="selectedBoxGames.length" class="game-preview-list">
-            <li *ngFor="let game of selectedBoxGames; trackBy: trackById">
-              <article class="game-preview-card" [class.is-selected]="selectedGameId === game.id"
-                (click)="selectGame(game.id)">
-                <div class="game-cover">
-                  <img *ngIf="game.image_url; else previewInitial" [src]="game.image_url" alt="" loading="lazy">
-                  <ng-template #previewInitial><span>{{ game.name.slice(0, 1) }}</span></ng-template>
-                </div>
-                <div>
-                  <div class="game-card-heading">
-                    <a [href]="game.bgg_url" target="_blank" rel="noreferrer" (click)="$event.stopPropagation()">{{ game.name }}</a>
-                    <span class="game-card-actions">
-                      <span *ngIf="metadataByGameId[game.id]?.avgRating as rating"
-                        class="rating-chip" [ngClass]="ratingClass(rating)">{{ rating | number:'1.1-1' }}</span>
-                      <button mat-button type="button" (click)="$event.stopPropagation(); removeGameFromBox(game.id)">Remove</button>
-                      <button mat-icon-button type="button" class="sell-game-button"
-                        (click)="$event.stopPropagation(); sellGame(game.id)"><mat-icon>sell</mat-icon></button>
-                    </span>
-                  </div>
-                  <span>{{ game.release_year }} · size {{ game.size }}
-                    <ng-container *ngIf="metadataByGameId[game.id]?.rank as rank"> · rank #{{ rank }}</ng-container>
-                  </span>
-                  <p *ngIf="metadataByGameId[game.id]?.themes?.length" class="game-themes">
-                    {{ metadataByGameId[game.id].themes.slice(0, 3).join(' · ') }}
-                  </p>
-                </div>
-              </article>
-            </li>
-          </ul>
-        </aside>
-      </div>
-    </div>
-  </main>
-</ng-template>
-
-<div *ngIf="isAddGameOpen" class="modal-backdrop" (mousedown)="closeAddDialog()">
-  <mat-card class="add-game-dialog" role="dialog" (mousedown)="$event.stopPropagation()">
-    <header><div><p class="eyebrow">Local BGG data</p><h2>Add game</h2></div>
-      <button mat-icon-button type="button" (click)="closeAddDialog()"><mat-icon>close</mat-icon></button></header>
-    <mat-form-field appearance="outline">
-      <mat-label>Search by name</mat-label>
-      <input matInput type="search" [(ngModel)]="addQuery" (ngModelChange)="searchBggSoon()" placeholder="e.g. ^Brass|Gloomhaven" autofocus>
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-    <p *ngIf="addError" class="error">{{ addError }}</p>
-    <mat-spinner *ngIf="isSearchingBgg" diameter="30"></mat-spinner>
-    <ul class="add-game-results">
-      <li *ngFor="let game of addResults">
-        <article><div class="game-cover"><span>{{ game.name.slice(0, 1) }}</span></div>
-          <div><strong>{{ game.name }}</strong><span>{{ game.yearPublished ?? 'Unknown year' }} · BGG {{ game.bggId }}
-            <ng-container *ngIf="game.avgRating"> · {{ game.avgRating | number:'1.1-1' }}</ng-container></span>
-            <p *ngIf="game.themes.length" class="game-themes">{{ game.themes.slice(0, 3).join(' · ') }}</p></div>
-          <button mat-flat-button type="button" [disabled]="isExistingGame(game.bggId) || addingBggId === game.bggId"
-            (click)="addGame(game)">{{ isExistingGame(game.bggId) ? 'Added' : addingBggId === game.bggId ? 'Adding…' : 'Add' }}</button>
-        </article>
-      </li>
-    </ul>
-  </mat-card>
-</div>
-
-<div *ngIf="isGridLayoutOpen" class="modal-backdrop" (mousedown)="isGridLayoutOpen = false">
-  <mat-card class="grid-layout-dialog" role="dialog" (mousedown)="$event.stopPropagation()">
-    <header><div><p class="eyebrow">Shelf layout</p><h2>Customize grid shape</h2>
-      <p class="muted">Auto uses {{ autoGridLayout.columnCount }} columns × {{ autoGridLayout.rowCount }} rows.</p></div>
-      <button mat-icon-button (click)="isGridLayoutOpen = false"><mat-icon>close</mat-icon></button></header>
-    <form class="grid-layout-form" (ngSubmit)="applyGridLayout()">
-      <mat-form-field appearance="outline"><mat-label>Rows</mat-label>
-        <input matInput type="number" name="rows" min="1" [(ngModel)]="draftGridLayout.rowCount" required></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Columns</mat-label>
-        <input matInput type="number" name="columns" min="1" [(ngModel)]="draftGridLayout.columnCount" required></mat-form-field>
-      <p [class.error]="!gridCapacityIsValid">{{ draftGridLayout.columnCount }}×{{ draftGridLayout.rowCount }}
-        holds {{ draftGridLayout.columnCount * draftGridLayout.rowCount }} cubes.</p>
-      <div class="grid-layout-actions">
-        <button mat-flat-button type="submit" [disabled]="!gridCapacityIsValid">Apply layout</button>
-        <button mat-stroked-button type="button" (click)="useAutoGrid()">Use auto</button>
-      </div>
-    </form>
-  </mat-card>
-</div>
-
-<div *ngIf="isSearchOpen" class="modal-backdrop" (mousedown)="isSearchOpen = false">
-  <mat-card class="game-search-dialog" role="dialog" (mousedown)="$event.stopPropagation()">
-    <header><div><p class="eyebrow">Owned library</p><h2>Find a game</h2></div>
-      <button mat-icon-button (click)="isSearchOpen = false"><mat-icon>close</mat-icon></button></header>
-    <div class="game-search-controls">
-      <mat-form-field appearance="outline"><mat-label>Search title</mat-label>
-        <input matInput type="search" [(ngModel)]="ownedSearchQuery" placeholder="e.g. Brass|Ark Nova"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Category</mat-label>
-        <mat-select [(ngModel)]="ownedSearchCategory"><mat-option value="">All categories</mat-option>
-          <mat-option *ngFor="let category of ownedCategories" [value]="category">{{ category }}</mat-option>
-        </mat-select></mat-form-field>
-    </div>
-    <p class="muted">{{ ownedSearchResults.length }} of {{ boardGames.length }} games</p>
-    <ul class="game-search-results">
-      <li *ngFor="let game of ownedSearchResults; trackBy: trackById"><button type="button" (click)="selectOwnedSearchResult(game.id)">
-        <span class="game-search-result-title">{{ game.name }}</span>
-        <span>{{ game.release_year }} · {{ boxLocation(game) }}</span>
-        <small *ngIf="categoriesText(game)">{{ categoriesText(game) }}</small>
-      </button></li>
-    </ul>
-  </mat-card>
+  }
+  <router-outlet></router-outlet>
 </div>

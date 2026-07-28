@@ -1,0 +1,40 @@
+@if (library.game(gameId); as game) {
+  <main class="mx-auto min-h-[calc(100dvh-76px)] max-w-[1680px] px-5 py-10 pb-28 lg:px-16 lg:py-14">
+    <a routerLink="/games" class="mb-10 inline-flex items-center gap-1.5 font-bold text-brand"><mat-icon>arrow_back</mat-icon>All games</a>
+    <section class="grid gap-8 lg:grid-cols-[minmax(260px,520px)_1fr] lg:gap-[clamp(32px,7vw,90px)]">
+      <div class="flex aspect-4/5 items-center justify-center overflow-hidden rounded-3xl bg-mint font-display text-8xl shadow-2xl">
+        @if (game.image_url) {
+          <img class="size-full object-cover" [src]="game.image_url" [alt]="game.name + ' cover'">
+        } @else {
+          <span>{{ game.name.slice(0, 1) }}</span>
+        }
+      </div>
+      <div class="self-center">
+        <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">{{ game.release_year }} · In your collection</p>
+        <h1 class="mb-9 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ game.name }}</h1>
+        @if (library.metadata()[game.id]; as meta) {
+          <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5">
+            <span class="grid gap-1 text-xs text-muted"><mat-icon class="text-accent">star</mat-icon><strong class="font-display text-xl text-ink">{{ meta.avgRating | number:'1.1-1' }}</strong>BGG rating</span>
+            <span class="grid gap-1 text-xs text-muted"><mat-icon class="text-accent">leaderboard</mat-icon><strong class="font-display text-xl text-ink">#{{ meta.rank ?? '—' }}</strong>Overall rank</span>
+            <span class="grid gap-1 text-xs text-muted"><mat-icon class="text-accent">groups</mat-icon><strong class="font-display text-xl text-ink">{{ meta.usersRated | number }}</strong>Ratings</span>
+          </div>
+        }
+        <div class="my-5 flex flex-wrap gap-2">
+          @for (theme of library.metadata()[game.id]?.themes; track theme) {
+            <span class="rounded-full bg-mint px-3 py-2 text-xs font-bold text-brand">{{ theme }}</span>
+          }
+        </div>
+        <p class="my-7 flex items-center gap-2"><mat-icon>inventory_2</mat-icon>Stored in <strong>{{ location(game.box) }}</strong></p>
+        <a mat-flat-button class="primary-action" [href]="game.bgg_url" target="_blank" rel="noreferrer">
+          View on BoardGameGeek <mat-icon>open_in_new</mat-icon>
+        </a>
+      </div>
+    </section>
+  </main>
+} @else {
+  <main class="flex min-h-[calc(100dvh-76px)] flex-col items-center justify-center px-5 text-center">
+    <mat-icon class="!size-12 !text-5xl text-accent">extension_off</mat-icon>
+    <h1 class="font-display text-5xl">Game not found</h1>
+    <a class="text-brand" routerLink="/games">Return to all games</a>
+  </main>
+}

@@ -1,0 +1,28 @@
+<article class="group relative overflow-hidden rounded-2xl border border-line bg-surface shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+  <a class="relative flex aspect-5/4 items-center justify-center overflow-hidden bg-mint font-display text-6xl" [routerLink]="['/games', game.id]">
+    @if (game.image_url) {
+      <img class="size-full object-cover" [src]="game.image_url" [alt]="game.name + ' cover'" loading="lazy">
+    } @else {
+      <span>{{ game.name.slice(0, 1) }}</span>
+    }
+    @if (metadata?.avgRating) {
+      <span class="absolute right-2.5 bottom-2.5 flex items-center gap-1 rounded-full bg-surface px-2.5 py-1.5 text-xs font-bold">
+        <mat-icon class="!size-4 !text-base text-amber-400">star</mat-icon>
+        {{ metadata!.avgRating | number:'1.1-1' }}
+      </span>
+    }
+  </a>
+  <div class="p-4">
+    <p class="mb-2 text-[.7rem] font-bold tracking-widest text-accent uppercase">{{ game.release_year }} @if (metadata?.themes?.length) {
+      <span>· {{ metadata!.themes[0] }}</span>
+    }</p>
+    <a [routerLink]="['/games', game.id]"><h3 class="mb-4 font-display text-xl font-bold">{{ game.name }}</h3></a>
+    <p class="m-0 flex items-center gap-1 text-xs text-muted"><mat-icon class="!size-4 !text-base">inventory_2</mat-icon>{{ location }}</p>
+  </div>
+  @if (actionLabel) {
+    <button class="w-full" type="button" (click)="action.emit(game)">
+      <mat-icon>{{ actionIcon }}</mat-icon>
+      {{ actionLabel }}
+    </button>
+  }
+</article>
