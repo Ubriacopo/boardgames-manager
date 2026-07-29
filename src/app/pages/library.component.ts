@@ -1,22 +1,20 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, effect, HostListener } from '@angular/core';
+import { Component, computed, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDragHandle, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import type { BoardGame } from '../../entities/BoardGame';
 import { LibraryService } from '../services/library.service';
-import { AddGameDialogComponent } from '../components/add-game-dialog.component';
 
 @Component({
   standalone: true,
   imports: [DecimalPipe, FormsModule, CdkDrag, CdkDragHandle, CdkDropList, CdkDropListGroup, RouterLink,
-    MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule, MatDividerModule, MatSnackBarModule],
+    MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDividerModule, MatSnackBarModule],
   templateUrl: './library.component.html',
 })
 export class LibraryComponent {
@@ -29,12 +27,10 @@ export class LibraryComponent {
   draftColumns = 4;
   draftRows = 4;
   layoutOpen = false;
-  private addDialogRef?: MatDialogRef<AddGameDialogComponent>;
   readonly assignedCount = computed(() => this.library.games().length - this.library.unassigned().length);
 
   constructor(
     readonly library: LibraryService,
-    private readonly dialog: MatDialog,
     private readonly snackBar: MatSnackBar,
   ) {
     const boxCount = Math.max(1, library.boxes().length);
@@ -42,9 +38,6 @@ export class LibraryComponent {
     this.gridRows = Math.ceil(boxCount / this.gridColumns);
     this.draftColumns = this.gridColumns;
     this.draftRows = this.gridRows;
-    effect(() => {
-      if (this.library.addDialogOpen() && !this.addDialogRef) this.showAddDialog();
-    });
   }
   get gridLayoutValid(): boolean {
     return Number.isInteger(this.draftColumns) && Number.isInteger(this.draftRows) &&
@@ -115,18 +108,6 @@ export class LibraryComponent {
   capacity(id: number): number { return this.gamesInBox(id).reduce((sum, game) => sum + game.size, 0); }
   location(id: number | null): string { return this.library.boxes().find((box) => box.id === id)?.description ?? 'Unassigned'; }
   initials(name: string): string { return name.split(/\s+/).slice(0, 2).map((word) => word[0]).join(''); }
-  openAdd(): void { this.library.addDialogOpen.set(true); }
-  private showAddDialog(): void {
-    this.addDialogRef = this.dialog.open(AddGameDialogComponent, {
-      autoFocus: 'input',
-      maxWidth: 'calc(100vw - 32px)',
-      width: '660px',
-    });
-    this.addDialogRef.afterClosed().subscribe(() => {
-      this.addDialogRef = undefined;
-      this.library.addDialogOpen.set(false);
-    });
-  }
   drop(box: number, event: CdkDragDrop<BoardGame[]>): void { void this.move(event.item.data as string, box); }
   unassign(event: CdkDragDrop<BoardGame[]>): void { void this.move(event.item.data as string, null); }
   async move(gameId: string, box: number | null): Promise<void> {

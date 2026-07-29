@@ -50,10 +50,10 @@
                     >
                         <mat-icon>grid_view</mat-icon>
                       </button>
-                      <button mat-flat-button class="primary-action desktop-add-game" (click)="openAdd()">
+                      <a mat-flat-button class="primary-action desktop-add-game" routerLink="/add">
                         <mat-icon>add</mat-icon>
                         Add a game
-                      </button>
+                      </a>
                     </div>
                 </header>
                 <div class="shelf-workspace" cdkDropListGroup>
@@ -247,7 +247,7 @@
                 <mat-icon>extension</mat-icon>
                 <h2>Your shelf is waiting</h2>
                 <p>Add your first game to start building the collection.</p>
-                <button mat-flat-button class="primary-action" (click)="openAdd()">Add a game</button>
+                <a mat-flat-button class="primary-action" routerLink="/add">Add a game</a>
             </section>
         }
     }

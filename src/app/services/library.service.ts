@@ -18,7 +18,6 @@ export class LibraryService {
   readonly metadata = signal<Record<string, BggGameMetadata>>({});
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly addDialogOpen = signal(false);
   readonly unassigned = computed(() => this.games().filter((game) => game.box === null));
   private loadedForUser: string | null = null;
 
