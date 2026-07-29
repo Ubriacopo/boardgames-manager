@@ -19,13 +19,44 @@
     </select>
   </div>
   @if (filtered().length) {
-    <section class="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
+    <section class="recent-game-list !max-w-none">
       @for (game of filtered(); track game.id) {
-        <app-game-card
-          [game]="game"
-          [metadata]="library.metadata()[game.id]"
-          [location]="location(game.box)"
-          />
+        <a class="recent-game-row" [class.is-favorite]="game.favorite"
+           cdkDrag cdkDragLockAxis="x" [cdkDragData]="game"
+           (cdkDragEnded)="swipeGame(game, $event)"
+           [routerLink]="['/games', game.id]"
+           title="Swipe left to favorite, right to remove">
+          <span class="recent-game-cover">
+            @if (game.image_url) {
+              <img [src]="game.image_url" [alt]="game.name + ' cover'" loading="lazy">
+            } @else {
+              {{ game.name.slice(0, 1) }}
+            }
+          </span>
+          <span class="recent-game-main">
+            <strong>{{ game.name }}</strong>
+            <small>
+              {{ game.release_year }}
+              @if (library.metadata()[game.id]?.themes?.length) {
+                · {{ library.metadata()[game.id]!.themes[0] }}
+              }
+            </small>
+          </span>
+          <span class="recent-game-location">
+            <mat-icon>inventory_2</mat-icon>
+            {{ location(game.box) }}
+          </span>
+          @if (library.metadata()[game.id]?.avgRating; as rating) {
+            <span class="recent-game-rating">
+              <mat-icon>star</mat-icon>
+              {{ rating | number:'1.1-1' }}
+            </span>
+          }
+          <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
+        </a>
+        @if (!$last) {
+          <mat-divider/>
+        }
       }
     </section>
   } @else {

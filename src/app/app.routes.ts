@@ -18,6 +18,7 @@ export const routes: Routes = [
   { path: 'library', canActivate: [libraryGuard], loadComponent: () => import('./pages/library.component').then((m) => m.LibraryComponent) },
   { path: 'games', canActivate: [libraryGuard], loadComponent: () => import('./pages/games.component').then((m) => m.GamesComponent) },
   { path: 'games/:id', canActivate: [libraryGuard], loadComponent: () => import('./pages/game-detail.component').then((m) => m.GameDetailComponent) },
+  { path: 'profile', canActivate: [libraryGuard], loadComponent: () => import('./pages/profile.component').then((m) => m.ProfileComponent) },
   { path: 'session/:code', loadComponent: () => import('./pages/session.component').then((m) => m.SessionComponent) },
   { path: '**', redirectTo: 'library' },
 ];

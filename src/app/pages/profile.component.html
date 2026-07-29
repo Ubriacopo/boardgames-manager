@@ -1,0 +1,43 @@
+<main class="mx-auto min-h-[calc(100dvh-76px)] max-w-4xl px-5 py-10 pb-28 lg:px-16 lg:py-14">
+  <header class="mb-10">
+    <a routerLink="/library" class="mb-8 flex w-max items-center gap-2.5 font-display text-xl font-bold lg:hidden"
+       aria-label="Meeple House home">
+      <span class="flex size-10 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white">
+        <mat-icon class="rotate-3">casino</mat-icon>
+      </span>
+      <span>Meeple House</span>
+    </a>
+    <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">Your account</p>
+    <h1 class="font-display text-5xl font-bold tracking-tight lg:text-7xl">Profile</h1>
+  </header>
+
+  <section class="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
+    <div class="flex items-center gap-4 border-b border-line p-6 sm:p-8">
+      <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-mint text-brand">
+        <mat-icon>person</mat-icon>
+      </span>
+      <div class="min-w-0">
+        <p class="text-sm text-muted">Signed in as</p>
+        <strong class="block truncate text-lg">{{ auth.session()?.user?.email ?? 'Board game collector' }}</strong>
+      </div>
+    </div>
+
+    <div class="grid gap-px bg-line sm:grid-cols-2">
+      <div class="bg-surface p-6 sm:p-8">
+        <strong class="font-display text-4xl text-brand">{{ library.games().length }}</strong>
+        <p class="mt-1 text-sm text-muted">Games in your library</p>
+      </div>
+      <div class="bg-surface p-6 sm:p-8">
+        <strong class="font-display text-4xl text-brand">{{ library.boxes().length }}</strong>
+        <p class="mt-1 text-sm text-muted">Kallax cubes</p>
+      </div>
+    </div>
+
+    <div class="p-6 sm:p-8">
+      <button mat-stroked-button type="button" (click)="auth.signOut()">
+        <mat-icon>logout</mat-icon>
+        Sign out
+      </button>
+    </div>
+  </section>
+</main>

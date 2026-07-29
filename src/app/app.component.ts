@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from './services/auth.service';
 import { LibraryService } from './services/library.service';
 import { VotingSessionService } from './services/voting-session.service';
@@ -10,7 +11,7 @@ import { VotingSessionService } from './services/voting-session.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatButtonModule, MatIconModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
     readonly auth: AuthService,
     readonly library: LibraryService,
     private readonly votingSessions: VotingSessionService,
+    private readonly snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -31,7 +33,11 @@ export class AppComponent implements OnInit {
     try {
       await this.votingSessions.createAndOpen(this.library.games());
     } catch (error) {
-      this.library.error.set(error instanceof Error ? error.message : 'Unable to start a voting session.');
+      this.snackBar.open(
+        error instanceof Error ? error.message : 'Unable to start a voting session.',
+        'Dismiss',
+        { duration: 5000, horizontalPosition: 'center', verticalPosition: 'bottom' },
+      );
     } finally {
       this.isCreatingSession = false;
     }

@@ -4,33 +4,33 @@
 @theme {
   --font-sans: "DM Sans", sans-serif;
   --font-display: "Fraunces", serif;
-  --color-canvas: #0d110f;
-  --color-surface: #171c19;
-  --color-line: #303a34;
+  --color-canvas: #061617;
+  --color-surface: #0c2425;
+  --color-line: #244647;
   --color-ink: #edf3ef;
   --color-muted: #9aa69f;
-  --color-accent: #ff8061;
-  --color-brand: #69c99e;
-  --color-mint: #243a30;
+  --color-accent: #7650c9;
+  --color-brand: #5a379f;
+  --color-mint: #123435;
 }
 
 :root {
   color-scheme: dark;
   --ink: #edf3ef;
   --muted: #9aa69f;
-  --cream: #0d110f;
-  --paper: #171c19;
-  --line: #303a34;
-  --forest: #69c99e;
-  --forest-dark: #10241b;
-  --mint: #243a30;
-  --coral: #ff8061;
+  --cream: #061617;
+  --paper: #0c2425;
+  --line: #244647;
+  --forest: #7650c9;
+  --forest-dark: #082829;
+  --mint: #123435;
+  --coral: #7650c9;
   --mustard: #e9b94e;
   --shadow: 0 18px 45px rgba(0, 0, 0, .35);
   --mat-sys-background: var(--cream);
   --mat-sys-surface: var(--paper);
-  --mat-sys-surface-container: #1d2420;
-  --mat-sys-surface-container-high: #252d28;
+  --mat-sys-surface-container: #102d2e;
+  --mat-sys-surface-container-high: #173a3b;
   --mat-sys-on-surface: var(--ink);
   --mat-sys-on-surface-variant: var(--muted);
   --mat-sys-outline: var(--line);

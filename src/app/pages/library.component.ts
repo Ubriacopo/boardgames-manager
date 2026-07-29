@@ -1,44 +1,50 @@
-import { Component, computed } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { Component, computed, effect, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDragHandle, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import type { BoardGame } from '../../entities/BoardGame';
-import { searchBggMetadataByName, type BggGameMetadata } from '../../utils/bggData';
 import { LibraryService } from '../services/library.service';
-import { GameCardComponent } from '../components/game-card.component';
+import { AddGameDialogComponent } from '../components/add-game-dialog.component';
 
 @Component({
   standalone: true,
-  imports: [DecimalPipe, FormsModule, CdkDrag, CdkDropList, CdkDropListGroup, RouterLink, MatButtonModule, MatIconModule,
-    MatProgressSpinnerModule, GameCardComponent],
+  imports: [DecimalPipe, FormsModule, CdkDrag, CdkDragHandle, CdkDropList, CdkDropListGroup, RouterLink,
+    MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule, MatDividerModule, MatSnackBarModule],
   templateUrl: './library.component.html',
 })
 export class LibraryComponent {
   activeTab: 'shelf' | 'recent' = 'shelf';
   selectedBox: number | null = null;
+  unassignedOpen = false;
   gridColumns = 4;
   gridRows = 4;
+  kallaxZoom = 1;
   draftColumns = 4;
   draftRows = 4;
   layoutOpen = false;
-  addQuery = '';
-  addResults: BggGameMetadata[] = [];
-  addError = '';
-  searching = false;
-  adding: number | null = null;
-  private timer?: number;
+  private addDialogRef?: MatDialogRef<AddGameDialogComponent>;
   readonly assignedCount = computed(() => this.library.games().length - this.library.unassigned().length);
 
-  constructor(readonly library: LibraryService) {
+  constructor(
+    readonly library: LibraryService,
+    private readonly dialog: MatDialog,
+    private readonly snackBar: MatSnackBar,
+  ) {
     const boxCount = Math.max(1, library.boxes().length);
     this.gridColumns = Math.ceil(Math.sqrt(boxCount));
     this.gridRows = Math.ceil(boxCount / this.gridColumns);
     this.draftColumns = this.gridColumns;
     this.draftRows = this.gridRows;
+    effect(() => {
+      if (this.library.addDialogOpen() && !this.addDialogRef) this.showAddDialog();
+    });
   }
   get gridLayoutValid(): boolean {
     return Number.isInteger(this.draftColumns) && Number.isInteger(this.draftRows) &&
@@ -46,17 +52,19 @@ export class LibraryComponent {
       this.draftColumns <= 12 && this.draftRows <= 12 &&
       this.draftColumns * this.draftRows >= this.library.boxes().length;
   }
-  get addOpen(): boolean {
-    return this.library.addDialogOpen();
-  }
-  set addOpen(open: boolean) {
-    this.library.addDialogOpen.set(open);
-  }
   get selectedBoxInfo() {
     return this.library.boxes().find((box) => box.id === this.selectedBox) ?? null;
   }
   get selectedGames(): BoardGame[] {
     return this.selectedBox === null ? [] : this.gamesInBox(this.selectedBox);
+  }
+  @HostListener('document:click')
+  closeSelectedBox(): void {
+    this.selectedBox = null;
+  }
+  selectBox(boxId: number, event: MouseEvent): void {
+    event.stopPropagation();
+    this.selectedBox = boxId;
   }
   applyGridLayout(): void {
     if (!this.gridLayoutValid) return;
@@ -69,6 +77,35 @@ export class LibraryComponent {
     this.draftRows = this.gridRows;
     this.layoutOpen = true;
   }
+  zoomIn(): void {
+    this.kallaxZoom = Math.min(1.5, Math.round((this.kallaxZoom + 0.1) * 10) / 10);
+  }
+  zoomOut(): void {
+    this.kallaxZoom = Math.max(0.5, Math.round((this.kallaxZoom - 0.1) * 10) / 10);
+  }
+  async favorite(game: BoardGame): Promise<void> {
+    try {
+      await this.library.setFavorite(game.id, true);
+      this.snackBar.open(`${game.name} added to favorites`, 'Dismiss', { duration: 3000 });
+    } catch (error) {
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to favorite this game.', 'Dismiss');
+    }
+  }
+  async removeFromLibrary(game: BoardGame): Promise<void> {
+    try {
+      await this.library.removeGame(game.id);
+      const notice = this.snackBar.open(`${game.name} removed from your library`, 'Undo', { duration: 5000 });
+      notice.onAction().subscribe(() => void this.library.restoreGame(game));
+    } catch (error) {
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to remove this game.', 'Dismiss');
+    }
+  }
+  swipeGame(game: BoardGame, event: CdkDragEnd): void {
+    const distance = event.distance.x;
+    event.source.reset();
+    if (distance <= -72) void this.favorite(game);
+    if (distance >= 72) void this.removeFromLibrary(game);
+  }
   recentlyAdded(): BoardGame[] {
     return [...this.library.games()]
       .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
@@ -78,33 +115,23 @@ export class LibraryComponent {
   capacity(id: number): number { return this.gamesInBox(id).reduce((sum, game) => sum + game.size, 0); }
   location(id: number | null): string { return this.library.boxes().find((box) => box.id === id)?.description ?? 'Unassigned'; }
   initials(name: string): string { return name.split(/\s+/).slice(0, 2).map((word) => word[0]).join(''); }
-  openAdd(): void { this.addOpen = true; this.addQuery = ''; this.addResults = []; }
-  exists(id: number): boolean { return this.library.games().some((game) => game.bgg_id === id); }
+  openAdd(): void { this.library.addDialogOpen.set(true); }
+  private showAddDialog(): void {
+    this.addDialogRef = this.dialog.open(AddGameDialogComponent, {
+      autoFocus: 'input',
+      maxWidth: 'calc(100vw - 32px)',
+      width: '660px',
+    });
+    this.addDialogRef.afterClosed().subscribe(() => {
+      this.addDialogRef = undefined;
+      this.library.addDialogOpen.set(false);
+    });
+  }
   drop(box: number, event: CdkDragDrop<BoardGame[]>): void { void this.move(event.item.data as string, box); }
   unassign(event: CdkDragDrop<BoardGame[]>): void { void this.move(event.item.data as string, null); }
   async move(gameId: string, box: number | null): Promise<void> {
     try { await this.library.moveGame(gameId, box); } catch (error) {
       this.library.error.set(error instanceof Error ? error.message : 'Unable to move this game.');
     }
-  }
-  searchSoon(): void {
-    if (this.timer) window.clearTimeout(this.timer);
-    if (this.addQuery.trim().length < 2) { this.addResults = []; return; }
-    this.timer = window.setTimeout(() => void this.search(), 200);
-  }
-  async search(): Promise<void> {
-    this.searching = true;
-    try { this.addResults = await searchBggMetadataByName(this.addQuery, 16); }
-    catch (error) { this.addError = error instanceof Error ? error.message : 'Search failed.'; }
-    finally { this.searching = false; }
-  }
-  async add(game: BggGameMetadata): Promise<void> {
-    this.adding = game.bggId;
-    try {
-      await this.library.addGame({ bgg_id: game.bggId, bgg_url: `https://boardgamegeek.com/boardgame/${game.bggId}`,
-        name: game.name, release_year: game.yearPublished ?? new Date().getFullYear(), size: 1 });
-      this.addOpen = false;
-    } catch (error) { this.addError = error instanceof Error ? error.message : 'Unable to add this game.'; }
-    finally { this.adding = null; }
   }
 }

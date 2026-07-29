@@ -1,49 +1,53 @@
 <div class="min-h-dvh bg-canvas text-ink">
-  @if (auth.session()) {
-    <header class="sticky top-0 z-20 grid min-h-17 grid-cols-[1fr_auto] items-center border-b border-line bg-surface px-4 lg:min-h-19 lg:grid-cols-[1fr_auto_1fr] lg:px-[clamp(20px,5vw,76px)]">
-      <a routerLink="/library" class="flex w-max items-center gap-2.5 font-display text-xl font-bold" aria-label="Meeple House home">
+    @if (auth.session()) {
+        <header class="lg:sticky lg:top-0 lg:z-20 lg:grid lg:min-h-19 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:border-b lg:border-line lg:bg-surface lg:px-[clamp(20px,5vw,76px)]">
+            <a routerLink="/library" class="hidden w-max items-center gap-2.5 font-display text-xl font-bold lg:flex"
+               aria-label="Meeple House home">
         <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white">
           <mat-icon class="rotate-3">casino</mat-icon>
         </span>
-        <span class="hidden sm:inline">Meeple House</span>
-      </a>
+                <span class="hidden sm:inline">Meeple House</span>
+            </a>
 
-      <nav
-        aria-label="Main navigation"
-        class="fixed inset-x-0 bottom-0 z-30 flex min-h-16 items-center justify-center gap-[clamp(14px,8vw,52px)] border-t border-line bg-surface px-3.5 py-1 pb-[max(5px,env(safe-area-inset-bottom))] lg:static lg:gap-2 lg:border-0 lg:bg-transparent lg:p-0"
-      >
-        <a routerLink="/library" routerLinkActive="bg-mint! text-brand!"
-          class="flex items-center gap-1.5 rounded-full px-4 py-2.5 font-semibold text-muted">
-          <mat-icon class="!size-5 !text-xl">grid_view</mat-icon>
-          Library
-        </a>
-        <a
-          routerLink="/library"
-          class="-mt-7 flex size-15 items-center justify-center rounded-full border-5 border-canvas bg-accent p-0 text-white shadow-xl lg:hidden"
-          aria-label="Add a game"
-          (click)="library.addDialogOpen.set(true)"
-        >
-          <mat-icon class="!size-7 !text-[28px]">add</mat-icon>
-          <span class="sr-only">Add game</span>
-        </a>
-        <a routerLink="/games" routerLinkActive="bg-mint! text-brand!"
-          class="flex items-center gap-1.5 rounded-full px-4 py-2.5 font-semibold text-muted">
-          <mat-icon class="!size-5 !text-xl">explore</mat-icon>
-          Browse games
-        </a>
-      </nav>
+            <nav
+                    aria-label="Main navigation"
+                    class="fixed inset-x-0 bottom-0 z-50 grid min-h-16 grid-cols-5 items-center border-t border-line bg-surface px-1 py-1 pb-[max(5px,env(safe-area-inset-bottom))] lg:static lg:flex lg:justify-center lg:gap-2 lg:border-0 lg:bg-transparent lg:p-0"
+            >
+                <a routerLink="/library" routerLinkActive="bg-mint! text-brand!"
+                   class="col-start-1 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
+                    <mat-icon>grid_view</mat-icon>
+                    <span class="hidden md:block">Library</span>
+                </a>
+                <a routerLink="/library"
+                   class="absolute left-1/2 -mt-7 flex size-15 -translate-x-1/2 items-center justify-center rounded-full border-5 border-canvas bg-accent p-0 text-white shadow-xl lg:hidden"
+                   aria-label="Add a game" (click)="library.addDialogOpen.set(true)">
+                    <mat-icon>add</mat-icon>
+                    <span class="sr-only">Add game</span>
+                </a>
+                <a routerLink="/games" routerLinkActive="bg-mint! text-brand!"
+                   class="col-start-2 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
+                    <mat-icon>explore</mat-icon>
+                    <span class="hidden md:block"> Browse games</span>
+                </a>
+                <button
+                    type="button"
+                    class="col-start-4 flex items-center justify-center gap-1.5 rounded-full border-0 bg-transparent px-2 py-2.5 font-semibold text-muted disabled:opacity-45 lg:px-4"
+                    (click)="createSession()"
+                    [disabled]="isCreatingSession || !library.games().length"
+                    [attr.aria-label]="isCreatingSession ? 'Starting session' : 'Start a session'"
+                >
+                    <mat-icon>group</mat-icon>
+                    <span class="hidden md:block">{{ isCreatingSession ? 'Starting…' : 'Start a session' }}</span>
+                </button>
+                <a routerLink="/profile" routerLinkActive="bg-mint! text-brand!"
+                   class="col-start-5 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
+                    <mat-icon>person</mat-icon>
+                    <span class="hidden md:block">Profile</span>
+                </a>
+            </nav>
 
-      <div class="flex items-center justify-end gap-2">
-        <button mat-flat-button class="session-button max-lg:!text-[0]" (click)="createSession()"
-          [disabled]="isCreatingSession || !library.games().length">
-          <mat-icon>group</mat-icon>
-          {{ isCreatingSession ? 'Starting…' : 'Start a session' }}
-        </button>
-        <button mat-icon-button aria-label="Sign out" (click)="auth.signOut()">
-          <mat-icon>logout</mat-icon>
-        </button>
-      </div>
-    </header>
-  }
-  <router-outlet></router-outlet>
+            <div></div>
+        </header>
+    }
+    <router-outlet></router-outlet>
 </div>

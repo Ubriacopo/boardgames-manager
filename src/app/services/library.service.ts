@@ -71,6 +71,16 @@ export class LibraryService {
     }
   }
 
+  async setFavorite(gameId: string, favorite: boolean): Promise<void> {
+    const previous = this.games();
+    this.games.update((games) => games.map((game) => game.id === gameId ? { ...game, favorite } : game));
+    const { error } = await supabase.from('board_games').update({ favorite }).eq('id', gameId);
+    if (error) {
+      this.games.set(previous);
+      throw error;
+    }
+  }
+
   async removeGame(gameId: string): Promise<void> {
     const previous = this.games();
     this.games.update((games) => games.filter((game) => game.id !== gameId));
@@ -79,6 +89,12 @@ export class LibraryService {
       this.games.set(previous);
       throw error;
     }
+  }
+
+  async restoreGame(game: BoardGame): Promise<void> {
+    const { data, error } = await supabase.from('board_games').insert(game).select('*').single();
+    if (error) throw error;
+    this.games.update((games) => [...games, data].sort((a, b) => a.name.localeCompare(b.name)));
   }
 
   private async ensureLibrary(session: Session): Promise<Library> {

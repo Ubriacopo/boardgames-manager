@@ -65,6 +65,7 @@ export type Database = {
           bgg_url: string
           box: number | null
           created_at: string
+          favorite: boolean
           id: string
           image_url: string | null
           library_id: string | null
@@ -77,6 +78,7 @@ export type Database = {
           bgg_url: string
           box?: number | null
           created_at?: string
+          favorite?: boolean
           id?: string
           image_url?: string | null
           library_id?: string | null
@@ -89,6 +91,7 @@ export type Database = {
           bgg_url?: string
           box?: number | null
           created_at?: string
+          favorite?: boolean
           id?: string
           image_url?: string | null
           library_id?: string | null
