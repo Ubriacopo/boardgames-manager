@@ -1,8 +1,8 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDragHandle, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
-import { RouterLink } from '@angular/router';
+import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDragHandle, CdkDragMove, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -10,17 +10,20 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import type { BoardGame } from '../../entities/BoardGame';
 import { LibraryService } from '../services/library.service';
+import { CollectionListComponent } from '../components/collection-list.component';
 
 @Component({
   standalone: true,
   imports: [DecimalPipe, FormsModule, CdkDrag, CdkDragHandle, CdkDropList, CdkDropListGroup, RouterLink,
-    MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDividerModule, MatSnackBarModule],
+    MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDividerModule, MatSnackBarModule,
+    CollectionListComponent],
   templateUrl: './library.component.html',
 })
 export class LibraryComponent {
-  activeTab: 'shelf' | 'recent' = 'shelf';
+  activeTab: 'shelf' | 'recent' | 'collection' = 'shelf';
   selectedBox: number | null = null;
   unassignedOpen = false;
+  swipeDirection: Record<string, 'favorite' | 'delete' | null> = {};
   gridColumns = 4;
   gridRows = 4;
   kallaxZoom = 1;
@@ -31,8 +34,11 @@ export class LibraryComponent {
 
   constructor(
     readonly library: LibraryService,
+    route: ActivatedRoute,
     private readonly snackBar: MatSnackBar,
   ) {
+    const requestedTab = route.snapshot.queryParamMap.get('tab');
+    if (requestedTab === 'recent' || requestedTab === 'collection') this.activeTab = requestedTab;
     const boxCount = Math.max(1, library.boxes().length);
     this.gridColumns = Math.ceil(Math.sqrt(boxCount));
     this.gridRows = Math.ceil(boxCount / this.gridColumns);
@@ -96,8 +102,14 @@ export class LibraryComponent {
   swipeGame(game: BoardGame, event: CdkDragEnd): void {
     const distance = event.distance.x;
     event.source.reset();
+    this.swipeDirection[game.id] = null;
     if (distance <= -72) void this.favorite(game);
     if (distance >= 72) void this.removeFromLibrary(game);
+  }
+  trackSwipe(gameId: string, event: CdkDragMove): void {
+    this.swipeDirection[gameId] =
+      event.distance.x <= -48 ? 'favorite' :
+      event.distance.x >= 48 ? 'delete' : null;
   }
   recentlyAdded(): BoardGame[] {
     return [...this.library.games()]

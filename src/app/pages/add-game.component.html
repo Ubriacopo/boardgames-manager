@@ -1,57 +1,61 @@
 <main class="mx-auto min-h-[calc(100dvh-64px)] max-w-5xl px-5 py-8 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-12 lg:py-12">
-  <header class="mb-8 flex items-start gap-4">
-    <a mat-icon-button routerLink="/library" aria-label="Back to library">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
-    <div>
-      <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Grow the collection</p>
-      <h1 class="font-display text-4xl font-bold lg:text-6xl">Add a game</h1>
-      <p class="mt-3 text-muted">Search BoardGameGeek and add a title to your library.</p>
-    </div>
-  </header>
-
-  <label class="search-box sticky top-0 z-10 mb-6 shadow-xl">
-    <mat-icon>search</mat-icon>
-    <input
-      autofocus
-      [(ngModel)]="query"
-      (ngModelChange)="searchSoon()"
-      placeholder="Search for a board game"
-    >
-  </label>
-
-  @if (error) {
-    <p class="notice error">{{ error }}</p>
-  }
-
-  <section class="add-results !max-h-none">
-    @for (game of results; track game.bggId) {
-      <article>
+    <header class="mb-8 flex items-start gap-4">
+        <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" routerLink="/library"
+           aria-label="Back to library">
+            <mat-icon>arrow_back</mat-icon>
+        </a>
         <div>
-          <strong>{{ game.name }}</strong>
-          <span>
-            {{ game.yearPublished ?? 'Year unknown' }}
-            @if (game.avgRating) {
-              · ★ {{ game.avgRating | number:'1.1-1' }}
-            }
-          </span>
+            <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Grow the collection</p>
+            <h1 class="font-display text-4xl font-bold lg:text-6xl">Add a game</h1>
         </div>
-        <button mat-flat-button (click)="add(game)" [disabled]="adding === game.bggId || exists(game.bggId)">
-          {{ exists(game.bggId) ? 'Owned' : adding === game.bggId ? 'Adding…' : 'Add' }}
-        </button>
-      </article>
+    </header>
+
+    <label class="search-box sticky top-0 z-10 mb-6 shadow-xl">
+        <mat-icon>search</mat-icon>
+        <input matInput class="ml-8" autofocus [(ngModel)]="query" (ngModelChange)="searchSoon()" placeholder="Search for a board game">
+    </label>
+
+    @if (error) {
+        <p class="notice error">{{ error }}</p>
     }
-    @if (searching) {
-      <p class="py-8 text-center text-muted">Searching the catalog…</p>
-    }
-    @if (!searching && query.length > 1 && !results.length) {
-      <p class="py-8 text-center text-muted">No matching games found.</p>
-    }
-    @if (!query.length) {
-      <div class="flex min-h-72 flex-col items-center justify-center text-center text-muted">
-        <mat-icon class="!size-12 !text-5xl text-accent">manage_search</mat-icon>
-        <p>Type a title to search the catalog.</p>
-      </div>
-    }
-  </section>
+
+    <section class="add-results !max-h-none">
+        @for (game of results; track game.bggId) {
+            <article>
+                <div>
+                    <strong>{{ game.name }}</strong>
+                    <span>
+            {{ game.yearPublished ?? 'Year unknown' }}
+                        @if (game.avgRating) {
+                            · ★ {{ game.avgRating | number:'1.1-1' }}
+                        }
+          </span>
+                </div>
+                <span class="flex items-center gap-1">
+                    <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                       [routerLink]="['/add/details', game.bggId]"
+                       [queryParams]="{ from: query }"
+                       [attr.aria-label]="'View details for ' + game.name">
+                        <mat-icon>info</mat-icon>
+                    </a>
+                    <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                            (click)="add(game)" [disabled]="adding === game.bggId || exists(game.bggId)">
+                        <mat-icon>{{ exists(game.bggId) ? 'check' : adding === game.bggId ? 'refresh' : 'add' }}</mat-icon>
+                    </button>
+                </span>
+            </article>
+        }
+        @if (searching) {
+            <p class="py-8 text-center text-muted">Searching the catalog…</p>
+        }
+        @if (!searching && query.length > 1 && !results.length) {
+            <p class="py-8 text-center text-muted">No matching games found.</p>
+        }
+        @if (!query.length) {
+            <div class="flex min-h-72 flex-col items-center justify-center text-center text-muted">
+                <mat-icon class="!size-12 !text-5xl text-accent">manage_search</mat-icon>
+                <p>Type a title to search the catalog.</p>
+            </div>
+        }
+    </section>
 </main>

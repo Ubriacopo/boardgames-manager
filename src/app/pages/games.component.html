@@ -1,69 +1,76 @@
-<main class="mx-auto min-h-[calc(100dvh-76px)] max-w-[1680px] px-5 py-10 pb-28 lg:px-16 lg:py-14">
-  <header class="mb-11 flex flex-col items-start justify-between gap-7 sm:flex-row sm:items-end">
-    <div>
-      <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">The collection</p>
-      <h1 class="mb-3 font-display text-5xl font-bold tracking-tight lg:text-7xl">Browse all games</h1>
-      <p class="text-muted">Every game on your shelf, ready to rediscover.</p>
-    </div>
-    <div class="flex items-center gap-2.5 rounded-2xl bg-mint px-5 py-3 text-brand"><strong class="font-display text-3xl">{{ filtered().length }}</strong><span class="max-w-12 text-xs text-muted">games found</span></div>
+<main class="mx-auto min-h-[calc(100dvh-64px)] max-w-[1500px] px-5 py-8 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-12">
+  <header class="mb-3">
+    <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">Discover</p>
   </header>
-  <div class="mb-8 flex flex-col gap-3 sm:flex-row">
-    <label class="flex flex-1 items-center gap-2.5 rounded-xl border border-line bg-surface px-4 focus-within:border-brand">
-      <mat-icon>search</mat-icon>
-      <input class="w-full bg-transparent py-4 outline-none" type="search" [(ngModel)]="query" placeholder="Search title, year, or category">
-    </label>
-    <select class="min-w-40 rounded-xl border border-line bg-surface px-4 text-ink" [(ngModel)]="sort">
-      <option value="name">A–Z</option>
-      <option value="rating">Top rated</option>
-      <option value="newest">Newest</option>
-    </select>
-  </div>
-  @if (filtered().length) {
-    <section class="recent-game-list !max-w-none">
-      @for (game of filtered(); track game.id) {
-        <a class="recent-game-row" [class.is-favorite]="game.favorite"
-           cdkDrag cdkDragLockAxis="x" [cdkDragData]="game"
-           (cdkDragEnded)="swipeGame(game, $event)"
-           [routerLink]="['/games', game.id]"
-           title="Swipe left to favorite, right to remove">
-          <span class="recent-game-cover">
-            @if (game.image_url) {
-              <img [src]="game.image_url" [alt]="game.name + ' cover'" loading="lazy">
-            } @else {
-              {{ game.name.slice(0, 1) }}
-            }
+
+  <section class="sticky top-0 z-10 mb-7 grid gap-4 bg-canvas/95 py-3 backdrop-blur">
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <label class="flex flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4 focus-within:border-brand">
+        <mat-icon>search</mat-icon>
+        <input class="w-full bg-transparent py-3 outline-none" type="search" [(ngModel)]="query"
+               placeholder="Search every board game">
+      </label>
+      <select class="rounded-xl border border-line bg-surface px-4 py-3" [(ngModel)]="sort">
+        <option value="rank">Best ranked</option>
+        <option value="rating">Highest rating</option>
+        <option value="popular">Most popular</option>
+        <option value="newest">Newest</option>
+      </select>
+    </div>
+    <div class="flex gap-2 overflow-x-auto pb-1">
+      @for (item of categories; track item) {
+        <button mat-stroked-button type="button" class="shrink-0"
+                [class.!bg-accent]="category === item"
+                [class.!text-white]="category === item"
+                (click)="category = item">
+          {{ item }}
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (loading) {
+    <p class="py-20 text-center text-muted">Opening the catalog…</p>
+  } @else if (error) {
+    <p class="error py-20 text-center">{{ error }}</p>
+  } @else {
+    <div class="mb-4 flex items-center justify-between">
+      <p class="m-0 text-sm text-muted">Showing the first {{ results().length }} matches</p>
+    </div>
+    <section class="grid gap-3 md:grid-cols-2">
+      @for (game of results(); track game.bggId) {
+        <article class="relative flex min-w-0 items-center gap-4 rounded-xl border border-line bg-surface p-4 transition hover:bg-mint">
+          <a class="absolute inset-0 rounded-xl focus:outline-2 focus:outline-accent"
+             [routerLink]="['/add/details', game.bggId]"
+             [attr.aria-label]="'View details for ' + game.name">
+            <span class="sr-only">View details for {{ game.name }}</span>
+          </a>
+          <span class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-mint font-display text-xl text-accent">
+            {{ game.rank ?? '—' }}
           </span>
-          <span class="recent-game-main">
-            <strong>{{ game.name }}</strong>
-            <small>
-              {{ game.release_year }}
-              @if (library.metadata()[game.id]?.themes?.length) {
-                · {{ library.metadata()[game.id]!.themes[0] }}
-              }
-            </small>
-          </span>
-          <span class="recent-game-location">
-            <mat-icon>inventory_2</mat-icon>
-            {{ location(game.box) }}
-          </span>
-          @if (library.metadata()[game.id]?.avgRating; as rating) {
-            <span class="recent-game-rating">
-              <mat-icon>star</mat-icon>
-              {{ rating | number:'1.1-1' }}
+          <div class="min-w-0 flex-1">
+            <strong class="block truncate">{{ game.name }}</strong>
+            <p class="m-0 truncate text-xs text-muted">
+              {{ game.yearPublished ?? 'Year unknown' }}
+              @if (game.themes.length) { · {{ game.themes.join(' · ') }} }
+            </p>
+          </div>
+          @if (game.avgRating) {
+            <span class="hidden items-center gap-1 text-sm sm:flex">
+              <mat-icon class="!size-4 !text-base text-amber-400">star</mat-icon>
+              {{ game.avgRating | number:'1.1-1' }}
             </span>
           }
-          <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
-        </a>
-        @if (!$last) {
-          <mat-divider/>
-        }
+          <a mat-icon-button class="relative z-10 !inline-flex !items-center !justify-center !p-0"
+             [routerLink]="gameLink(game)"
+             [queryParams]="owned(game.bggId) ? null : { q: game.name }"
+             [attr.aria-label]="owned(game.bggId) ? 'Open owned game' : 'Add game'">
+            <mat-icon>{{ owned(game.bggId) ? 'check_circle' : 'add_circle' }}</mat-icon>
+          </a>
+        </article>
+      } @empty {
+        <p class="col-span-full py-20 text-center text-muted">No games match these filters.</p>
       }
-    </section>
-  } @else {
-    <section class="flex min-h-85 flex-col items-center justify-center text-center">
-      <mat-icon class="!size-12 !text-5xl text-accent">search_off</mat-icon>
-      <h2 class="font-display text-3xl">No games found</h2>
-      <p class="text-muted">Try a shorter title or another category.</p>
     </section>
   }
 </main>

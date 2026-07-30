@@ -151,6 +151,44 @@ export type Database = {
           },
         ]
       }
+      game_reviews: {
+        Row: {
+          bgg_id: number
+          body: string
+          created_at: string
+          id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bgg_id: number
+          body: string
+          created_at?: string
+          id?: string
+          rating: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          bgg_id?: number
+          body?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rating: {
         Row: {
           game_id: number

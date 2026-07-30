@@ -12,6 +12,23 @@ export type BggGameMetadata = {
   searchText: string;
 };
 
+export type BggReview = {
+  username: string;
+  rating: number | null;
+  comment: string;
+};
+
+export type BggOverview = {
+  description: string;
+  imageUrl: string | null;
+  minPlayers: number | null;
+  maxPlayers: number | null;
+  minPlaytime: number | null;
+  maxPlaytime: number | null;
+  minAge: number | null;
+  complexity: number | null;
+};
+
 const BGG_GAME_ID_PATTERN = /boardgame\/(\d+)/;
 let bggDataCache: Promise<Map<number, BggGameMetadata>> | null = null;
 
@@ -32,6 +49,43 @@ export async function getBggMetadataByIds(ids: number[]) {
   });
 
   return metadataById;
+}
+
+export async function getBggCatalog() {
+  return [...(await getAllBggMetadata()).values()];
+}
+
+export async function getBggReviews(bggId: number, limit = 5): Promise<BggReview[]> {
+  const response = await fetch(
+    `https://boardgamegeek.com/xmlapi2/thing?id=${bggId}&ratingcomments=1&page=1`,
+  );
+  if (!response.ok) throw new Error('BGG reviews are temporarily unavailable.');
+  const xml = new DOMParser().parseFromString(await response.text(), 'application/xml');
+  return Array.from(xml.querySelectorAll('comments > comment')).slice(0, limit).map((comment) => ({
+    username: comment.getAttribute('username') ?? 'BGG user',
+    rating: toNumber(comment.getAttribute('rating') ?? undefined),
+    comment: comment.getAttribute('value') ?? '',
+  })).filter((review) => review.comment);
+}
+
+export async function getBggOverview(bggId: number): Promise<BggOverview> {
+  const response = await fetch(`https://boardgamegeek.com/xmlapi2/thing?id=${bggId}&stats=1`);
+  if (!response.ok) throw new Error('BGG overview is temporarily unavailable.');
+  const xml = new DOMParser().parseFromString(await response.text(), 'application/xml');
+  const item = xml.querySelector('item');
+  if (!item) throw new Error('BGG overview was not found.');
+  const value = (selector: string) => toNumber(item.querySelector(selector)?.getAttribute('value') ?? undefined);
+  const description = item.querySelector('description')?.textContent ?? '';
+  return {
+    description: description.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trim(),
+    imageUrl: item.querySelector('image')?.textContent?.trim() || null,
+    minPlayers: value('minplayers'),
+    maxPlayers: value('maxplayers'),
+    minPlaytime: value('minplaytime'),
+    maxPlaytime: value('maxplaytime'),
+    minAge: value('minage'),
+    complexity: value('statistics ratings averageweight'),
+  };
 }
 
 export async function searchBggMetadataByName(query: string, limit = 20) {

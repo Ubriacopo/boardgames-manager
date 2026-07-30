@@ -1,12 +1,16 @@
-<main class="content-page library-page">
-    <nav class="library-tabs" aria-label="Library views">
-        <button type="button" [class.active]="activeTab === 'shelf'" (click)="activeTab = 'shelf'">
+<main class="content-page library-page max-lg:!h-[calc(100dvh-64px)] max-lg:!overflow-hidden max-lg:!pb-[42px]">
+    <nav class="library-tabs max-lg:fixed max-lg:inset-x-0 max-lg:bottom-16 max-lg:z-40 max-lg:justify-around max-lg:bg-surface max-lg:shadow-[0_-8px_24px_rgba(0,0,0,.28)]" aria-label="Library views">
+        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button" [class.active]="activeTab === 'shelf'" (click)="activeTab = 'shelf'">
             <mat-icon>view_module</mat-icon>
             Kallax
         </button>
-        <button type="button" [class.active]="activeTab === 'recent'" (click)="activeTab = 'recent'">
+        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button" [class.active]="activeTab === 'recent'" (click)="activeTab = 'recent'">
             <mat-icon>history</mat-icon>
-            Recently added
+            New
+        </button>
+        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button" [class.active]="activeTab === 'collection'" (click)="activeTab = 'collection'">
+            <mat-icon>library_books</mat-icon>
+            Collection
         </button>
     </nav>
 
@@ -29,21 +33,23 @@
                               (click)="unassignedOpen = !unassignedOpen"
                               [attr.aria-expanded]="unassignedOpen"
                               aria-controls="unassigned-games">
-                        <mat-icon>{{ unassignedOpen ? 'left_panel_close' : 'left_panel_open' }}</mat-icon>
+                        <mat-icon>{{ unassignedOpen ? 'box' : 'cross' }}</mat-icon>
                         <span>Unassigned</span>
                         <strong>{{ library.unassigned().length }}</strong>
                       </button>
                       <div class="zoom-controls" aria-label="Kallax zoom controls">
-                        <button mat-icon-button type="button" (click)="zoomOut()" [disabled]="kallaxZoom <= 0.5"
+                        <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                                type="button" (click)="zoomOut()" [disabled]="kallaxZoom <= 0.5"
                                 aria-label="Zoom out"><mat-icon>remove</mat-icon></button>
                         <span>{{ kallaxZoom * 100 | number:'1.0-0' }}%</span>
-                        <button mat-icon-button type="button" (click)="zoomIn()" [disabled]="kallaxZoom >= 1.5"
+                        <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                                type="button" (click)="zoomIn()" [disabled]="kallaxZoom >= 1.5"
                                 aria-label="Zoom in"><mat-icon>add</mat-icon></button>
                       </div>
                       <button
                             mat-icon-button
+                            class="layout-settings-button !inline-flex !items-center !justify-center !p-0"
                             type="button"
-                            class="layout-settings-button"
                             (click)="openLayoutSettings()"
                             aria-label="Change Kallax layout"
                             title="Change Kallax layout"
@@ -64,7 +70,7 @@
                             cdkDrag
                             cdkDragBoundary=".shelf-section"
                             [cdkDropListData]="library.unassigned()"
-                            class="unassigned-column floating-unassigned"
+                            class="unassigned-column floating-unassigned max-sm:!bottom-[118px]"
                             [class.is-empty]="!library.unassigned().length"
                             (cdkDropListDropped)="unassign($event)"
                     >
@@ -97,7 +103,7 @@
                             class="kallax-shell"
                             [style.--kallax-columns]="gridColumns"
                             [style.--kallax-rows]="gridRows"
-                            [style.width.%]="kallaxZoom * 100"
+                            [style.height.%]="kallaxZoom * 100"
                     >
                         @for (box of library.boxes(); track box.id) {
                             <button
@@ -124,7 +130,7 @@
                         }
                     </section>
                     <aside
-                            class="cube-overview"
+                            class="cube-overview max-sm:!bottom-[106px]"
                             [class.is-open]="selectedBoxInfo"
                             [attr.aria-hidden]="selectedBoxInfo ? null : true"
                             (click)="$event.stopPropagation()"
@@ -196,14 +202,27 @@
                         <p class="eyebrow">Collection</p>
                         <h2>Recently added</h2>
                     </div>
-                    <a routerLink="/games">Browse all
+                    <button type="button" class="flex items-center gap-1 border-0 bg-transparent font-bold text-brand"
+                            (click)="activeTab = 'collection'">Browse all
                         <mat-icon>arrow_forward</mat-icon>
-                    </a>
+                    </button>
                 </header>
                 <div class="recent-game-list">
                     @for (game of recentlyAdded(); track game.id) {
+                      <div class="swipe-row-shell"
+                           [class.reveal-delete]="swipeDirection[game.id] === 'delete'"
+                           [class.reveal-favorite]="swipeDirection[game.id] === 'favorite'">
+                        <span class="swipe-action swipe-action-delete" aria-hidden="true">
+                          <mat-icon>delete</mat-icon>
+                          <small>Remove</small>
+                        </span>
+                        <span class="swipe-action swipe-action-favorite" aria-hidden="true">
+                          <small>Favorite</small>
+                          <mat-icon>favorite</mat-icon>
+                        </span>
                         <a class="recent-game-row" [class.is-favorite]="game.favorite"
                            cdkDrag cdkDragLockAxis="x" [cdkDragData]="game"
+                           (cdkDragMoved)="trackSwipe(game.id, $event)"
                            (cdkDragEnded)="swipeGame(game, $event)"
                            [routerLink]="['/games', game.id]"
                            title="Swipe left to favorite, right to remove">
@@ -235,12 +254,16 @@
                           }
                           <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
                         </a>
+                      </div>
                         @if (!$last) {
                           <mat-divider/>
                         }
                     }
                 </div>
             </section>
+        }
+        @if (activeTab === 'collection') {
+          <app-collection-list/>
         }
         @if (!library.games().length) {
             <section class="empty-state">

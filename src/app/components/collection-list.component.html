@@ -1,0 +1,66 @@
+<section class="recent-section">
+    <header>
+        <div>
+            <p class="eyebrow">The collection</p>
+            <h2>Browse all my games</h2>
+        </div>
+        <span class="rounded-full bg-mint px-4 py-2 text-sm text-brand">{{ filtered().length }} games</span>
+    </header>
+
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row">
+        <label class="flex flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4">
+            <mat-icon>search</mat-icon>
+            <input class="w-full bg-transparent py-3 outline-none" type="search" [(ngModel)]="query"
+                   placeholder="Search my collection">
+        </label>
+        <select class="rounded-xl border border-line bg-surface px-4" [(ngModel)]="sort">
+            <option value="name">A–Z</option>
+            <option value="rating">Top rated</option>
+            <option value="newest">Newest</option>
+        </select>
+    </div>
+
+    <div class="recent-game-list">
+        @for (game of filtered(); track game.id) {
+            <div class="swipe-row-shell"
+                 [class.reveal-delete]="swipeDirection[game.id] === 'delete'"
+                 [class.reveal-favorite]="swipeDirection[game.id] === 'favorite'">
+                <span class="swipe-action swipe-action-delete"><mat-icon>delete</mat-icon><small>Remove</small></span>
+                <span class="swipe-action swipe-action-favorite"><small>Favorite</small><mat-icon>favorite</mat-icon></span>
+                <a class="recent-game-row" [class.is-favorite]="game.favorite"
+                   cdkDrag cdkDragLockAxis="x"
+                   (cdkDragMoved)="trackSwipe(game.id, $event)"
+                   (cdkDragEnded)="finishSwipe(game, $event)"
+                   [routerLink]="['/games', game.id]">
+          <span class="recent-game-cover">
+            @if (game.image_url) {
+                <img [src]="game.image_url" [alt]="game.name + ' cover'">
+            } @else {
+                {{ game.name.slice(0, 1) }}
+            }
+          </span>
+                    <span class="recent-game-main">
+            <strong>{{ game.name }}</strong>
+            <small>{{ game.release_year }}
+                @if (library.metadata()[game.id]?.themes?.length) {
+                    · {{ library.metadata()[game.id]!.themes[0] }}
+                }
+            </small>
+          </span>
+                    <span class="recent-game-location"><mat-icon>inventory_2</mat-icon>
+                        {{ location(game.box) }}</span>
+                    @if (library.metadata()[game.id]?.avgRating; as rating) {
+                        <span class="recent-game-rating"><mat-icon>star</mat-icon>
+                            {{ rating | number:'1.1-1' }}</span>
+                    }
+                    <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
+                </a>
+            </div>
+            @if (!$last) {
+                <mat-divider/>
+            }
+        } @empty {
+            <p class="py-16 text-center text-muted">No games match this search.</p>
+        }
+    </div>
+</section>

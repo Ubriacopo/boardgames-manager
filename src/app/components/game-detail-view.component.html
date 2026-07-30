@@ -1,0 +1,123 @@
+<main class="mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
+  <button mat-button type="button" class="mb-6" (click)="back.emit()">
+    <mat-icon>arrow_back</mat-icon>
+    {{ backLabel }}
+  </button>
+
+  <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
+    <div class="flex aspect-4/5 w-full max-w-80 items-center justify-center justify-self-center overflow-hidden rounded-3xl bg-mint font-display text-8xl shadow-2xl lg:max-w-95">
+      @if ((activeView === 'bgg' ? bggOverview?.imageUrl : null) || imageUrl; as cover) {
+        <img class="size-full object-cover" [src]="cover" [alt]="name + ' cover'">
+      } @else {
+        <span>{{ name.slice(0, 1) }}</span>
+      }
+    </div>
+
+    <div class="self-center">
+      <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">
+        {{ releaseYear ?? 'Year unknown' }} ·
+        {{ activeView === 'local' ? (owned ? 'In your collection' : 'Meeple House preview') : 'BoardGameGeek overview' }}
+      </p>
+      <h1 class="mb-6 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ name }}</h1>
+
+      <nav class="mb-6 flex gap-2 justify-center" aria-label="Game detail source">
+        <button mat-stroked-button type="button"
+                [class.!bg-accent]="activeView === 'local'"
+                [class.!text-white]="activeView === 'local'"
+                (click)="activeView = 'local'">
+          <mat-icon>home</mat-icon>
+          MH
+        </button>
+        <button mat-stroked-button type="button"
+                [class.!bg-accent]="activeView === 'bgg'"
+                [class.!text-white]="activeView === 'bgg'"
+                (click)="activeView = 'bgg'">
+          <mat-icon>public</mat-icon>
+          BGG
+        </button>
+      </nav>
+
+      @if (activeView === 'local') {
+        <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5">
+          <span class="grid gap-1 text-xs text-muted">
+            <mat-icon class="text-accent">star</mat-icon>
+            <strong class="font-display text-xl text-ink">
+              {{ localSummary.average === null ? '—' : (localSummary.average | number:'1.1-1') }}
+            </strong>
+            Rating
+          </span>
+          <span class="grid gap-1 text-xs text-muted">
+            <mat-icon class="text-accent">leaderboard</mat-icon>
+            <strong class="font-display text-xl text-ink">#{{ localSummary.rank ?? '—' }}</strong>
+            Rank
+          </span>
+          <a [routerLink]="['/reviews', bggId]" [queryParams]="{ source: 'local' }"
+             class="grid gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent">
+            <mat-icon class="text-accent">reviews</mat-icon>
+            <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
+            Ratings
+          </a>
+        </div>
+      } @else if (metadata; as meta) {
+        <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5">
+          <span class="grid gap-1 text-xs text-muted">
+            <mat-icon class="text-accent">star</mat-icon>
+            <strong class="font-display text-xl text-ink">{{ meta.avgRating | number:'1.1-1' }}</strong>
+            Rating
+          </span>
+          <span class="grid gap-1 text-xs text-muted">
+            <mat-icon class="text-accent">leaderboard</mat-icon>
+            <strong class="font-display text-xl text-ink">#{{ meta.rank ?? '—' }}</strong>
+            Rank
+          </span>
+          <a [routerLink]="['/reviews', bggId]" [queryParams]="{ source: 'bgg' }"
+             class="grid gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent">
+            <mat-icon class="text-accent">groups</mat-icon>
+            <strong class="font-display text-xl text-ink">{{ meta.usersRated | number }}</strong>
+            Ratings
+          </a>
+        </div>
+      }
+
+      @if (metadata; as meta) {
+        <div class="my-5 flex flex-wrap gap-2">
+          @for (theme of meta.themes; track theme) {
+            <span class="rounded-full bg-mint px-3 py-2 text-xs font-bold text-brand">{{ theme }}</span>
+          }
+        </div>
+      }
+
+      @if (activeView === 'local' && owned && location) {
+        <p class="my-7 flex items-center gap-2">
+          <mat-icon>inventory_2</mat-icon>
+          Stored in <strong>{{ location }}</strong>
+        </p>
+      }
+
+      @if (error) { <p class="error my-5">{{ error }}</p> }
+
+      <div class="flex flex-wrap gap-3">
+        @if (activeView === 'local' && owned) {
+          <a mat-flat-button class="primary-action" [routerLink]="['/reviews', bggId]"
+             [queryParams]="{ source: 'local', write: 1 }">
+            <mat-icon>rate_review</mat-icon>
+            Leave a review
+          </a>
+        }
+        @if (activeView === 'local' && !owned) {
+          <button mat-flat-button type="button" class="primary-action"
+                  (click)="primaryAction.emit()" [disabled]="actionDisabled">
+            <mat-icon>{{ actionDisabled ? 'check' : 'add' }}</mat-icon>
+            {{ actionLabel }}
+          </button>
+        }
+        @if (activeView === 'bgg' && bggUrl) {
+          <a mat-flat-button class="primary-action" [href]="bggUrl" target="_blank" rel="noreferrer">
+            Open on BoardGameGeek
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+</main>

@@ -1,18 +1,19 @@
 import { DecimalPipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { searchBggMetadataByName, type BggGameMetadata } from '../../utils/bggData';
 import { LibraryService } from '../services/library.service';
+import {MatInput} from "@angular/material/input";
 
 @Component({
   standalone: true,
-  imports: [DecimalPipe, FormsModule, MatButtonModule, MatIconModule, RouterLink],
+    imports: [DecimalPipe, FormsModule, MatButtonModule, MatIconModule, RouterLink, MatInput],
   templateUrl: './add-game.component.html',
 })
-export class AddGameComponent {
+export class AddGameComponent implements OnInit {
   query = '';
   results: BggGameMetadata[] = [];
   error = '';
@@ -20,7 +21,16 @@ export class AddGameComponent {
   adding: number | null = null;
   private timer?: number;
 
-  constructor(readonly library: LibraryService, private readonly router: Router) {}
+  constructor(
+    readonly library: LibraryService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+  ) {}
+
+  ngOnInit(): void {
+    this.query = this.route.snapshot.queryParamMap.get('q') ?? '';
+    if (this.query.trim().length >= 2) void this.search();
+  }
 
   exists(id: number): boolean {
     return this.library.games().some((game) => game.bgg_id === id);
@@ -28,6 +38,11 @@ export class AddGameComponent {
 
   searchSoon(): void {
     if (this.timer) window.clearTimeout(this.timer);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { q: this.query.trim() || null },
+      replaceUrl: true,
+    });
     if (this.query.trim().length < 2) {
       this.results = [];
       return;
