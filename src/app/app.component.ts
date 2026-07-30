@@ -7,6 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from './services/auth.service';
 import { LibraryService } from './services/library.service';
 import { VotingSessionService } from './services/voting-session.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit {
   constructor(
     readonly auth: AuthService,
     readonly library: LibraryService,
+    readonly theme: ThemeService,
     private readonly votingSessions: VotingSessionService,
     private readonly snackBar: MatSnackBar,
   ) {}

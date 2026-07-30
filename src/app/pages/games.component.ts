@@ -1,15 +1,14 @@
-import { DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { getBggCatalog, type BggGameMetadata } from '../../utils/bggData';
 import { LibraryService } from '../services/library.service';
+import { GameListRowComponent } from '../components/game-list-row.component';
 
 @Component({
   standalone: true,
-  imports: [DecimalPipe, FormsModule, MatButtonModule, MatIconModule, RouterLink],
+  imports: [FormsModule, GameListRowComponent, MatButtonModule, MatIconModule],
   templateUrl: './games.component.html',
 })
 export class GamesComponent implements OnInit {
@@ -54,6 +53,6 @@ export class GamesComponent implements OnInit {
 
   gameLink(game: BggGameMetadata): unknown[] {
     const owned = this.library.games().find((item) => item.bgg_id === game.bggId);
-    return owned ? ['/games', owned.id] : ['/add'];
+    return owned ? ['/games', owned.id] : ['/games/discover', game.bggId];
   }
 }

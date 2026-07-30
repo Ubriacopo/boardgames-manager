@@ -8,7 +8,7 @@
     [metadata]="item"
     [owned]="owned()"
     [bggUrl]="'https://boardgamegeek.com/boardgame/' + item.bggId"
-    [backLabel]="'Back to search results'"
+    [backLabel]="'Back to discovery'"
     [actionLabel]="adding ? 'Adding…' : owned() ? 'Owned' : 'Add to library'"
     [actionDisabled]="owned() || adding"
     [error]="error"
@@ -18,6 +18,6 @@
 } @else {
   <main class="flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center px-5 text-center">
     <p class="error">{{ error || 'Game details were not found.' }}</p>
-    <button type="button" class="text-brand" (click)="back()">Back to search results</button>
+    <button type="button" class="text-brand" (click)="back()">Back to discovery</button>
   </main>
 }

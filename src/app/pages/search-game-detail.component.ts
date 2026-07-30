@@ -38,8 +38,7 @@ export class SearchGameDetailComponent implements OnInit {
   }
 
   back(): void {
-    const query = this.route.snapshot.queryParamMap.get('from');
-    void this.router.navigate(['/add'], { queryParams: { q: query || null } });
+    void this.router.navigate(['/games']);
   }
 
   async add(): Promise<void> {

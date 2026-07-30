@@ -70,6 +70,37 @@ export class LibraryService {
     }
   }
 
+  async addBox(): Promise<LibraryBox> {
+    const library = this.library();
+    if (!library) throw new Error('Your library is not ready.');
+    const number = this.boxes().length + 1;
+    const { data, error } = await supabase.from('container_box').insert({
+      library_id: library.id,
+      label: `Cube ${String(number).padStart(2, '0')}`,
+      description: `Cube ${number}`,
+      capacity: BOX_CAPACITY,
+    }).select('*').single();
+    if (error) throw error;
+    const box = { ...data, capacity: data.capacity ?? BOX_CAPACITY };
+    this.boxes.update((boxes) => [...boxes, box]);
+    return box;
+  }
+
+  async removeLastBox(): Promise<void> {
+    const boxes = this.boxes();
+    if (boxes.length <= 1) throw new Error('Your Kallax needs at least one cube.');
+    const box = boxes[boxes.length - 1];
+    const gameIds = this.games().filter((game) => game.box === box.id).map((game) => game.id);
+    if (gameIds.length) {
+      const moved = await supabase.from('board_games').update({ box: null }).in('id', gameIds);
+      if (moved.error) throw moved.error;
+    }
+    const { error } = await supabase.from('container_box').delete().eq('id', box.id);
+    if (error) throw error;
+    this.games.update((games) => games.map((game) => game.box === box.id ? { ...game, box: null } : game));
+    this.boxes.update((current) => current.filter((item) => item.id !== box.id));
+  }
+
   async setFavorite(gameId: string, favorite: boolean): Promise<void> {
     const previous = this.games();
     this.games.update((games) => games.map((game) => game.id === gameId ? { ...game, favorite } : game));

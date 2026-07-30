@@ -11,12 +11,13 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import type { BoardGame } from '../../entities/BoardGame';
 import { LibraryService } from '../services/library.service';
 import { CollectionListComponent } from '../components/collection-list.component';
+import { GameListRowComponent } from '../components/game-list-row.component';
 
 @Component({
   standalone: true,
   imports: [DecimalPipe, FormsModule, CdkDrag, CdkDragHandle, CdkDropList, CdkDropListGroup, RouterLink,
     MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDividerModule, MatSnackBarModule,
-    CollectionListComponent],
+    CollectionListComponent, GameListRowComponent],
   templateUrl: './library.component.html',
 })
 export class LibraryComponent {
@@ -30,6 +31,7 @@ export class LibraryComponent {
   draftColumns = 4;
   draftRows = 4;
   layoutOpen = false;
+  changingCubes = false;
   readonly assignedCount = computed(() => this.library.games().length - this.library.unassigned().length);
 
   constructor(
@@ -81,6 +83,33 @@ export class LibraryComponent {
   }
   zoomOut(): void {
     this.kallaxZoom = Math.max(0.5, Math.round((this.kallaxZoom - 0.1) * 10) / 10);
+  }
+  async addCube(): Promise<void> {
+    this.changingCubes = true;
+    try {
+      await this.library.addBox();
+      if (this.gridColumns * this.gridRows < this.library.boxes().length) {
+        if (this.gridColumns <= this.gridRows) this.gridColumns += 1;
+        else this.gridRows += 1;
+      }
+    } catch (error) {
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to add a cube.', 'Dismiss');
+    } finally {
+      this.changingCubes = false;
+    }
+  }
+  async removeCube(): Promise<void> {
+    this.changingCubes = true;
+    try {
+      await this.library.removeLastBox();
+      if (this.selectedBox && !this.library.boxes().some((box) => box.id === this.selectedBox)) {
+        this.selectedBox = null;
+      }
+    } catch (error) {
+      this.snackBar.open(error instanceof Error ? error.message : 'Unable to remove a cube.', 'Dismiss');
+    } finally {
+      this.changingCubes = false;
+    }
   }
   async favorite(game: BoardGame): Promise<void> {
     try {

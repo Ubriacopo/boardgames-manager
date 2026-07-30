@@ -1,0 +1,60 @@
+<div class="swipe-row-shell mt-0.5 mb-0.5"
+     [class.reveal-delete]="swipeDirection === 'delete'"
+     [class.reveal-favorite]="swipeDirection === 'favorite'">
+    @if (draggable) {
+        <span class="swipe-action swipe-action-delete" aria-hidden="true">
+      <mat-icon>delete</mat-icon><small>Remove</small>
+    </span>
+        <span class="swipe-action swipe-action-favorite" aria-hidden="true">
+      <small>Favorite</small><mat-icon>favorite</mat-icon>
+    </span>
+    }
+
+    <article class="recent-game-row relative" [class.is-favorite]="favorite"
+             [class.!cursor-pointer]="!draggable"
+             cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable"
+             (cdkDragMoved)="dragMoved.emit($event)" (cdkDragEnded)="dragEnded.emit($event)">
+        <a class="absolute inset-0 z-0 rounded-xl focus:outline-2 focus:outline-accent"
+           [routerLink]="link" [attr.aria-label]="'View details for ' + name">
+            <span class="sr-only">View details for {{ name }}</span>
+        </a>
+
+        <span class="recent-game-cover">
+      @if (imageUrl) {
+          <img [src]="imageUrl" [alt]="name + ' cover'" loading="lazy">
+      } @else {
+          {{ name.slice(0, 1) }}
+      }
+    </span>
+        <span class="recent-game-main">
+      <strong>{{ name }}</strong>
+      <small>
+        {{ year ?? 'Year unknown' }}
+          @if (category) {
+              · {{ category }}
+          }
+          @if (rank) {
+              · Rank #{{ rank }}
+          }
+      </small>
+    </span>
+        @if (location) {
+            <span class="recent-game-location"><mat-icon>inventory_2</mat-icon>
+                {{ location }}</span>
+        } @else {
+            <span class="recent-game-location"><mat-icon>leaderboard</mat-icon>#{{ rank ?? '—' }}</span>
+        }
+        @if (rating) {
+            <span class="recent-game-rating"><mat-icon>star</mat-icon>
+                {{ rating | number:'1.1-1' }}</span>
+        }
+        @if (actionLink) {
+            <a mat-icon-button class="relative z-10 !inline-flex !items-center !justify-center !p-0"
+               [routerLink]="actionLink" [attr.aria-label]="actionLabel">
+                <mat-icon>{{ actionIcon }}</mat-icon>
+            </a>
+        } @else {
+            <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
+        }
+    </article>
+</div>

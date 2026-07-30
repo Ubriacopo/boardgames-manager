@@ -27,7 +27,7 @@
     @if (!library.loading()) {
         @if (activeTab === 'shelf') {
             <section class="shelf-section">
-                <header class="flex justify-center items-center w-full">
+                <header class="relative flex w-full items-center justify-center">
                     <div class="shelf-header-actions">
                       <button mat-stroked-button type="button" class="unassigned-toggle"
                               (click)="unassignedOpen = !unassignedOpen"
@@ -56,10 +56,27 @@
                     >
                         <mat-icon>grid_view</mat-icon>
                       </button>
-                      <a mat-flat-button class="primary-action desktop-add-game" routerLink="/add">
+                      <a mat-flat-button class="primary-action desktop-add-game" routerLink="/games">
                         <mat-icon>add</mat-icon>
                         Add a game
                       </a>
+                    </div>
+                    <div class="absolute right-0 flex items-center rounded-full border border-line bg-surface p-1"
+                         aria-label="Kallax cube controls">
+                      <button mat-icon-button type="button"
+                              class="!inline-flex !items-center !justify-center !p-0"
+                              (click)="removeCube()"
+                              [disabled]="changingCubes || library.boxes().length <= 1"
+                              aria-label="Remove last Kallax cube">
+                        <mat-icon>remove</mat-icon>
+                      </button>
+                      <strong class="min-w-7 text-center text-sm">{{ library.boxes().length }}</strong>
+                      <button mat-icon-button type="button"
+                              class="!inline-flex !items-center !justify-center !p-0"
+                              (click)="addCube()" [disabled]="changingCubes"
+                              aria-label="Add a Kallax cube">
+                        <mat-icon>add</mat-icon>
+                      </button>
                     </div>
                 </header>
                 <div class="shelf-workspace" cdkDropListGroup>
@@ -202,62 +219,23 @@
                         <p class="eyebrow">Collection</p>
                         <h2>Recently added</h2>
                     </div>
-                    <button type="button" class="flex items-center gap-1 border-0 bg-transparent font-bold text-brand"
-                            (click)="activeTab = 'collection'">Browse all
-                        <mat-icon>arrow_forward</mat-icon>
-                    </button>
                 </header>
                 <div class="recent-game-list">
                     @for (game of recentlyAdded(); track game.id) {
-                      <div class="swipe-row-shell"
-                           [class.reveal-delete]="swipeDirection[game.id] === 'delete'"
-                           [class.reveal-favorite]="swipeDirection[game.id] === 'favorite'">
-                        <span class="swipe-action swipe-action-delete" aria-hidden="true">
-                          <mat-icon>delete</mat-icon>
-                          <small>Remove</small>
-                        </span>
-                        <span class="swipe-action swipe-action-favorite" aria-hidden="true">
-                          <small>Favorite</small>
-                          <mat-icon>favorite</mat-icon>
-                        </span>
-                        <a class="recent-game-row" [class.is-favorite]="game.favorite"
-                           cdkDrag cdkDragLockAxis="x" [cdkDragData]="game"
-                           (cdkDragMoved)="trackSwipe(game.id, $event)"
-                           (cdkDragEnded)="swipeGame(game, $event)"
-                           [routerLink]="['/games', game.id]"
-                           title="Swipe left to favorite, right to remove">
-                          <span class="recent-game-cover">
-                            @if (game.image_url) {
-                              <img [src]="game.image_url" [alt]="game.name + ' cover'" loading="lazy">
-                            } @else {
-                              {{ game.name.slice(0, 1) }}
-                            }
-                          </span>
-                          <span class="recent-game-main">
-                            <strong>{{ game.name }}</strong>
-                            <small>
-                              {{ game.release_year }}
-                              @if (library.metadata()[game.id]?.themes?.length) {
-                                · {{ library.metadata()[game.id]!.themes[0] }}
-                              }
-                            </small>
-                          </span>
-                          <span class="recent-game-location">
-                            <mat-icon>inventory_2</mat-icon>
-                            {{ location(game.box) }}
-                          </span>
-                          @if (library.metadata()[game.id]?.avgRating; as rating) {
-                            <span class="recent-game-rating">
-                              <mat-icon>star</mat-icon>
-                              {{ rating | number:'1.1-1' }}
-                            </span>
-                          }
-                          <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
-                        </a>
-                      </div>
-                        @if (!$last) {
-                          <mat-divider/>
-                        }
+                      <app-game-list-row
+                              [name]="game.name"
+                              [year]="game.release_year"
+                              [link]="['/games', game.id]"
+                              [imageUrl]="game.image_url"
+                              [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
+                              [location]="location(game.box)"
+                              [rating]="library.metadata()[game.id]?.avgRating ?? null"
+                              [favorite]="game.favorite"
+                              [draggable]="true"
+                              [swipeDirection]="swipeDirection[game.id]"
+                              (dragMoved)="trackSwipe(game.id, $event)"
+                              (dragEnded)="swipeGame(game, $event)"
+                      />
                     }
                 </div>
             </section>
@@ -270,7 +248,7 @@
                 <mat-icon>extension</mat-icon>
                 <h2>Your shelf is waiting</h2>
                 <p>Add your first game to start building the collection.</p>
-                <a mat-flat-button class="primary-action" routerLink="/add">Add a game</a>
+                <a mat-flat-button class="primary-action" routerLink="/games">Discover games</a>
             </section>
         }
     }

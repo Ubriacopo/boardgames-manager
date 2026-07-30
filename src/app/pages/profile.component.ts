@@ -4,6 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
 import {AuthService} from '../services/auth.service';
 import {LibraryService} from '../services/library.service';
+import {ThemeService} from '../services/theme.service';
 
 @Component({
     standalone: true,
@@ -11,6 +12,6 @@ import {LibraryService} from '../services/library.service';
     templateUrl: './profile.component.html',
 })
 export class ProfileComponent {
-    constructor(readonly auth: AuthService, readonly library: LibraryService,) {
+    constructor(readonly auth: AuthService, readonly library: LibraryService, readonly theme: ThemeService) {
     }
 }

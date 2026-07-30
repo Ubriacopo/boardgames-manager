@@ -37,37 +37,19 @@
     <div class="mb-4 flex items-center justify-between">
       <p class="m-0 text-sm text-muted">Showing the first {{ results().length }} matches</p>
     </div>
-    <section class="grid gap-3 md:grid-cols-2">
+    <section class="md:grid-cols-2">
       @for (game of results(); track game.bggId) {
-        <article class="relative flex min-w-0 items-center gap-4 rounded-xl border border-line bg-surface p-4 transition hover:bg-mint">
-          <a class="absolute inset-0 rounded-xl focus:outline-2 focus:outline-accent"
-             [routerLink]="['/add/details', game.bggId]"
-             [attr.aria-label]="'View details for ' + game.name">
-            <span class="sr-only">View details for {{ game.name }}</span>
-          </a>
-          <span class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-mint font-display text-xl text-accent">
-            {{ game.rank ?? '—' }}
-          </span>
-          <div class="min-w-0 flex-1">
-            <strong class="block truncate">{{ game.name }}</strong>
-            <p class="m-0 truncate text-xs text-muted">
-              {{ game.yearPublished ?? 'Year unknown' }}
-              @if (game.themes.length) { · {{ game.themes.join(' · ') }} }
-            </p>
-          </div>
-          @if (game.avgRating) {
-            <span class="hidden items-center gap-1 text-sm sm:flex">
-              <mat-icon class="!size-4 !text-base text-amber-400">star</mat-icon>
-              {{ game.avgRating | number:'1.1-1' }}
-            </span>
-          }
-          <a mat-icon-button class="relative z-10 !inline-flex !items-center !justify-center !p-0"
-             [routerLink]="gameLink(game)"
-             [queryParams]="owned(game.bggId) ? null : { q: game.name }"
-             [attr.aria-label]="owned(game.bggId) ? 'Open owned game' : 'Add game'">
-            <mat-icon>{{ owned(game.bggId) ? 'check_circle' : 'add_circle' }}</mat-icon>
-          </a>
-        </article>
+        <app-game-list-row
+          [name]="game.name"
+          [year]="game.yearPublished"
+          [category]="game.themes[0] || ''"
+          [rank]="game.rank"
+          [rating]="game.avgRating"
+          [link]="['/games/discover', game.bggId]"
+          [actionLink]="gameLink(game)"
+          [actionIcon]="owned(game.bggId) ? 'check_circle' : 'add_circle'"
+          [actionLabel]="owned(game.bggId) ? 'Open owned game' : 'Add game'"
+        />
       } @empty {
         <p class="col-span-full py-20 text-center text-muted">No games match these filters.</p>
       }

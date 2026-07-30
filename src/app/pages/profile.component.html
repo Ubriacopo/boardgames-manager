@@ -1,43 +1,71 @@
 <main class="mx-auto min-h-[calc(100dvh-76px)] max-w-4xl px-5 py-10 pb-28 lg:px-16 lg:py-14">
-  <header class="mb-10">
-    <a routerLink="/library" class="mb-8 flex w-max items-center gap-2.5 font-display text-xl font-bold lg:hidden"
-       aria-label="Meeple House home">
-      <span class="flex size-10 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white">
-        <mat-icon class="rotate-3">casino</mat-icon>
-      </span>
-      <span>Meeple House</span>
-    </a>
-    <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">Your account</p>
-    <h1 class="font-display text-5xl font-bold tracking-tight lg:text-7xl">Profile</h1>
-  </header>
+    <header class="mb-10">
+        <div class="flex justify-between">
+            <div>
+                <a routerLink="/library"
+                   class="mb-8 flex w-max items-center gap-2.5 font-display text-xl font-bold lg:hidden"
+                   aria-label="Meeple House home">
+                  <span class="flex size-10 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white">
+                    <mat-icon class="rotate-3">casino</mat-icon>
+                  </span>
 
-  <section class="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
-    <div class="flex items-center gap-4 border-b border-line p-6 sm:p-8">
+                    <span>Meeple House</span>
+
+                </a>
+            </div>
+            <div>
+                <button mat-icon-button type="button" (click)="auth.signOut()">
+                    <mat-icon>logout</mat-icon>
+                </button>
+            </div>
+        </div>
+        <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">Your account</p>
+        <h1 class="font-display text-5xl font-bold tracking-tight lg:text-7xl">Profile</h1>
+    </header>
+
+    <section class="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
+        <div class="flex items-center gap-4 border-b border-line p-6 sm:p-8">
       <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-mint text-brand">
         <mat-icon>person</mat-icon>
       </span>
-      <div class="min-w-0">
-        <p class="text-sm text-muted">Signed in as</p>
-        <strong class="block truncate text-lg">{{ auth.session()?.user?.email ?? 'Board game collector' }}</strong>
-      </div>
-    </div>
+            <div class="min-w-0">
+                <p class="text-sm text-muted">Signed in as</p>
+                <strong class="block truncate text-lg">{{ auth.session()?.user?.email ?? 'Board game collector' }}</strong>
+            </div>
+        </div>
 
-    <div class="grid gap-px bg-line sm:grid-cols-2">
-      <div class="bg-surface p-6 sm:p-8">
-        <strong class="font-display text-4xl text-brand">{{ library.games().length }}</strong>
-        <p class="mt-1 text-sm text-muted">Games in your library</p>
-      </div>
-      <div class="bg-surface p-6 sm:p-8">
-        <strong class="font-display text-4xl text-brand">{{ library.boxes().length }}</strong>
-        <p class="mt-1 text-sm text-muted">Kallax cubes</p>
-      </div>
-    </div>
+        <div class="grid gap-px bg-line sm:grid-cols-2">
+            <div class="bg-surface p-6 sm:p-8">
+                <strong class="font-display text-4xl text-brand">{{ library.games().length }}</strong>
+                <p class="mt-1 text-sm text-muted">Games in your library</p>
+            </div>
+            <div class="bg-surface p-6 sm:p-8">
+                <strong class="font-display text-4xl text-brand">{{ library.boxes().length }}</strong>
+                <p class="mt-1 text-sm text-muted">Kallax cubes</p>
+            </div>
+        </div>
 
-    <div class="p-6 sm:p-8">
-      <button mat-stroked-button type="button" (click)="auth.signOut()">
-        <mat-icon>logout</mat-icon>
-        Sign out
-      </button>
-    </div>
-  </section>
+    </section>
+
+    <section class="mt-6 rounded-3xl border border-line bg-surface p-6 sm:p-8">
+        <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Appearance</p>
+        <h2 class="mb-5 font-display text-2xl">Color theme</h2>
+        <div class="flex gap-2">
+            <button mat-stroked-button type="button" [class.!bg-accent]="theme.selected() === 'system'"
+                    [class.!text-white]="theme.selected() === 'system'" (click)="theme.set('system')">
+                <mat-icon>settings_brightness</mat-icon>
+                System
+            </button>
+            <button mat-stroked-button type="button" [class.!bg-accent]="theme.selected() === 'dark'"
+                    [class.!text-white]="theme.selected() === 'dark'" (click)="theme.set('dark')">
+                <mat-icon>dark_mode</mat-icon>
+                Dark
+            </button>
+            <button mat-stroked-button type="button" [class.!bg-accent]="theme.selected() === 'light'"
+                    [class.!text-white]="theme.selected() === 'light'" (click)="theme.set('light')">
+                <mat-icon>light_mode</mat-icon>
+                Light
+            </button>
+        </div>
+    </section>
 </main>

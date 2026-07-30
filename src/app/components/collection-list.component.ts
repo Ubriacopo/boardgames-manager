@@ -1,18 +1,17 @@
-import { DecimalPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { CdkDrag, CdkDragEnd, CdkDragMove } from '@angular/cdk/drag-drop';
+import { CdkDragEnd, CdkDragMove } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { RouterLink } from '@angular/router';
 import type { BoardGame } from '../../entities/BoardGame';
 import { LibraryService } from '../services/library.service';
+import { GameListRowComponent } from './game-list-row.component';
 
 @Component({
   selector: 'app-collection-list',
   standalone: true,
-  imports: [CdkDrag, DecimalPipe, FormsModule, MatDividerModule, MatIconModule, MatSnackBarModule, RouterLink],
+  imports: [FormsModule, GameListRowComponent, MatDividerModule, MatIconModule, MatSnackBarModule],
   templateUrl: './collection-list.component.html',
 })
 export class CollectionListComponent {
