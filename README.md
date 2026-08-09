@@ -1,8 +1,51 @@
-# Boardgames Manager
+# Kallboard
 
-An Angular 20 application for organizing a personal board-game library in a
-Kallax shelf. The interface uses Angular Material and the Angular CDK, while
-authentication and library persistence are provided by Supabase.
+Kallboard is a platform for managing and tracking your board game collection.
+
+## Roadmap
+
+### Now: complete the Supabase integration
+
+- [ ] Make the database reproducible with migrations for profiles, libraries,
+  reviews, voting sessions, and votes.
+- [ ] Add and verify Row Level Security policies for every user-owned resource.
+- [ ] Finish authentication and profile flows, including session recovery and
+  useful loading and error states.
+- [ ] Complete collection persistence: add, edit, remove, favorite, and track
+  owned games and play counts.
+- [ ] Generate and use up-to-date Supabase database types throughout the app.
+- [ ] Cover the main authenticated data flows with tests.
+
+### Next: desktop UI
+
+- [ ] Rework the desktop layout, navigation, spacing, and information density.
+- [ ] Improve the collection and game-detail views for larger screens.
+- [ ] Refine the Kallax-style shelf, including box dimensions and horizontal,
+  vertical, and side orientations.
+- [ ] Keep the layouts responsive and accessible across desktop and mobile.
+
+### Later: community features
+
+- [ ] Finish game reviews.
+- [ ] Complete Spotify Jam-style sessions for voting on which game to play.
+- [ ] Add event organization and lobbies.
+- [ ] Add groups, with clans considered after the core social flows are proven.
+
+### Later: review topic modelling
+
+Integrate the ABAE-based model from
+[boardgames-aspect-extraction](https://github.com/Ubriacopo/boardgames-aspect-extraction)
+to recognize the aspects discussed in board game reviews. Extracted topics will
+help organize and filter reviews by themes such as components, mechanics, and
+complexity.
+
+- [ ] Package preprocessing and ABAE inference as a reproducible service.
+- [ ] Define a stable topic taxonomy and map model outputs to readable labels.
+- [ ] Run topic extraction when reviews are created or updated.
+- [ ] Store topic assignments and confidence scores in Supabase.
+- [ ] Add topic filters and summaries to the review UI.
+- [ ] Evaluate predictions on real reviews before enabling the feature by
+  default.
 
 ## Setup
 
