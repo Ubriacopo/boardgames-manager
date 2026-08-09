@@ -31,6 +31,17 @@ Kallboard is a platform for managing and tracking your board game collection.
 - [ ] Add event organization and lobbies.
 - [ ] Add groups, with clans considered after the core social flows are proven.
 
+### Later: dedicated backend service
+
+Develop a first-party backend service once the Supabase integration and core
+product flows are stable. Introduce it incrementally for workloads that benefit
+from custom server-side logic while retaining Supabase where it remains useful.
+
+- [ ] Define which responsibilities should move behind the backend API.
+- [ ] Design authentication, authorization, and data-access boundaries.
+- [ ] Implement, deploy, and monitor the service.
+- [ ] Migrate features incrementally without disrupting the existing app.
+
 ### Later: review topic modelling
 
 Integrate the ABAE-based model from

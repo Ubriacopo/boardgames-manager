@@ -8,3 +8,4 @@ Cose richieste:
 - Gruppi
 - Clan (?)
 - Posizionare i giochi come scatole in rapporto roteabili in tute le direzioni orizziontali  e up / side
+- Sviluppo di un servizio backend proprietario
