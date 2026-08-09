@@ -1,19 +1,19 @@
 @if (library.game(gameId); as game) {
-  <app-game-detail-view
-    [bggId]="game.bgg_id ?? 0"
-    [name]="game.name"
-    [releaseYear]="game.release_year"
-    [imageUrl]="game.image_url"
-    [metadata]="library.metadata()[game.id]"
-    [owned]="true"
-    [location]="location(game.box)"
-    [bggUrl]="game.bgg_url"
-    backLabel="My collection"
-    (back)="back()"
-  />
+    <app-game-detail-view
+            [bggId]="game.bgg_id ?? 0"
+            [name]="game.name"
+            [releaseYear]="game.release_year"
+            [imageUrl]="game.image_url"
+            [metadata]="library.metadata()[game.id]"
+            [owned]="true"
+            [location]="location(game.box)"
+            [bggUrl]="game.bgg_url"
+            backLabel="My collection"
+            (back)="back()"
+    />
 } @else {
-  <main class="flex min-h-[calc(100dvh-76px)] flex-col items-center justify-center px-5 text-center">
-    <mat-icon class="!size-12 !text-5xl text-accent">extension_off</mat-icon>
-    <h1 class="font-display text-5xl">Game not found</h1>
-  </main>
+    <main class="flex min-h-[calc(100dvh-76px)] flex-col items-center justify-center px-5 text-center">
+        <mat-icon class="!size-12 !text-5xl text-accent">extension_off</mat-icon>
+        <h1 class="font-display text-5xl">Game not found</h1>
+    </main>
 }

@@ -1,41 +1,53 @@
 <main class="grid min-h-dvh lg:grid-cols-[1.05fr_.95fr]">
-  <section class="relative flex min-h-105 flex-col justify-between overflow-hidden bg-[#10241b] p-6 text-white lg:min-h-dvh lg:p-[clamp(32px,6vw,80px)]">
-    <div class="flex w-max items-center gap-2.5 font-display text-xl font-bold">
-      <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white"><mat-icon>casino</mat-icon></span>
-      Meeple House
-    </div>
-    <div>
-      <p class="mb-3 text-xs font-bold tracking-[.14em] text-[#ffc3b2] uppercase">Your collection, ready to play</p>
-      <h1 class="max-w-4xl font-display text-[clamp(3rem,6vw,6rem)] leading-none font-bold">More game nights.<br>Less shelf searching.</h1>
-      <p class="max-w-xl text-lg leading-7 text-[#c9d9cf]">Organize your collection, rediscover old favorites, and let your friends vote on what hits the table next.</p>
-    </div>
-    <div class="hidden h-30 items-end gap-4 lg:flex" aria-hidden="true"><span class="flex h-28 w-21 -rotate-6 items-center justify-center rounded-lg bg-accent font-display shadow-2xl">AZUL</span><span class="flex h-32 w-21 rotate-3 items-center justify-center rounded-lg bg-amber-400 font-display text-canvas shadow-2xl">WING<br>SPAN</span><span class="flex h-28 w-21 items-center justify-center rounded-lg bg-mint font-display text-brand shadow-2xl">ROOT</span></div>
-  </section>
-  <section class="flex items-center justify-center bg-surface p-6 lg:p-10">
-    <form class="grid w-full max-w-md gap-5" (ngSubmit)="submit()">
-      <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Welcome {{ mode === 'sign-in' ? 'back' : 'in' }}</p>
-      <h2 class="font-display text-4xl font-bold lg:text-5xl">{{ mode === 'sign-in' ? 'Sign in to your library' : 'Create your game library' }}</h2>
-      <p class="text-muted">
-        {{ mode === 'sign-in' ? 'Your next game night starts here.' : 'A better home for every game you own.' }}
-      </p>
-      <label class="grid gap-2 text-sm font-bold">
-        Email address
-        <input class="rounded-xl border border-line bg-canvas px-4 py-3.5 outline-none focus:border-brand" type="email" name="email" [(ngModel)]="email" autocomplete="email" placeholder="you@example.com" required>
-      </label>
-      <label class="grid gap-2 text-sm font-bold">
-        Password
-        <input class="rounded-xl border border-line bg-canvas px-4 py-3.5 outline-none focus:border-brand" type="password" name="password" [(ngModel)]="password" minlength="6" required>
-      </label>
-      @if (message) {
-        <p [class.error]="isError">{{ message }}</p>
-      }
-      <button mat-flat-button class="primary-action" [disabled]="working">
-        {{ working ? 'One moment…' : mode === 'sign-in' ? 'Sign in' : 'Create account' }}
-        <mat-icon>arrow_forward</mat-icon>
-      </button>
-      <button type="button" class="text-button" (click)="toggle()">
-        {{ mode === 'sign-in' ? 'New here? Create an account' : 'Already have an account? Sign in' }}
-      </button>
-    </form>
-  </section>
+    <section
+            class="relative flex min-h-105 flex-col justify-between overflow-hidden bg-[#10241b] p-6 text-white lg:min-h-dvh lg:p-[clamp(32px,6vw,80px)]">
+        <div class="flex w-max items-center gap-2.5 font-display text-xl font-bold">
+            <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white"><mat-icon>casino</mat-icon></span>
+            Meeple House
+        </div>
+        <div>
+            <p class="mb-3 text-xs font-bold tracking-[.14em] text-[#ffc3b2] uppercase">Your collection, ready to
+                play</p>
+            <h1 class="max-w-4xl font-display text-[clamp(3rem,6vw,6rem)] leading-none font-bold">More game nights.<br>Less
+                shelf searching.</h1>
+            <p class="max-w-xl text-lg leading-7 text-[#c9d9cf]">Organize your collection, rediscover old favorites, and
+                let your friends vote on what hits the table next.</p>
+        </div>
+        <div class="hidden h-30 items-end gap-4 lg:flex" aria-hidden="true"><span
+                class="flex h-28 w-21 -rotate-6 items-center justify-center rounded-lg bg-accent font-display shadow-2xl">AZUL</span><span
+                class="flex h-32 w-21 rotate-3 items-center justify-center rounded-lg bg-amber-400 font-display text-canvas shadow-2xl">WING<br>SPAN</span><span
+                class="flex h-28 w-21 items-center justify-center rounded-lg bg-mint font-display text-brand shadow-2xl">ROOT</span>
+        </div>
+    </section>
+    <section class="flex items-center justify-center bg-surface p-6 lg:p-10">
+        <form class="grid w-full max-w-md gap-5" (ngSubmit)="submit()">
+            <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">
+                Welcome {{ mode === 'sign-in' ? 'back' : 'in' }}</p>
+            <h2 class="font-display text-4xl font-bold lg:text-5xl">{{ mode === 'sign-in' ? 'Sign in to your library' : 'Create your game library' }}</h2>
+            <p class="text-muted">
+                {{ mode === 'sign-in' ? 'Your next game night starts here.' : 'A better home for every game you own.' }}
+            </p>
+            <label class="grid gap-2 text-sm font-bold">
+                Email address
+                <input class="rounded-xl border border-line bg-canvas px-4 py-3.5 outline-none focus:border-brand"
+                       type="email" name="email" [(ngModel)]="email" autocomplete="email" placeholder="you@example.com"
+                       required>
+            </label>
+            <label class="grid gap-2 text-sm font-bold">
+                Password
+                <input class="rounded-xl border border-line bg-canvas px-4 py-3.5 outline-none focus:border-brand"
+                       type="password" name="password" [(ngModel)]="password" minlength="6" required>
+            </label>
+            @if (message) {
+                <p [class.error]="isError">{{ message }}</p>
+            }
+            <button mat-flat-button class="primary-action" [disabled]="working">
+                {{ working ? 'One moment…' : mode === 'sign-in' ? 'Sign in' : 'Create account' }}
+                <mat-icon>arrow_forward</mat-icon>
+            </button>
+            <button type="button" class="text-button" (click)="toggle()">
+                {{ mode === 'sign-in' ? 'New here? Create an account' : 'Already have an account? Sign in' }}
+            </button>
+        </form>
+    </section>
 </main>

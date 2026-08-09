@@ -1,23 +1,23 @@
 @if (loading) {
-  <p class="py-20 text-center text-muted">Loading game details…</p>
+    <p class="py-20 text-center text-muted">Loading game details…</p>
 } @else if (game; as item) {
-  <app-game-detail-view
-    [bggId]="item.bggId"
-    [name]="item.name"
-    [releaseYear]="item.yearPublished"
-    [metadata]="item"
-    [owned]="owned()"
-    [bggUrl]="'https://boardgamegeek.com/boardgame/' + item.bggId"
-    [backLabel]="'Back to discovery'"
-    [actionLabel]="adding ? 'Adding…' : owned() ? 'Owned' : 'Add to library'"
-    [actionDisabled]="owned() || adding"
-    [error]="error"
-    (back)="back()"
-    (primaryAction)="add()"
-  />
+    <app-game-detail-view
+            [bggId]="item.bggId"
+            [name]="item.name"
+            [releaseYear]="item.yearPublished"
+            [metadata]="item"
+            [owned]="owned()"
+            [bggUrl]="'https://boardgamegeek.com/boardgame/' + item.bggId"
+            [backLabel]="'Back to discovery'"
+            [actionLabel]="adding ? 'Adding…' : owned() ? 'Owned' : 'Add to library'"
+            [actionDisabled]="owned() || adding"
+            [error]="error"
+            (back)="back()"
+            (primaryAction)="add()"
+    />
 } @else {
-  <main class="flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center px-5 text-center">
-    <p class="error">{{ error || 'Game details were not found.' }}</p>
-    <button type="button" class="text-brand" (click)="back()">Back to discovery</button>
-  </main>
+    <main class="flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center px-5 text-center">
+        <p class="error">{{ error || 'Game details were not found.' }}</p>
+        <button type="button" class="text-brand" (click)="back()">Back to discovery</button>
+    </main>
 }

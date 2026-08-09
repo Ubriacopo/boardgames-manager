@@ -1,14 +1,18 @@
 <main class="content-page library-page max-lg:!h-[calc(100dvh-64px)] max-lg:!overflow-hidden max-lg:!pb-[42px]">
-    <nav class="library-tabs max-lg:fixed max-lg:inset-x-0 max-lg:bottom-16 max-lg:z-40 max-lg:justify-around max-lg:bg-surface max-lg:shadow-[0_-8px_24px_rgba(0,0,0,.28)]" aria-label="Library views">
-        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button" [class.active]="activeTab === 'shelf'" (click)="activeTab = 'shelf'">
+    <nav class="library-tabs max-lg:fixed max-lg:inset-x-0 max-lg:bottom-16 max-lg:z-40 max-lg:justify-around max-lg:bg-surface max-lg:shadow-[0_-8px_24px_rgba(0,0,0,.28)]"
+         aria-label="Library views">
+        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button"
+                [class.active]="activeTab === 'shelf'" (click)="activeTab = 'shelf'">
             <mat-icon>view_module</mat-icon>
             Kallax
         </button>
-        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button" [class.active]="activeTab === 'recent'" (click)="activeTab = 'recent'">
+        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button"
+                [class.active]="activeTab === 'recent'" (click)="activeTab = 'recent'">
             <mat-icon>history</mat-icon>
             New
         </button>
-        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button" [class.active]="activeTab === 'collection'" (click)="activeTab = 'collection'">
+        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button"
+                [class.active]="activeTab === 'collection'" (click)="activeTab = 'collection'">
             <mat-icon>library_books</mat-icon>
             Collection
         </button>
@@ -29,93 +33,97 @@
             <section class="shelf-section">
                 <header class="relative flex w-full items-center justify-center">
                     <div class="shelf-header-actions">
-                      <button mat-stroked-button type="button" class="unassigned-toggle"
-                              (click)="unassignedOpen = !unassignedOpen"
-                              [attr.aria-expanded]="unassignedOpen"
-                              aria-controls="unassigned-games">
-                        <mat-icon>{{ unassignedOpen ? 'box' : 'cross' }}</mat-icon>
-                        <span>Unassigned</span>
-                        <strong>{{ library.unassigned().length }}</strong>
-                      </button>
-                      <div class="zoom-controls" aria-label="Kallax zoom controls">
-                        <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
-                                type="button" (click)="zoomOut()" [disabled]="kallaxZoom <= 0.5"
-                                aria-label="Zoom out"><mat-icon>remove</mat-icon></button>
-                        <span>{{ kallaxZoom * 100 | number:'1.0-0' }}%</span>
-                        <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
-                                type="button" (click)="zoomIn()" [disabled]="kallaxZoom >= 1.5"
-                                aria-label="Zoom in"><mat-icon>add</mat-icon></button>
-                      </div>
-                      <button
-                            mat-icon-button
-                            class="layout-settings-button !inline-flex !items-center !justify-center !p-0"
-                            type="button"
-                            (click)="openLayoutSettings()"
-                            aria-label="Change Kallax layout"
-                            title="Change Kallax layout"
-                    >
-                        <mat-icon>grid_view</mat-icon>
-                      </button>
-                      <a mat-flat-button class="primary-action desktop-add-game" routerLink="/games">
-                        <mat-icon>add</mat-icon>
-                        Add a game
-                      </a>
+                        <button mat-stroked-button type="button" class="unassigned-toggle"
+                                (click)="unassignedOpen = !unassignedOpen"
+                                [attr.aria-expanded]="unassignedOpen"
+                                aria-controls="unassigned-games">
+                            <mat-icon>{{ unassignedOpen ? 'box' : 'cross' }}</mat-icon>
+                            <span>Unassigned</span>
+                            <strong>{{ library.unassigned().length }}</strong>
+                        </button>
+                        <div class="zoom-controls" aria-label="Kallax zoom controls">
+                            <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                                    type="button" (click)="zoomOut()" [disabled]="kallaxZoom <= 0.5"
+                                    aria-label="Zoom out">
+                                <mat-icon>remove</mat-icon>
+                            </button>
+                            <span>{{ kallaxZoom * 100 | number:'1.0-0' }}%</span>
+                            <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                                    type="button" (click)="zoomIn()" [disabled]="kallaxZoom >= 1.5"
+                                    aria-label="Zoom in">
+                                <mat-icon>add</mat-icon>
+                            </button>
+                        </div>
+                        <button
+                                mat-icon-button
+                                class="layout-settings-button !inline-flex !items-center !justify-center !p-0"
+                                type="button"
+                                (click)="openLayoutSettings()"
+                                aria-label="Change Kallax layout"
+                                title="Change Kallax layout"
+                        >
+                            <mat-icon>grid_view</mat-icon>
+                        </button>
+                        <a mat-flat-button class="primary-action desktop-add-game" routerLink="/games">
+                            <mat-icon>add</mat-icon>
+                            Add a game
+                        </a>
                     </div>
                     <div class="absolute right-0 flex items-center rounded-full border border-line bg-surface p-1"
                          aria-label="Kallax cube controls">
-                      <button mat-icon-button type="button"
-                              class="!inline-flex !items-center !justify-center !p-0"
-                              (click)="removeCube()"
-                              [disabled]="changingCubes || library.boxes().length <= 1"
-                              aria-label="Remove last Kallax cube">
-                        <mat-icon>remove</mat-icon>
-                      </button>
-                      <strong class="min-w-7 text-center text-sm">{{ library.boxes().length }}</strong>
-                      <button mat-icon-button type="button"
-                              class="!inline-flex !items-center !justify-center !p-0"
-                              (click)="addCube()" [disabled]="changingCubes"
-                              aria-label="Add a Kallax cube">
-                        <mat-icon>add</mat-icon>
-                      </button>
+                        <button mat-icon-button type="button"
+                                class="!inline-flex !items-center !justify-center !p-0"
+                                (click)="removeCube()"
+                                [disabled]="changingCubes || library.boxes().length <= 1"
+                                aria-label="Remove last Kallax cube">
+                            <mat-icon>remove</mat-icon>
+                        </button>
+                        <strong class="min-w-7 text-center text-sm">{{ library.boxes().length }}</strong>
+                        <button mat-icon-button type="button"
+                                class="!inline-flex !items-center !justify-center !p-0"
+                                (click)="addCube()" [disabled]="changingCubes"
+                                aria-label="Add a Kallax cube">
+                            <mat-icon>add</mat-icon>
+                        </button>
                     </div>
                 </header>
                 <div class="shelf-workspace" cdkDropListGroup>
-                  @if (unassignedOpen) {
-                    <aside
-                            id="unassigned-games"
-                            cdkDropList
-                            cdkDrag
-                            cdkDragBoundary=".shelf-section"
-                            [cdkDropListData]="library.unassigned()"
-                            class="unassigned-column floating-unassigned max-sm:!bottom-[118px]"
-                            [class.is-empty]="!library.unassigned().length"
-                            (cdkDropListDropped)="unassign($event)"
-                    >
-                        <div class="panel-title" cdkDragHandle title="Drag this panel">
-                            <span>Unassigned</span>
-                            <strong>{{ library.unassigned().length }}</strong>
-                            <mat-icon>drag_indicator</mat-icon>
-                        </div>
-                        @for (game of library.unassigned(); track game.id) {
-                            <div
-                                    class="mini-game"
-                                    cdkDrag
-                                    [cdkDragData]="game.id"
-                            >
+                    @if (unassignedOpen) {
+                        <aside
+                                id="unassigned-games"
+                                cdkDropList
+                                cdkDrag
+                                cdkDragBoundary=".shelf-section"
+                                [cdkDropListData]="library.unassigned()"
+                                class="unassigned-column floating-unassigned max-sm:!bottom-[118px]"
+                                [class.is-empty]="!library.unassigned().length"
+                                (cdkDropListDropped)="unassign($event)"
+                        >
+                            <div class="panel-title" cdkDragHandle title="Drag this panel">
+                                <span>Unassigned</span>
+                                <strong>{{ library.unassigned().length }}</strong>
+                                <mat-icon>drag_indicator</mat-icon>
+                            </div>
+                            @for (game of library.unassigned(); track game.id) {
+                                <div
+                                        class="mini-game"
+                                        cdkDrag
+                                        [cdkDragData]="game.id"
+                                >
                 <span class="mini-cover">
                   @if (game.image_url) {
                       <img [src]="game.image_url" alt="">
                   }
                 </span>
-                                <a [routerLink]="['/games', game.id]">{{ game.name }}</a>
-                                <mat-icon>drag_indicator</mat-icon>
-                            </div>
-                        }
-                        @if (!library.unassigned().length) {
-                            <p class="small-empty">Everything has a home. Lovely.</p>
-                        }
-                    </aside>
-                  }
+                                    <a [routerLink]="['/games', game.id]">{{ game.name }}</a>
+                                    <mat-icon>drag_indicator</mat-icon>
+                                </div>
+                            }
+                            @if (!library.unassigned().length) {
+                                <p class="small-empty">Everything has a home. Lovely.</p>
+                            }
+                        </aside>
+                    }
                     <section
                             class="kallax-shell"
                             [style.--kallax-columns]="gridColumns"
@@ -222,26 +230,26 @@
                 </header>
                 <div class="recent-game-list">
                     @for (game of recentlyAdded(); track game.id) {
-                      <app-game-list-row
-                              [name]="game.name"
-                              [year]="game.release_year"
-                              [link]="['/games', game.id]"
-                              [imageUrl]="game.image_url"
-                              [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
-                              [location]="location(game.box)"
-                              [rating]="library.metadata()[game.id]?.avgRating ?? null"
-                              [favorite]="game.favorite"
-                              [draggable]="true"
-                              [swipeDirection]="swipeDirection[game.id]"
-                              (dragMoved)="trackSwipe(game.id, $event)"
-                              (dragEnded)="swipeGame(game, $event)"
-                      />
+                        <app-game-list-row
+                                [name]="game.name"
+                                [year]="game.release_year"
+                                [link]="['/games', game.id]"
+                                [imageUrl]="game.image_url"
+                                [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
+                                [location]="location(game.box)"
+                                [rating]="library.metadata()[game.id]?.avgRating ?? null"
+                                [favorite]="game.favorite"
+                                [draggable]="true"
+                                [swipeDirection]="swipeDirection[game.id]"
+                                (dragMoved)="trackSwipe(game.id, $event)"
+                                (dragEnded)="swipeGame(game, $event)"
+                        />
                     }
                 </div>
             </section>
         }
         @if (activeTab === 'collection') {
-          <app-collection-list/>
+            <app-collection-list/>
         }
         @if (!library.games().length) {
             <section class="empty-state">
@@ -262,7 +270,8 @@
                     <p class="eyebrow">Shelf layout</p>
                     <h2>Arrange your Kallax</h2>
                 </div>
-                <button class="icon-plain" type="button" (click)="layoutOpen = false" aria-label="Close layout settings">
+                <button class="icon-plain" type="button" (click)="layoutOpen = false"
+                        aria-label="Close layout settings">
                     <mat-icon>close</mat-icon>
                 </button>
             </header>

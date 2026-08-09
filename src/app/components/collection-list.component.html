@@ -23,18 +23,18 @@
     <div class="recent-game-list">
         @for (game of filtered(); track game.id) {
             <app-game-list-row
-              [name]="game.name"
-              [year]="game.release_year"
-              [imageUrl]="game.image_url"
-              [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
-              [location]="location(game.box)"
-              [rating]="library.metadata()[game.id]?.avgRating ?? null"
-              [favorite]="game.favorite"
-              [link]="['/games', game.id]"
-              [draggable]="true"
-              [swipeDirection]="swipeDirection[game.id]"
-              (dragMoved)="trackSwipe(game.id, $event)"
-              (dragEnded)="finishSwipe(game, $event)"
+                    [name]="game.name"
+                    [year]="game.release_year"
+                    [imageUrl]="game.image_url"
+                    [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
+                    [location]="location(game.box)"
+                    [rating]="library.metadata()[game.id]?.avgRating ?? null"
+                    [favorite]="game.favorite"
+                    [link]="['/games', game.id]"
+                    [draggable]="true"
+                    [swipeDirection]="swipeDirection[game.id]"
+                    (dragMoved)="trackSwipe(game.id, $event)"
+                    (dragEnded)="finishSwipe(game, $event)"
             />
         } @empty {
             <p class="py-16 text-center text-muted">No games match this search.</p>

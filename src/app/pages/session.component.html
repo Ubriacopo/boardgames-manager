@@ -1,46 +1,49 @@
 <main class="min-h-dvh bg-[#10241b] px-[clamp(20px,6vw,90px)] pt-7 pb-18 text-white">
-  <header class="flex items-center justify-between">
-    <div class="flex w-max items-center gap-2.5 font-display text-xl font-bold">
-      <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent"><mat-icon>casino</mat-icon></span>
-      Meeple House
-    </div>
-    <button class="rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-white" (click)="share()">
-      <mat-icon>ios_share</mat-icon>
-      {{ copied ? 'Link copied!' : 'Share lobby' }}
-    </button>
-  </header>
-  @if (lobby) {
-    <section>
-      <div class="mx-auto my-[7vh] max-w-3xl text-center">
-        <p class="mb-3 text-xs font-bold tracking-[.14em] text-[#ffc3b2] uppercase">Live game vote · {{ lobby.code }}</p>
-        <h1 class="font-display text-5xl font-bold lg:text-7xl">{{ lobby.title }}</h1>
-        <p class="text-[#bed0c5]">Pick one. The crowd decides what hits the table.</p>
-      </div>
-      <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 lg:grid-cols-4">
-        @for (item of lobby.session_games; track item.game_id) {
-          <button
-            class="vote-card grid cursor-pointer gap-3 overflow-hidden rounded-2xl border-3 border-transparent bg-surface pb-4 text-left text-ink"
-            (click)="vote(item.game_id)"
-            [class.my-vote]="myVote === item.game_id"
-            >
+    <header class="flex items-center justify-between">
+        <div class="flex w-max items-center gap-2.5 font-display text-xl font-bold">
+            <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent"><mat-icon>casino</mat-icon></span>
+            Meeple House
+        </div>
+        <button class="rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-white" (click)="share()">
+            <mat-icon>ios_share</mat-icon>
+            {{ copied ? 'Link copied!' : 'Share lobby' }}
+        </button>
+    </header>
+    @if (lobby) {
+        <section>
+            <div class="mx-auto my-[7vh] max-w-3xl text-center">
+                <p class="mb-3 text-xs font-bold tracking-[.14em] text-[#ffc3b2] uppercase">Live game vote
+                    · {{ lobby.code }}</p>
+                <h1 class="font-display text-5xl font-bold lg:text-7xl">{{ lobby.title }}</h1>
+                <p class="text-[#bed0c5]">Pick one. The crowd decides what hits the table.</p>
+            </div>
+            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 lg:grid-cols-4">
+                @for (item of lobby.session_games; track item.game_id) {
+                    <button
+                            class="vote-card grid cursor-pointer gap-3 overflow-hidden rounded-2xl border-3 border-transparent bg-surface pb-4 text-left text-ink"
+                            (click)="vote(item.game_id)"
+                            [class.my-vote]="myVote === item.game_id"
+                    >
             <span class="aspect-4/3 overflow-hidden bg-mint">
               @if (item.game_snapshot.image_url) {
-                <img class="size-full object-cover" [src]="item.game_snapshot.image_url" alt="">
+                  <img class="size-full object-cover" [src]="item.game_snapshot.image_url" alt="">
               }
             </span>
-            <span class="grid gap-1 px-4">
+                        <span class="grid gap-1 px-4">
               <small class="text-accent">{{ item.game_snapshot.release_year }}</small>
               <strong class="font-display text-base lg:text-xl">{{ item.game_snapshot.name }}</strong>
             </span>
-            <span class="mr-4 flex items-center gap-1 justify-self-end rounded-full bg-mint px-2.5 py-1.5 text-brand"><mat-icon>how_to_vote</mat-icon>{{ count(item.game_id) }}</span>
-          </button>
-        }
-      </div>
-      <p class="mt-7 text-center text-[#bed0c5]">
-        {{ myVote ? 'Vote saved — choose another game to change it.' : 'Tap a game to cast your vote.' }}
-      </p>
-    </section>
-  } @else {
-    <div class="mx-auto my-[9vh] max-w-3xl text-center"><h1 class="font-display text-5xl">{{ error || 'Joining the lobby…' }}</h1></div>
-  }
+                        <span class="mr-4 flex items-center gap-1 justify-self-end rounded-full bg-mint px-2.5 py-1.5 text-brand"><mat-icon>how_to_vote</mat-icon>
+                            {{ count(item.game_id) }}</span>
+                    </button>
+                }
+            </div>
+            <p class="mt-7 text-center text-[#bed0c5]">
+                {{ myVote ? 'Vote saved — choose another game to change it.' : 'Tap a game to cast your vote.' }}
+            </p>
+        </section>
+    } @else {
+        <div class="mx-auto my-[9vh] max-w-3xl text-center"><h1
+                class="font-display text-5xl">{{ error || 'Joining the lobby…' }}</h1></div>
+    }
 </main>
