@@ -44,6 +44,7 @@ import {GameListRowComponent} from '../components/game-list-row.component';
 export class LibraryComponent {
     activeTab: 'shelf' | 'recent' | 'collection' = 'shelf';
     selectedBox: number | null = null;
+    selectedBoxLabel = '';
     unassignedOpen = false;
     swipeDirection: Record<string, 'favorite' | 'delete' | null> = {};
     gridColumns = 4;
@@ -92,6 +93,8 @@ export class LibraryComponent {
     selectBox(boxId: number, event: MouseEvent): void {
         event.stopPropagation();
         this.selectedBox = boxId;
+        const box = this.library.boxes().find((item) => item.id === boxId);
+        this.selectedBoxLabel = box?.description ?? box?.label ?? `Cube ${boxId}`;
     }
 
     applyGridLayout(): void {
@@ -221,6 +224,23 @@ export class LibraryComponent {
             await this.library.setBoxLayoutDirection(box.id, direction);
         } catch (error) {
             this.snackBar.open(error instanceof Error ? error.message : 'Unable to change cube layout.', 'Dismiss');
+        }
+    }
+
+    async renameSelectedCube(): Promise<void> {
+        const box = this.selectedBoxInfo;
+        if (!box) return;
+        const label = this.selectedBoxLabel.trim();
+        const currentLabel = box.description ?? box.label ?? '';
+        if (!label || label === currentLabel) {
+            this.selectedBoxLabel = currentLabel;
+            return;
+        }
+        try {
+            await this.library.renameBox(box.id, label);
+        } catch (error) {
+            this.selectedBoxLabel = currentLabel;
+            this.snackBar.open(error instanceof Error ? error.message : 'Unable to rename this cube.', 'Dismiss');
         }
     }
 

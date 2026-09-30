@@ -1,6 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
 import {ActivatedRoute, Router} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
 import {LibraryService} from '../services/library.service';
@@ -8,12 +6,11 @@ import {GameDetailViewComponent} from '../components/game-detail-view.component'
 
 @Component({
     standalone: true,
-    imports: [FormsModule, GameDetailViewComponent, MatButtonModule, MatIconModule],
+    imports: [GameDetailViewComponent, MatIconModule],
     templateUrl: './game-detail.component.html',
 })
 export class GameDetailComponent implements OnInit {
     gameId = '';
-    dimensions = {width: 50, height: 200, depth: 100};
     savingDimensions = false;
     dimensionsError = '';
 
@@ -22,14 +19,6 @@ export class GameDetailComponent implements OnInit {
 
     ngOnInit(): void {
         this.gameId = this.route.snapshot.paramMap.get('id') ?? '';
-        const game = this.library.game(this.gameId);
-        if (game) {
-            this.dimensions = {
-                width: game.box_width_mm,
-                height: game.box_height_mm,
-                depth: game.box_depth_mm,
-            };
-        }
     }
 
     location(boxId: number | null): string {
@@ -40,11 +29,11 @@ export class GameDetailComponent implements OnInit {
         void this.router.navigate(['/library'], {queryParams: {tab: 'collection'}});
     }
 
-    async saveDimensions(): Promise<void> {
+    async saveDimensions(dimensions: {width: number; height: number; depth: number}): Promise<void> {
         this.dimensionsError = '';
         this.savingDimensions = true;
         try {
-            await this.library.updateGameDimensions(this.gameId, this.dimensions);
+            await this.library.updateGameDimensions(this.gameId, dimensions);
         } catch (error) {
             this.dimensionsError = error instanceof Error ? error.message : 'Unable to save dimensions.';
         } finally {

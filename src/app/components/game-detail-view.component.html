@@ -1,13 +1,19 @@
 <main class="mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
-    <div class="flex justify-between">
+    <div>
         <button mat-button type="button" class="mb-6" (click)="back.emit()">
             <mat-icon>arrow_back</mat-icon>
             {{ backLabel }}
         </button>
-
-        @if (activeView === 'local' && !owned) {
-            <button mat-icon-button type="button"
-                    class="absolute top-0 right-0 !inline-flex !items-center !justify-center !p-0"
+    </div>
+    <div class="fixed top-4 right-4 z-30 flex gap-2 lg:top-6 lg:right-6">
+        @if (bggUrl) {
+            <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="bggUrl"
+               target="_blank" rel="noreferrer" aria-label="Open on BoardGameGeek" title="Open on BoardGameGeek">
+                <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
+            </a>
+        }
+        @if (!owned) {
+            <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
                     (click)="primaryAction.emit()" [disabled]="actionDisabled"
                     [attr.aria-label]="actionDisabled ? name + ' is already in your library' : 'Add ' + name + ' to your library'"
                     [title]="actionDisabled ? 'Already in your library' : actionLabel">
@@ -16,8 +22,8 @@
         }
     </div>
     <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
-        <div class="flex aspect-4/5 w-full max-w-80 items-center justify-center justify-self-center overflow-hidden rounded-3xl bg-mint font-display text-8xl shadow-2xl lg:max-w-95">
-            @if ((activeView === 'bgg' ? bggOverview?.imageUrl : null) || imageUrl; as cover) {
+        <div class="flex aspect-4/5 w-[min(58vw,18rem)] items-center justify-center justify-self-center overflow-hidden rounded-3xl bg-mint font-display text-7xl shadow-2xl lg:w-full lg:max-w-95 lg:text-8xl">
+            @if (imageUrl || bggOverview?.imageUrl; as cover) {
                 <img class="size-full object-cover" [src]="cover" [alt]="name + ' cover'">
             } @else {
                 <span>{{ name.slice(0, 1) }}</span>
@@ -27,28 +33,31 @@
         <div class="relative self-center">
             <p class="mb-3 pr-14 text-xs font-bold tracking-[.14em] text-accent uppercase">
                 {{ releaseYear ?? 'Year unknown' }} ·
-                {{ activeView === 'local' ? (owned ? 'In your collection' : 'Meeple House preview') : 'BoardGameGeek overview' }}
+                {{ owned ? 'In your collection' : 'Meeple House preview' }}
             </p>
             <h1 class="mb-6 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ name }}</h1>
 
-            <nav class="mb-6 flex gap-2 justify-center" aria-label="Game detail source">
-                <button mat-stroked-button type="button"
-                        [class.!bg-accent]="activeView === 'local'"
-                        [class.!text-white]="activeView === 'local'"
-                        (click)="activeView = 'local'">
-                    <mat-icon>home</mat-icon>
-                    MH
+            <nav class="mb-6 flex gap-2" aria-label="Game detail section">
+                <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'overview'"
+                        [class.!text-white]="detailTab === 'overview'" (click)="detailTab = 'overview'">
+                    Overview
                 </button>
-                <button mat-stroked-button type="button"
-                        [class.!bg-accent]="activeView === 'bgg'"
-                        [class.!text-white]="activeView === 'bgg'"
-                        (click)="activeView = 'bgg'">
-                    <mat-icon>public</mat-icon>
-                    BGG
+                <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'ratings'"
+                        [class.!text-white]="detailTab === 'ratings'" (click)="detailTab = 'ratings'">
+                    Reviews
+                    @if (localSummary.count) {
+                        <span>{{ localSummary.count }}</span>
+                    }
                 </button>
+                @if (owned) {
+                    <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'dimensions'"
+                            [class.!text-white]="detailTab === 'dimensions'" (click)="detailTab = 'dimensions'">
+                        Box dimensions
+                    </button>
+                }
             </nav>
 
-            @if (activeView === 'local') {
+            @if (detailTab === 'overview') {
                 <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5 text-center">
           <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
             <mat-icon class="text-accent">star</mat-icon>
@@ -62,33 +71,14 @@
             <strong class="font-display text-xl text-ink">#{{ localSummary.rank ?? '—' }}</strong>
             Rank
           </span>
-                    <a [routerLink]="['/reviews', bggId]" [queryParams]="{ source: 'local' }"
-                       class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent">
+                    <button type="button" (click)="detailTab = 'ratings'"
+                            class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent"
+                            aria-label="View ratings and reviews">
                         <mat-icon class="text-accent">reviews</mat-icon>
                         <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
                         Ratings
-                    </a>
+                    </button>
                 </div>
-            } @else if (metadata; as meta) {
-                <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5 text-center">
-          <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
-            <mat-icon class="text-accent">star</mat-icon>
-            <strong class="font-display text-xl text-ink">{{ meta.avgRating | number:'1.1-1' }}</strong>
-            Rating
-          </span>
-                    <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
-            <mat-icon class="text-accent">leaderboard</mat-icon>
-            <strong class="font-display text-xl text-ink">#{{ meta.rank ?? '—' }}</strong>
-            Rank
-          </span>
-                    <a [routerLink]="['/reviews', bggId]" [queryParams]="{ source: 'bgg' }"
-                       class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent">
-                        <mat-icon class="text-accent">groups</mat-icon>
-                        <strong class="font-display text-xl text-ink">{{ meta.usersRated | number }}</strong>
-                        Ratings
-                    </a>
-                </div>
-            }
 
             @if (metadata; as meta) {
                 <div class="my-5 flex flex-wrap gap-2">
@@ -98,7 +88,7 @@
                 </div>
             }
 
-            @if (activeView === 'local' && owned && location) {
+            @if (owned && location) {
                 <p class="my-7 flex items-center gap-2">
                     <mat-icon>inventory_2</mat-icon>
                     Stored in <strong>{{ location }}</strong>
@@ -110,20 +100,79 @@
             }
 
             <div class="flex flex-wrap gap-3">
-                @if (activeView === 'local' && owned) {
+                @if (owned) {
                     <a mat-flat-button class="primary-action" [routerLink]="['/reviews', bggId]"
                        [queryParams]="{ source: 'local', write: 1 }">
                         <mat-icon>rate_review</mat-icon>
                         Leave a review
                     </a>
                 }
-                @if (activeView === 'bgg' && bggUrl) {
-                    <a mat-flat-button class="primary-action" [href]="bggUrl" target="_blank" rel="noreferrer">
-                        Open on BoardGameGeek
-                        <mat-icon>open_in_new</mat-icon>
-                    </a>
-                }
             </div>
+            } @else if (detailTab === 'ratings') {
+                <section aria-label="Meeple House reviews">
+                    <header class="mb-5 border-b border-line pb-4">
+                        <div>
+                            <p class="eyebrow">Meeple House</p>
+                            <h2 class="font-display text-3xl">Reviews</h2>
+                        </div>
+                    </header>
+                    <div class="grid gap-3">
+                        @for (review of localSummary.reviews; track review.id) {
+                            <article class="rounded-xl border border-line bg-surface p-4">
+                                <div class="mb-2 flex items-center justify-between gap-3">
+                                    <strong>Meeple House member</strong>
+                                    <span class="text-accent">★ {{ review.rating }}/10</span>
+                                </div>
+                                <p class="mb-3 leading-6 text-muted">{{ review.body }}</p>
+                                <time class="text-xs text-muted" [attr.datetime]="review.updated_at">
+                                    Updated {{ review.updated_at | date:'mediumDate' }}
+                                </time>
+                            </article>
+                        } @empty {
+                            <p class="rounded-xl bg-mint p-4 text-muted">No reviews yet. Be the first to review it.</p>
+                        }
+                    </div>
+                    @if (owned) {
+                        <a mat-flat-button class="primary-action mt-5" [routerLink]="['/reviews', bggId]"
+                           [queryParams]="{ source: 'local', write: 1 }">
+                            <mat-icon>rate_review</mat-icon>
+                            Leave a review
+                        </a>
+                    }
+                </section>
+            } @else {
+                <section aria-label="Box dimensions">
+                    <header class="mb-5 border-b border-line pb-4">
+                        <p class="eyebrow">Physical copy</p>
+                        <h2 class="font-display text-3xl">Box dimensions</h2>
+                        <p class="text-sm text-muted">Used to size this game in your Kallax. Values are in millimetres.</p>
+                    </header>
+                    <form class="flex flex-wrap items-end gap-4" (ngSubmit)="saveDimensions()">
+                        <label class="grid gap-1 text-sm font-bold">
+                            Width
+                            <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="width"
+                                   [(ngModel)]="dimensions.width" min="1" max="2000" step="1" required>
+                        </label>
+                        <label class="grid gap-1 text-sm font-bold">
+                            Height
+                            <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="height"
+                                   [(ngModel)]="dimensions.height" min="1" max="2000" step="1" required>
+                        </label>
+                        <label class="grid gap-1 text-sm font-bold">
+                            Depth
+                            <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="depth"
+                                   [(ngModel)]="dimensions.depth" min="1" max="2000" step="1" required>
+                        </label>
+                        <button mat-flat-button class="primary-action" type="submit" [disabled]="savingDimensions">
+                            <mat-icon>save</mat-icon>
+                            {{ savingDimensions ? 'Saving…' : 'Save dimensions' }}
+                        </button>
+                    </form>
+                    @if (dimensionsError) {
+                        <p class="error mt-3">{{ dimensionsError }}</p>
+                    }
+                </section>
+            }
         </div>
     </section>
 </main>

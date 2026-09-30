@@ -115,6 +115,22 @@ export class LibraryService {
     }
   }
 
+  async renameBox(boxId: number, label: string): Promise<void> {
+    const normalized = label.trim();
+    if (!normalized) throw new Error('A cube needs a name.');
+    const previous = this.boxes();
+    this.boxes.update((boxes) => boxes.map((box) => box.id === boxId
+      ? { ...box, label: normalized, description: normalized }
+      : box));
+    const { error } = await supabase.from('container_box')
+      .update({ label: normalized, description: normalized })
+      .eq('id', boxId);
+    if (error) {
+      this.boxes.set(previous);
+      throw error;
+    }
+  }
+
   async updateGameDimensions(
     gameId: string,
     dimensions: { width: number; height: number; depth: number },

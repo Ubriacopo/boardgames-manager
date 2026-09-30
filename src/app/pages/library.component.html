@@ -174,10 +174,22 @@
                             <header>
                                 <div>
                                     <p class="eyebrow">Selected cube</p>
-                                    <h3>{{ box.description ?? box.label ?? 'Cube ' + box.id }}</h3>
+                                    <input class="cube-label-input" type="text" aria-label="Cube name"
+                                           [(ngModel)]="selectedBoxLabel" [ngModelOptions]="{standalone: true}"
+                                           (click)="$event.stopPropagation()" (keydown.enter)="renameSelectedCube()"
+                                           (blur)="renameSelectedCube()">
                                 </div>
                                 <div class="overview-actions">
                                     <span>{{ selectedGames.length }}/{{ box.capacity }}</span>
+                                    <button type="button" class="sheet-close" (click)="toggleSelectedCubeDirection()"
+                                            [attr.aria-label]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'"
+                                            [title]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'">
+                                        <mat-icon>screen_rotation</mat-icon>
+                                    </button>
+                                    <button type="button" class="sheet-close" (click)="removeSelectedCube()"
+                                            [disabled]="library.boxes().length <= 1" aria-label="Remove this cube" title="Remove this cube">
+                                        <mat-icon>delete_outline</mat-icon>
+                                    </button>
                                     <button
                                             type="button"
                                             class="sheet-close"
@@ -188,17 +200,6 @@
                                     </button>
                                 </div>
                             </header>
-                            <button mat-stroked-button type="button" class="mb-4 w-full !justify-center"
-                                    (click)="removeSelectedCube()"
-                                    [disabled]="library.boxes().length <= 1">
-                                <mat-icon>delete_outline</mat-icon>
-                                Remove this cube
-                            </button>
-                            <button mat-stroked-button type="button" class="mb-4 w-full !justify-center"
-                                    (click)="toggleSelectedCubeDirection()">
-                                <mat-icon>screen_rotation</mat-icon>
-                                Use {{ boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical' }} layout
-                            </button>
                             @if (!selectedGames.length) {
                                 <p class="small-empty">
                                     This cube is empty. Drag a game here to fill it.
