@@ -1,114 +1,44 @@
 <main class="mx-auto min-h-[calc(100dvh-64px)] max-w-5xl px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-12 lg:py-14">
-    <button mat-button type="button" class="mb-6" (click)="back()">
+    <button mat-button type="button" class="mb-6" (click)="router.navigate(['/games'])">
         <mat-icon>arrow_back</mat-icon>
-        Back to game
+        Back to games
     </button>
 
-    <header class="mb-8">
-        <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Ratings and reviews</p>
-        <h1 class="font-display text-4xl font-bold lg:text-6xl">{{ game?.name ?? 'Game reviews' }}</h1>
+    <header class="mb-8 flex items-end justify-between gap-4">
+        <div>
+            <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Meeple House</p>
+            <h1 class="font-display text-4xl font-bold lg:text-6xl">{{ gameName }}</h1>
+            <p class="mt-2 text-muted">Reviews</p>
+        </div>
+        <button mat-flat-button class="primary-action" type="button" (click)="writeReview()">
+            <mat-icon>rate_review</mat-icon>
+            Write a review
+        </button>
     </header>
-
-    <nav class="mb-8 flex gap-2" aria-label="Review source">
-        <button mat-stroked-button type="button" [class.!bg-accent]="source === 'local'"
-                [class.!text-white]="source === 'local'" (click)="source = 'local'">
-            <mat-icon>home</mat-icon>
-            Meeple House
-        </button>
-        <button mat-stroked-button type="button" [class.!bg-accent]="source === 'bgg'"
-                [class.!text-white]="source === 'bgg'" (click)="source = 'bgg'">
-            <mat-icon>public</mat-icon>
-            BoardGameGeek
-        </button>
-    </nav>
 
     @if (loading) {
         <p class="py-20 text-center text-muted">Loading reviews…</p>
-    } @else if (source === 'local') {
-        <div class="mb-8 grid grid-cols-3 gap-3 border-y border-line py-5">
-            <span class="grid gap-1 text-xs text-muted"><strong
-                    class="font-display text-2xl text-ink">{{ local.average === null ? '—' : (local.average | number:'1.1-1') }}</strong>Rating</span>
-            <span class="grid gap-1 text-xs text-muted"><strong
-                    class="font-display text-2xl text-ink">#{{ local.rank ?? '—' }}</strong>Rank</span>
-            <span class="grid gap-1 text-xs text-muted"><strong
-                    class="font-display text-2xl text-ink">{{ local.count }}</strong>Ratings</span>
-        </div>
-
-        <div class="grid gap-8 lg:grid-cols-[minmax(280px,400px)_1fr]">
-            <form id="review-form" class="grid content-start gap-3 rounded-xl border border-line bg-surface p-4"
-                  (ngSubmit)="submit()">
-                <label class="grid gap-2 text-sm font-bold">
-                    Your rating
-                    <select class="rounded-lg border border-line bg-mint px-3 py-2" name="rating" [(ngModel)]="rating">
-                        @for (value of [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; track value) {
-                            <option [value]="value">{{ value }}/10</option>
-                        }
-                    </select>
-                </label>
-                <label class="grid gap-2 text-sm font-bold">
-                    Your review
-                    <textarea class="min-h-32 resize-y rounded-lg border border-line bg-mint p-3 font-normal"
-                              name="review" maxlength="2000" [(ngModel)]="body"
-                              [autofocus]="focusForm" placeholder="What did you think?"></textarea>
-                </label>
-                @if (error) {
-                    <p class="error m-0 text-sm">{{ error }}</p>
-                }
-                <button mat-flat-button class="primary-action justify-self-start" type="submit" [disabled]="saving">
-                    {{ saving ? 'Saving…' : 'Publish review' }}
-                </button>
-            </form>
-
-            <div class="grid content-start gap-3">
-                @for (review of local.reviews; track review.id) {
-                    <article class="rounded-xl border border-line bg-surface p-4">
-                        <div class="mb-2 flex items-center justify-between gap-3">
-                            <strong>Meeple House member</strong><span class="text-accent">★ {{ review.rating }}</span>
-                        </div>
-                        <p class="m-0 leading-6 text-muted">{{ review.body }}</p>
-                    </article>
-                } @empty {
-                    <p class="rounded-xl bg-mint p-4 text-muted">No local reviews yet. Be the first.</p>
-                }
-            </div>
-        </div>
     } @else {
-        <div class="mb-8 grid grid-cols-3 gap-3 border-y border-line py-5">
-            <span class="grid gap-1 text-xs text-muted"><strong
-                    class="font-display text-2xl text-ink">{{ game?.avgRating | number:'1.1-1' }}</strong>Rating</span>
-            <span class="grid gap-1 text-xs text-muted"><strong
-                    class="font-display text-2xl text-ink">#{{ game?.rank ?? '—' }}</strong>Rank</span>
-            <span class="grid gap-1 text-xs text-muted"><strong
-                    class="font-display text-2xl text-ink">{{ game?.usersRated | number }}</strong>Ratings</span>
-        </div>
-
-        @if (overview; as item) {
-            <div class="mb-8 grid gap-3 sm:grid-cols-4">
-                <article class="rounded-xl bg-surface p-4"><strong>{{ item.minPlayers ?? '—' }}
-                    –{{ item.maxPlayers ?? '—' }}</strong><small class="block text-muted">Players</small></article>
-                <article class="rounded-xl bg-surface p-4"><strong>{{ item.minPlaytime ?? '—' }}
-                    –{{ item.maxPlaytime ?? '—' }}</strong><small class="block text-muted">Minutes</small></article>
-                <article class="rounded-xl bg-surface p-4"><strong>{{ item.minAge ?? '—' }}+</strong><small
-                        class="block text-muted">Age</small></article>
-                <article class="rounded-xl bg-surface p-4"><strong>{{ item.complexity | number:'1.1-1' }}
-                    /5</strong><small class="block text-muted">Complexity</small></article>
-            </div>
-            <article class="mb-8 rounded-xl border border-line bg-surface p-5">
-                <h2 class="mb-3 font-display text-2xl">BGG overview</h2>
-                <p class="m-0 whitespace-pre-line leading-7 text-muted">{{ item.description }}</p>
-            </article>
-        }
-
-        <div class="grid gap-3 md:grid-cols-2">
-            @for (review of bggReviews; track review.username + $index) {
+        <div class="grid gap-3">
+            @for (review of reviews; track review.id) {
                 <article class="rounded-xl border border-line bg-surface p-4">
-                    <div class="mb-2 flex justify-between gap-3"><strong>{{ review.username }}</strong><span
-                            class="text-accent">★ {{ review.rating ?? '—' }}</span></div>
-                    <p class="m-0 leading-6 text-muted">{{ review.comment }}</p>
+                    <div class="mb-2 flex items-center justify-between gap-3">
+                        <strong>Meeple House member</strong>
+                        <span class="text-accent">★ {{ review.rating }}/10</span>
+                    </div>
+                    <div class="review-markdown leading-6 text-muted" [innerHTML]="renderReview(review.body)"></div>
                 </article>
             } @empty {
-                <p class="rounded-xl bg-mint p-4 text-muted">BGG reviews are temporarily unavailable.</p>
+                <p class="rounded-xl bg-mint p-4 text-muted">No reviews yet. Be the first to review it.</p>
             }
         </div>
+        @if (loadingMore) {
+            <p class="py-6 text-center text-sm text-muted">Loading more reviews…</p>
+        } @else if (hasMore) {
+            <button mat-stroked-button type="button" class="mx-auto mt-6 flex" (click)="loadMore()">Load more</button>
+        }
+        @if (error) {
+            <p class="error mt-5">{{ error }}</p>
+        }
     }
 </main>

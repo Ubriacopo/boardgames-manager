@@ -19,6 +19,7 @@ export const routes: Routes = [
   { path: 'games', canActivate: [libraryGuard], loadComponent: () => import('./pages/games.component').then((m) => m.GamesComponent) },
   { path: 'games/discover/:bggId', canActivate: [libraryGuard], loadComponent: () => import('./pages/search-game-detail.component').then((m) => m.SearchGameDetailComponent) },
   { path: 'games/:id', canActivate: [libraryGuard], loadComponent: () => import('./pages/game-detail.component').then((m) => m.GameDetailComponent) },
+  { path: 'reviews/:bggId/write', canActivate: [libraryGuard], loadComponent: () => import('./pages/review-composer.component').then((m) => m.ReviewComposerComponent) },
   { path: 'reviews/:bggId', canActivate: [libraryGuard], loadComponent: () => import('./pages/reviews.component').then((m) => m.GameReviewsComponent) },
   { path: 'profile', canActivate: [libraryGuard], loadComponent: () => import('./pages/profile.component').then((m) => m.ProfileComponent) },
   { path: 'session/:code', loadComponent: () => import('./pages/session.component').then((m) => m.SessionComponent) },

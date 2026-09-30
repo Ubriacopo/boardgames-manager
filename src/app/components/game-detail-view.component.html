@@ -65,11 +65,19 @@
               {{ localSummary.average === null ? '—' : (localSummary.average | number:'1.1-1') }}
             </strong>
             Rating
+            @if (metadata; as meta) {
+                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
+                    BGG {{ meta.avgRating === null ? '—' : (meta.avgRating | number:'1.1-1') }}
+                </small>
+            }
           </span>
                     <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
             <mat-icon class="text-accent">leaderboard</mat-icon>
             <strong class="font-display text-xl text-ink">#{{ localSummary.rank ?? '—' }}</strong>
             Rank
+            @if (metadata; as meta) {
+                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">BGG #{{ meta.rank ?? '—' }}</small>
+            }
           </span>
                     <button type="button" (click)="detailTab = 'ratings'"
                             class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent"
@@ -77,6 +85,11 @@
                         <mat-icon class="text-accent">reviews</mat-icon>
                         <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
                         Ratings
+                        @if (metadata; as meta) {
+                            <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
+                                BGG {{ meta.usersRated === null ? '—' : (meta.usersRated | number) }}
+                            </small>
+                        }
                     </button>
                 </div>
 
@@ -101,15 +114,38 @@
 
             <div class="flex flex-wrap gap-3">
                 @if (owned) {
-                    <a mat-flat-button class="primary-action" [routerLink]="['/reviews', bggId]"
-                       [queryParams]="{ source: 'local', write: 1 }">
+                    <a mat-flat-button class="primary-action" [routerLink]="['/reviews', bggId, 'write']">
                         <mat-icon>rate_review</mat-icon>
                         Leave a review
                     </a>
                 }
             </div>
             } @else if (detailTab === 'ratings') {
-                <section aria-label="Meeple House reviews">
+                <section aria-label="BoardGameGeek comments">
+                    <header class="mb-5 border-b border-line pb-4">
+                        <div>
+                            <p class="eyebrow">BoardGameGeek</p>
+                            <h2 class="font-display text-3xl">Community comments</h2>
+                        </div>
+                    </header>
+                    <div class="grid gap-3">
+                        @for (review of bggReviews; track review.username + review.comment) {
+                            <article class="rounded-xl border border-line bg-surface p-4">
+                                <div class="mb-2 flex items-center justify-between gap-3">
+                                    <strong>{{ review.username }}</strong>
+                                    @if (review.rating !== null) {
+                                        <span class="text-accent">★ {{ review.rating }}/10</span>
+                                    }
+                                </div>
+                                <p class="leading-6 text-muted">{{ review.comment }}</p>
+                            </article>
+                        } @empty {
+                            <p class="rounded-xl bg-mint p-4 text-muted">No BoardGameGeek comments are available right now.</p>
+                        }
+                    </div>
+                </section>
+
+                <section class="mt-10" aria-label="Meeple House reviews">
                     <header class="mb-5 border-b border-line pb-4">
                         <div>
                             <p class="eyebrow">Meeple House</p>
@@ -123,7 +159,7 @@
                                     <strong>Meeple House member</strong>
                                     <span class="text-accent">★ {{ review.rating }}/10</span>
                                 </div>
-                                <p class="mb-3 leading-6 text-muted">{{ review.body }}</p>
+                                <div class="review-markdown mb-3 leading-6 text-muted" [innerHTML]="renderReview(review.body)"></div>
                                 <time class="text-xs text-muted" [attr.datetime]="review.updated_at">
                                     Updated {{ review.updated_at | date:'mediumDate' }}
                                 </time>
@@ -133,8 +169,7 @@
                         }
                     </div>
                     @if (owned) {
-                        <a mat-flat-button class="primary-action mt-5" [routerLink]="['/reviews', bggId]"
-                           [queryParams]="{ source: 'local', write: 1 }">
+                        <a mat-flat-button class="primary-action mt-5" [routerLink]="['/reviews', bggId, 'write']">
                             <mat-icon>rate_review</mat-icon>
                             Leave a review
                         </a>

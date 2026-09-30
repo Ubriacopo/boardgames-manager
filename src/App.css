@@ -67,6 +67,13 @@
 .cube-overview h3 { font-family: 'Fraunces'; font-size: 1.2rem; margin: 0; }
 .cube-label-input { background: transparent; border: 0; border-bottom: 1px solid transparent; color: var(--ink); font-family: 'Fraunces'; font-size: 1.2rem; font-weight: 700; max-width: 190px; outline: 0; padding: 1px 0; }
 .cube-label-input:focus { border-bottom-color: var(--accent); }
+.review-markdown > :first-child { margin-top: 0; }
+.review-markdown > :last-child { margin-bottom: 0; }
+.review-markdown a { color: var(--accent); text-decoration: underline; }
+.review-markdown blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 12px; }
+.review-markdown code { background: var(--mint); border-radius: 4px; padding: 1px 4px; }
+.review-markdown pre { background: var(--mint); border-radius: 8px; overflow-x: auto; padding: 12px; }
+.review-markdown pre code { background: transparent; padding: 0; }
 .overview-actions { align-items: center; display: flex; gap: 4px; }
 .overview-actions > span { background: var(--mint); border-radius: 999px; color: var(--forest); font-size: .72rem; font-weight: 700; padding: 6px 9px; }
 .sheet-close { display: none; }
@@ -163,3 +170,4 @@ html[data-theme='light'] .zoom-controls span, html[data-theme='light'] .small-em
   .swipe-action small { display: none; }
 }
 @keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@import 'quill/dist/quill.snow.css';

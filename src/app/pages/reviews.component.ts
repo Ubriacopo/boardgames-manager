@@ -1,81 +1,66 @@
-import {DecimalPipe, Location} from '@angular/common';
-import {Component, OnInit} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {Component, HostListener, OnInit} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {ActivatedRoute} from '@angular/router';
-import {
-    getBggMetadataByIds,
-    getBggOverview,
-    getBggReviews,
-    type BggGameMetadata,
-    type BggOverview,
-    type BggReview,
-} from '../../utils/bggData';
-import {ReviewService, type LocalReviewSummary} from '../services/review.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {renderMarkdown} from '../../utils/renderMarkdown';
+import {LibraryService} from '../services/library.service';
+import {ReviewService, type LocalReview} from '../services/review.service';
 
 @Component({
     standalone: true,
-    imports: [DecimalPipe, FormsModule, MatButtonModule, MatIconModule],
+    imports: [MatButtonModule, MatIconModule],
     templateUrl: './game-reviews.component.html',
 })
 export class GameReviewsComponent implements OnInit {
     bggId = 0;
-    game?: BggGameMetadata;
-    overview?: BggOverview;
-    bggReviews: BggReview[] = [];
-    local: LocalReviewSummary = {average: null, count: 0, rank: null, reviews: []};
-    source: 'local' | 'bgg' = 'local';
-    rating = 8;
-    body = '';
-    error = '';
+    gameName = 'Game reviews';
+    reviews: LocalReview[] = [];
     loading = true;
-    saving = false;
-    focusForm = false;
+    loadingMore = false;
+    hasMore = true;
+    error = '';
 
     constructor(
-        private readonly location: Location,
         private readonly route: ActivatedRoute,
-        private readonly reviews: ReviewService,
-    ) {
-    }
+        readonly router: Router,
+        private readonly library: LibraryService,
+        private readonly reviewService: ReviewService,
+    ) {}
 
     async ngOnInit(): Promise<void> {
         this.bggId = Number(this.route.snapshot.paramMap.get('bggId'));
-        this.source = this.route.snapshot.queryParamMap.get('source') === 'bgg' ? 'bgg' : 'local';
-        this.focusForm = this.route.snapshot.queryParamMap.has('write');
-        const results = await Promise.allSettled([
-            getBggMetadataByIds([this.bggId]),
-            getBggOverview(this.bggId),
-            getBggReviews(this.bggId),
-            this.reviews.summary(this.bggId),
-        ]);
-        if (results[0].status === 'fulfilled') this.game = results[0].value.get(this.bggId);
-        if (results[1].status === 'fulfilled') this.overview = results[1].value;
-        if (results[2].status === 'fulfilled') this.bggReviews = results[2].value;
-        if (results[3].status === 'fulfilled') this.local = results[3].value;
-        this.loading = false;
+        this.gameName = this.library.games().find((game) => game.bgg_id === this.bggId)?.name ?? this.gameName;
+        await this.loadMore();
     }
 
-    back(): void {
-        this.location.back();
-    }
-
-    async submit(): Promise<void> {
-        if (!this.body.trim()) {
-            this.error = 'Write a short review first.';
-            return;
+    @HostListener('window:scroll')
+    onScroll(): void {
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 320) {
+            void this.loadMore();
         }
-        this.saving = true;
+    }
+
+    renderReview(body: string): string {
+        return renderMarkdown(body);
+    }
+
+    writeReview(): void {
+        void this.router.navigate(['/reviews', this.bggId, 'write']);
+    }
+
+    async loadMore(): Promise<void> {
+        if (!this.hasMore || this.loadingMore) return;
+        this.loadingMore = true;
         this.error = '';
         try {
-            await this.reviews.save(this.bggId, this.rating, this.body);
-            this.body = '';
-            this.local = await this.reviews.summary(this.bggId);
+            const page = await this.reviewService.page(this.bggId, this.reviews.length);
+            this.reviews = [...this.reviews, ...page.reviews];
+            this.hasMore = page.hasMore;
         } catch (error) {
-            this.error = error instanceof Error ? error.message : 'Unable to save your review.';
+            this.error = error instanceof Error ? error.message : 'Unable to load reviews.';
         } finally {
-            this.saving = false;
+            this.loading = false;
+            this.loadingMore = false;
         }
     }
 }

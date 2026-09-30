@@ -6,9 +6,12 @@ import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
 import {
     getBggOverview,
+    getBggReviews,
     type BggGameMetadata,
     type BggOverview,
+    type BggReview,
 } from '../../utils/bggData';
+import {renderMarkdown} from '../../utils/renderMarkdown';
 import {ReviewService, type LocalReviewSummary} from '../services/review.service';
 
 @Component({
@@ -40,6 +43,7 @@ export class GameDetailViewComponent implements OnChanges {
     @Output() readonly dimensionsSave = new EventEmitter<{ width: number; height: number; depth: number }>();
 
     localSummary: LocalReviewSummary = {average: null, count: 0, rank: null, reviews: []};
+    bggReviews: BggReview[] = [];
     bggOverview?: BggOverview;
     detailTab: 'overview' | 'ratings' | 'dimensions' = 'overview';
     dimensions = {width: 50, height: 200, depth: 100};
@@ -62,10 +66,15 @@ export class GameDetailViewComponent implements OnChanges {
         this.dimensionsSave.emit({...this.dimensions});
     }
 
+    renderReview(markdown: string): string {
+        return renderMarkdown(markdown);
+    }
+
     private async loadReviews(): Promise<void> {
         await Promise.allSettled([
             this.loadLocalReviews(),
             getBggOverview(this.bggId).then((overview) => this.bggOverview = overview),
+            getBggReviews(this.bggId).then((reviews) => this.bggReviews = reviews),
         ]);
     }
 

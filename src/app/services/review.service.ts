@@ -9,6 +9,7 @@ export type LocalReviewSummary = {
   rank: number | null;
   reviews: LocalReview[];
 };
+export type ReviewPage = { reviews: LocalReview[]; hasMore: boolean };
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
@@ -47,5 +48,30 @@ export class ReviewService {
       { onConflict: 'user_id,bgg_id' },
     );
     if (error) throw error;
+  }
+
+  async page(bggId: number, offset: number, pageSize = 10): Promise<ReviewPage> {
+    const { data, error } = await supabase
+      .from('game_reviews')
+      .select('*')
+      .eq('bgg_id', bggId)
+      .order('updated_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    return { reviews: data, hasMore: data.length === pageSize };
+  }
+
+  async ownReview(bggId: number): Promise<LocalReview | null> {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData.session?.user.id;
+    if (!userId) throw new Error('Sign in to write a review.');
+    const { data, error } = await supabase
+      .from('game_reviews')
+      .select('*')
+      .eq('bgg_id', bggId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
   }
 }
