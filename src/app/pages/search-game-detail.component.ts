@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {getBggMetadataByIds, type BggGameMetadata} from '../../utils/bggData';
+import {getBggMetadataByIds, getBggOverview, type BggGameMetadata} from '../../utils/bggData';
 import {LibraryService} from '../services/library.service';
 import {GameDetailViewComponent} from '../components/game-detail-view.component';
 
@@ -42,12 +42,19 @@ export class SearchGameDetailComponent implements OnInit {
         if (!this.game) return;
         this.adding = true;
         try {
+            let imageUrl: string | null = null;
+            try {
+                imageUrl = (await getBggOverview(this.game.bggId)).imageUrl;
+            } catch {
+                // A cover is optional; adding a game must still work when BGG is unavailable.
+            }
             await this.library.addGame({
                 bgg_id: this.game.bggId,
                 bgg_url: `https://boardgamegeek.com/boardgame/${this.game.bggId}`,
                 name: this.game.name,
                 release_year: this.game.yearPublished ?? new Date().getFullYear(),
                 size: 1,
+                image_url: imageUrl,
             });
             await this.router.navigate(['/library']);
         } catch (error) {

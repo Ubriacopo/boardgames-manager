@@ -17,7 +17,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import type {BoardGame} from '../../entities/BoardGame';
-import {LibraryService} from '../services/library.service';
+import {LibraryService, type BoxLayoutDirection, type LibraryBox} from '../services/library.service';
 import {CollectionListComponent} from '../components/collection-list.component';
 import {GameListRowComponent} from '../components/game-list-row.component';
 
@@ -144,6 +144,16 @@ export class LibraryComponent {
         }
     }
 
+    async removeSelectedCube(): Promise<void> {
+        if (this.selectedBox === null) return;
+        try {
+            await this.library.removeBox(this.selectedBox);
+            this.selectedBox = null;
+        } catch (error) {
+            this.snackBar.open(error instanceof Error ? error.message : 'Unable to remove this cube.', 'Dismiss');
+        }
+    }
+
     async favorite(game: BoardGame): Promise<void> {
         try {
             await this.library.setFavorite(game.id, true);
@@ -184,7 +194,34 @@ export class LibraryComponent {
     }
 
     gamesInBox(id: number): BoardGame[] {
-        return this.library.games().filter((game) => game.box === id);
+        return this.library.games()
+            .filter((game) => (this.library.placement(game.id)?.container_box_id ?? game.box) === id)
+            .sort((left, right) => (this.library.placement(left.id)?.sort_order ?? 0) -
+                (this.library.placement(right.id)?.sort_order ?? 0));
+    }
+
+    boxDirection(box: LibraryBox): BoxLayoutDirection {
+        return box.layout_direction;
+    }
+
+    spineWidthPercent(game: BoardGame, box: LibraryBox): number {
+        return Math.min(100, (game.box_width_mm / box.inner_width_mm) * 100);
+    }
+
+    spineHeightPercent(game: BoardGame, box: LibraryBox): number {
+        const height = this.boxDirection(box) === 'vertical' ? game.box_height_mm : game.box_depth_mm;
+        return Math.min(100, (height / box.inner_height_mm) * 100);
+    }
+
+    async toggleSelectedCubeDirection(): Promise<void> {
+        const box = this.selectedBoxInfo;
+        if (!box) return;
+        const direction: BoxLayoutDirection = this.boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical';
+        try {
+            await this.library.setBoxLayoutDirection(box.id, direction);
+        } catch (error) {
+            this.snackBar.open(error instanceof Error ? error.message : 'Unable to change cube layout.', 'Dismiss');
+        }
     }
 
     capacity(id: number): number {
@@ -200,16 +237,16 @@ export class LibraryComponent {
     }
 
     drop(box: number, event: CdkDragDrop<BoardGame[]>): void {
-        void this.move(event.item.data as string, box);
+        void this.move(event.item.data as string, box, event.currentIndex);
     }
 
     unassign(event: CdkDragDrop<BoardGame[]>): void {
-        void this.move(event.item.data as string, null);
+        void this.move(event.item.data as string, null, event.currentIndex);
     }
 
-    async move(gameId: string, box: number | null): Promise<void> {
+    async move(gameId: string, box: number | null, index?: number): Promise<void> {
         try {
-            await this.library.moveGame(gameId, box);
+            await this.library.moveGame(gameId, box, index);
         } catch (error) {
             this.library.error.set(error instanceof Error ? error.message : 'Unable to move this game.');
         }

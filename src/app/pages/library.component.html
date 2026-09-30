@@ -141,13 +141,23 @@
                                     [class.selected]="selectedBox === box.id"
                             >
                                 <span>{{ box.description }}</span>
-                                <div class="book-spines">
-                                    @for (game of gamesInBox(box.id).slice(0, 6); track game.id) {
-                                        <i
+                                <div class="book-spines" [class.horizontal]="boxDirection(box) === 'horizontal'">
+                                    @for (game of gamesInBox(box.id); track game.id) {
+                                        <span
                                                 cdkDrag
                                                 [cdkDragData]="game.id"
+                                                class="game-spine"
+                                                [class.horizontal]="boxDirection(box) === 'horizontal'"
+                                                [style.width.%]="spineWidthPercent(game, box)"
+                                                [style.height.%]="spineHeightPercent(game, box)"
                                                 [title]="'Drag ' + game.name"
-                                        >{{ initials(game.name) }}</i>
+                                        >
+                                            @if (boxDirection(box) === 'horizontal' && game.image_url) {
+                                                <img [src]="game.image_url" alt="">
+                                            } @else {
+                                                {{ initials(game.name) }}
+                                            }
+                                        </span>
                                     }
                                 </div>
                                 <small>{{ capacity(box.id) }}/{{ box.capacity }}</small>
@@ -178,6 +188,17 @@
                                     </button>
                                 </div>
                             </header>
+                            <button mat-stroked-button type="button" class="mb-4 w-full !justify-center"
+                                    (click)="removeSelectedCube()"
+                                    [disabled]="library.boxes().length <= 1">
+                                <mat-icon>delete_outline</mat-icon>
+                                Remove this cube
+                            </button>
+                            <button mat-stroked-button type="button" class="mb-4 w-full !justify-center"
+                                    (click)="toggleSelectedCubeDirection()">
+                                <mat-icon>screen_rotation</mat-icon>
+                                Use {{ boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical' }} layout
+                            </button>
                             @if (!selectedGames.length) {
                                 <p class="small-empty">
                                     This cube is empty. Drag a game here to fill it.
@@ -195,7 +216,7 @@
                         </span>
                                                 <span>
                           <strong>{{ game.name }}</strong>
-                          <small>{{ game.release_year }} · Size {{ game.size }}</small>
+                          <small>{{ boxDirection(box) }} layout · {{ game.box_width_mm }} × {{ game.box_height_mm }} mm</small>
                         </span>
                                             </a>
                                             <button

@@ -64,6 +64,9 @@ export type Database = {
           bgg_id: number | null
           bgg_url: string
           box: number | null
+          box_depth_mm: number
+          box_height_mm: number
+          box_width_mm: number
           created_at: string
           favorite: boolean
           id: string
@@ -77,6 +80,9 @@ export type Database = {
           bgg_id?: number | null
           bgg_url: string
           box?: number | null
+          box_depth_mm?: number
+          box_height_mm?: number
+          box_width_mm?: number
           created_at?: string
           favorite?: boolean
           id?: string
@@ -90,6 +96,9 @@ export type Database = {
           bgg_id?: number | null
           bgg_url?: string
           box?: number | null
+          box_depth_mm?: number
+          box_height_mm?: number
+          box_width_mm?: number
           created_at?: string
           favorite?: boolean
           id?: string
@@ -122,7 +131,11 @@ export type Database = {
           created_at: string
           description: string | null
           id: number
+          inner_depth_mm: number
+          inner_height_mm: number
+          inner_width_mm: number
           label: string | null
+          layout_direction: 'horizontal' | 'vertical'
           library_id: string | null
         }
         Insert: {
@@ -130,7 +143,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          inner_depth_mm?: number
+          inner_height_mm?: number
+          inner_width_mm?: number
           label?: string | null
+          layout_direction?: 'horizontal' | 'vertical'
           library_id?: string | null
         }
         Update: {
@@ -138,7 +155,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          inner_depth_mm?: number
+          inner_height_mm?: number
+          inner_width_mm?: number
           label?: string | null
+          layout_direction?: 'horizontal' | 'vertical'
           library_id?: string | null
         }
         Relationships: [
@@ -147,6 +168,45 @@ export type Database = {
             columns: ["library_id"]
             isOneToOne: false
             referencedRelation: "libraries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_placements: {
+        Row: {
+          container_box_id: number | null
+          created_at: string
+          game_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          container_box_id?: number | null
+          created_at?: string
+          game_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          container_box_id?: number | null
+          created_at?: string
+          game_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_placements_container_box_id_fkey"
+            columns: ["container_box_id"]
+            isOneToOne: false
+            referencedRelation: "container_box"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_placements_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: true
+            referencedRelation: "board_games"
             referencedColumns: ["id"]
           },
         ]

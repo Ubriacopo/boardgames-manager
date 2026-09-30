@@ -11,6 +11,37 @@
             backLabel="My collection"
             (back)="back()"
     />
+    <section class="mx-auto mt-8 max-w-[1680px] rounded-2xl border border-line bg-surface p-5 lg:px-8">
+        <div class="mb-4">
+            <p class="eyebrow">Physical copy</p>
+            <h2 class="font-display text-2xl">Box dimensions</h2>
+            <p class="text-sm text-muted">Used to size the game on your Kallax. Values are in millimetres.</p>
+        </div>
+        <form class="flex flex-wrap items-end gap-4" (ngSubmit)="saveDimensions()">
+            <label class="grid gap-1 text-sm font-bold">
+                Width
+                <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="width"
+                       [(ngModel)]="dimensions.width" min="1" max="2000" step="1" required>
+            </label>
+            <label class="grid gap-1 text-sm font-bold">
+                Height
+                <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="height"
+                       [(ngModel)]="dimensions.height" min="1" max="2000" step="1" required>
+            </label>
+            <label class="grid gap-1 text-sm font-bold">
+                Depth
+                <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="depth"
+                       [(ngModel)]="dimensions.depth" min="1" max="2000" step="1" required>
+            </label>
+            <button mat-flat-button class="primary-action" type="submit" [disabled]="savingDimensions">
+                <mat-icon>save</mat-icon>
+                {{ savingDimensions ? 'Saving…' : 'Save dimensions' }}
+            </button>
+        </form>
+        @if (dimensionsError) {
+            <p class="error mt-3">{{ dimensionsError }}</p>
+        }
+    </section>
 } @else {
     <main class="flex min-h-[calc(100dvh-76px)] flex-col items-center justify-center px-5 text-center">
         <mat-icon class="!size-12 !text-5xl text-accent">extension_off</mat-icon>

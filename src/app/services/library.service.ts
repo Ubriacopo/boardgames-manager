@@ -2,11 +2,13 @@ import { Injectable, computed, signal } from '@angular/core';
 import type { Session } from '@supabase/supabase-js';
 import type { BoardGame, NewBoardGame } from '../../entities/BoardGame';
 import type { ContainerBox } from '../../entities/ContainerBox';
+import type { GamePlacement } from '../../entities/GamePlacement';
 import { getBggGameId, getBggMetadataByIds, type BggGameMetadata } from '../../utils/bggData';
 import { supabase } from '../../utils/supabase';
 
 export type Library = { id: string; user_id: string; name: string; created_at: string };
 export type LibraryBox = ContainerBox & { capacity: number };
+export type BoxLayoutDirection = 'vertical' | 'horizontal';
 const BOX_COUNT = 16;
 const BOX_CAPACITY = 8;
 
@@ -15,6 +17,7 @@ export class LibraryService {
   readonly library = signal<Library | null>(null);
   readonly games = signal<BoardGame[]>([]);
   readonly boxes = signal<LibraryBox[]>([]);
+  readonly placements = signal<Record<string, GamePlacement>>({});
   readonly metadata = signal<Record<string, BggGameMetadata>>({});
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -27,15 +30,18 @@ export class LibraryService {
     this.error.set(null);
     try {
       const library = await this.ensureLibrary(session);
-      const [games, boxes] = await Promise.all([
+      const [games, boxes, placements] = await Promise.all([
         supabase.from('board_games').select('*').eq('library_id', library.id).order('name'),
         supabase.from('container_box').select('*').eq('library_id', library.id).order('id'),
+        supabase.from('game_placements').select('*'),
       ]);
       if (games.error) throw games.error;
       if (boxes.error) throw boxes.error;
+      if (placements.error) throw placements.error;
       this.library.set(library);
       this.games.set(games.data);
       this.boxes.set(boxes.data.map((box) => ({ ...box, capacity: box.capacity ?? BOX_CAPACITY })));
+      this.placements.set(Object.fromEntries(placements.data.map((placement) => [placement.game_id, placement])));
       this.loadedForUser = session.user.id;
       await this.loadMetadata();
     } catch (error) {
@@ -60,10 +66,71 @@ export class LibraryService {
     return data;
   }
 
-  async moveGame(gameId: string, box: number | null): Promise<void> {
+  placement(gameId: string): GamePlacement | undefined {
+    return this.placements()[gameId];
+  }
+
+  async moveGame(gameId: string, box: number | null, index?: number): Promise<void> {
     const previous = this.games();
+    const previousPlacements = this.placements();
+    const targetGames = this.gamesInPlacement(box).filter((game) => game.id !== gameId);
+    const insertionIndex = Math.max(0, Math.min(index ?? targetGames.length, targetGames.length));
+    targetGames.splice(insertionIndex, 0, this.game(gameId)!);
+    const nextPlacements = { ...previousPlacements };
+    targetGames.forEach((game, sortOrder) => {
+      nextPlacements[game.id] = {
+        ...(nextPlacements[game.id] ?? this.newPlacement(game.id)),
+        container_box_id: box,
+        sort_order: sortOrder,
+      };
+    });
+
     this.games.update((games) => games.map((game) => game.id === gameId ? { ...game, box } : game));
-    const { error } = await supabase.from('board_games').update({ box }).eq('id', gameId);
+    this.placements.set(nextPlacements);
+
+    const { error } = await supabase.from('game_placements')
+      .upsert(targetGames.map((game, sortOrder) => ({
+        game_id: game.id,
+        container_box_id: box,
+        sort_order: sortOrder,
+      })), { onConflict: 'game_id' });
+    if (error) {
+      this.games.set(previous);
+      this.placements.set(previousPlacements);
+      throw error;
+    }
+  }
+
+  async setBoxLayoutDirection(boxId: number, layoutDirection: BoxLayoutDirection): Promise<void> {
+    const previous = this.boxes();
+    this.boxes.update((boxes) => boxes.map((box) => box.id === boxId
+      ? { ...box, layout_direction: layoutDirection }
+      : box));
+    const { error } = await supabase.from('container_box')
+      .update({ layout_direction: layoutDirection })
+      .eq('id', boxId);
+    if (error) {
+      this.boxes.set(previous);
+      throw error;
+    }
+  }
+
+  async updateGameDimensions(
+    gameId: string,
+    dimensions: { width: number; height: number; depth: number },
+  ): Promise<void> {
+    const normalized = {
+      box_width_mm: Math.round(dimensions.width),
+      box_height_mm: Math.round(dimensions.height),
+      box_depth_mm: Math.round(dimensions.depth),
+    };
+    if (Object.values(normalized).some((value) => !Number.isInteger(value) || value < 1 || value > 2_000)) {
+      throw new Error('Enter whole-number dimensions between 1 and 2,000 mm.');
+    }
+
+    const previous = this.games();
+    this.games.update((games) => games.map((game) => game.id === gameId ? { ...game, ...normalized } : game));
+    const { error } = await supabase.from('board_games').update(normalized).eq('id', gameId);
     if (error) {
       this.games.set(previous);
       throw error;
@@ -88,16 +155,51 @@ export class LibraryService {
 
   async removeLastBox(): Promise<void> {
     const boxes = this.boxes();
+    await this.removeBox(boxes[boxes.length - 1]?.id);
+  }
+
+  async removeBox(boxId: number | undefined): Promise<void> {
+    const boxes = this.boxes();
     if (boxes.length <= 1) throw new Error('Your Kallax needs at least one cube.');
-    const box = boxes[boxes.length - 1];
-    const gameIds = this.games().filter((game) => game.box === box.id).map((game) => game.id);
-    if (gameIds.length) {
-      const moved = await supabase.from('board_games').update({ box: null }).in('id', gameIds);
-      if (moved.error) throw moved.error;
+    const box = boxes.find((item) => item.id === boxId);
+    if (!box) throw new Error('That cube no longer exists.');
+
+    const games = this.games().filter((game) =>
+      (this.placement(game.id)?.container_box_id ?? game.box) === box.id,
+    );
+    const previousPlacements = this.placements();
+    if (games.length) {
+      const { error: unassignError } = await supabase.from('game_placements').upsert(games.map((game) => {
+        const placement = this.placement(game.id) ?? this.newPlacement(game.id);
+        return {
+          game_id: game.id,
+          container_box_id: null,
+          sort_order: placement.sort_order,
+        };
+      }), { onConflict: 'game_id' });
+      if (unassignError) throw unassignError;
     }
+
     const { error } = await supabase.from('container_box').delete().eq('id', box.id);
-    if (error) throw error;
-    this.games.update((games) => games.map((game) => game.box === box.id ? { ...game, box: null } : game));
+    if (error) {
+      if (games.length) {
+        await supabase.from('game_placements').upsert(games.map((game) => {
+          const placement = previousPlacements[game.id] ?? this.newPlacement(game.id);
+          return {
+            game_id: game.id,
+            container_box_id: placement.container_box_id,
+            sort_order: placement.sort_order,
+          };
+        }), { onConflict: 'game_id' });
+      }
+      throw error;
+    }
+
+    this.games.update((current) => current.map((game) => game.box === box.id ? { ...game, box: null } : game));
+    this.placements.update((current) => Object.fromEntries(Object.entries(current).map(([gameId, placement]) => [
+      gameId,
+      placement.container_box_id === box.id ? { ...placement, container_box_id: null } : placement,
+    ])));
     this.boxes.update((current) => current.filter((item) => item.id !== box.id));
   }
 
@@ -113,10 +215,16 @@ export class LibraryService {
 
   async removeGame(gameId: string): Promise<void> {
     const previous = this.games();
+    const previousPlacements = this.placements();
     this.games.update((games) => games.filter((game) => game.id !== gameId));
+    this.placements.update((placements) => {
+      const { [gameId]: _removed, ...remaining } = placements;
+      return remaining;
+    });
     const { error } = await supabase.from('board_games').delete().eq('id', gameId);
     if (error) {
       this.games.set(previous);
+      this.placements.set(previousPlacements);
       throw error;
     }
   }
@@ -125,6 +233,22 @@ export class LibraryService {
     const { data, error } = await supabase.from('board_games').insert(game).select('*').single();
     if (error) throw error;
     this.games.update((games) => [...games, data].sort((a, b) => a.name.localeCompare(b.name)));
+  }
+
+  private gamesInPlacement(box: number | null): BoardGame[] {
+    return this.games()
+      .filter((game) => (this.placement(game.id)?.container_box_id ?? game.box) === box)
+      .sort((left, right) => (this.placement(left.id)?.sort_order ?? 0) - (this.placement(right.id)?.sort_order ?? 0));
+  }
+
+  private newPlacement(gameId: string): GamePlacement {
+    return {
+      game_id: gameId,
+      container_box_id: this.game(gameId)?.box ?? null,
+      sort_order: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
   }
 
   private async ensureLibrary(session: Session): Promise<Library> {
