@@ -152,8 +152,8 @@
                                                 [style.height.%]="spineHeightPercent(game, box)"
                                                 [title]="'Drag ' + game.name"
                                         >
-                                            @if (boxDirection(box) === 'horizontal' && game.image_url) {
-                                                <img [src]="game.image_url" alt="">
+                                            @if (library.sideImage(game); as side) {
+                                                <img [src]="side" alt="" draggable="false">
                                             } @else {
                                                 {{ initials(game.name) }}
                                             }

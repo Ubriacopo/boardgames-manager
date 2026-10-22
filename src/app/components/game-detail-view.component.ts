@@ -1,5 +1,5 @@
 import {DatePipe, DecimalPipe} from '@angular/common';
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -13,7 +13,7 @@ import {
 } from '../../utils/bggData';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {AuthService} from '../services/auth.service';
-import {GameCoverService} from '../services/game-cover.service';
+import {GameCoverService, type ArtworkKind} from '../services/game-cover.service';
 import {CoverEditorComponent} from './cover-editor.component';
 import {getBggGameId} from '../../utils/bggData';
 import {renderMarkdown} from '../../utils/renderMarkdown';
@@ -50,6 +50,7 @@ export class GameDetailViewComponent implements OnChanges {
     localSummary: LocalReviewSummary = {average: null, count: 0, rank: null, reviews: []};
     bggReviews: BggReview[] = [];
     bggOverview?: BggOverview;
+    private readonly logoRatio = signal(1);
     detailTab: 'overview' | 'ratings' | 'dimensions' = 'overview';
     dimensions = {width: 50, height: 200, depth: 100};
 
@@ -62,11 +63,41 @@ export class GameDetailViewComponent implements OnChanges {
         return this.covers.urls()[this.coverGameId] ?? this.imageUrl ?? this.bggOverview?.imageUrl ?? null;
     }
 
-    editCover(): void {
+    wallpaperUrl(): string | null {
+        return this.covers.wallpapers()[this.coverGameId] ?? null;
+    }
+
+    logoUrl(): string | null {
+        return this.covers.logos()[this.coverGameId] ?? this.coverUrl();
+    }
+
+    hasLogo(): boolean { return !!this.covers.logos()[this.coverGameId]; }
+    hasBoxSide(): boolean { return !!this.covers.boxSides()[this.coverGameId]; }
+    logoWidth(): string { return `min(100%, ${420 * this.logoRatio()}px)`; }
+
+    onLogoLoad(event: Event): void {
+        const image = event.target as HTMLImageElement;
+        if (image.naturalWidth && image.naturalHeight) this.logoRatio.set(image.naturalWidth / image.naturalHeight);
+    }
+
+    editLogo(): void { this.editArtwork('logo'); }
+    editBoxSide(): void { this.editArtwork('box-side'); }
+
+    editCover(): void { this.editArtwork('cover'); }
+    editWallpaper(): void { this.editArtwork('wallpaper'); }
+
+    private editArtwork(kind: ArtworkKind): void {
         if (!this.auth.isAdmin() || !this.coverGameId) return;
+        const imageUrl = {
+            cover: this.coverUrl(), wallpaper: this.wallpaperUrl() ?? this.coverUrl(),
+            logo: this.logoUrl(), 'box-side': this.covers.boxSides()[this.coverGameId] ?? this.wallpaperUrl() ?? this.coverUrl(),
+        }[kind];
         this.dialog.open(CoverEditorComponent, {
             width: '760px', maxWidth: '95vw', panelClass: 'cover-editor-dialog',
-            data: { bggId: this.coverGameId, name: this.name, imageUrl: this.coverUrl() },
+            data: {
+                bggId: this.coverGameId, name: this.name, kind,
+                imageUrl,
+            },
         });
     }
 

@@ -28,7 +28,7 @@
                 @for (game of gamesInBox(box.id); track game.id) {
                   <span class="game-spine friend-spine" [class.horizontal]="box.layout_direction === 'horizontal'"
                         [style.width.%]="width(game, box)" [style.height.%]="height(game, box)" [title]="game.name">
-                    @if (box.layout_direction === 'horizontal' && game.image_url) { <img [src]="game.image_url" alt=""> }
+                    @if (sideImage(game); as side) { <img [src]="side" alt="" draggable="false"> }
                     @else { {{ initials(game.name) }} }
                   </span>
                 }

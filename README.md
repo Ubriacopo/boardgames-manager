@@ -130,3 +130,21 @@ users cannot grant it to themselves through profile or registration fields.
 After an admin role changes, sign out and back in to refresh the session.
 `20261022082322_admin_covers_and_registration_handles.sql` provisions registration
 triggers, handle rules, fuzzy collector search, cover tables, and upload policies.
+
+Game detail pages support separate wallpaper artwork behind the cover and title.
+Admins can use **Add wallpaper** or **Edit wallpaper** to upload or crop the
+background, with a 16:9 crop preset. Wallpapers are stored in `game_wallpapers`
+and use the existing artwork Storage bucket. Editing a wallpaper leaves the cover
+unchanged. Without a custom wallpaper, the page uses a softened cover backdrop.
+The `20261022121801_game_wallpapers.sql` migration provisions the wallpaper table
+and admin-only write policies.
+
+Artwork has four independent roles: **cover** for browsing and collection lists,
+**logo** for the game page, **wallpaper** for its background, and **box side** for
+Kallax spines. Admins can edit each from the game page. Logos and box sides keep
+original proportions by default in the crop editor; the page fits logos into
+rounded bounds without cropping. Until a logo is uploaded, the page uses its
+cover. Shelves use box-side artwork, fall back to wallpaper, then to the cover
+when neither is available. The same rules apply to friends' shelves.
+`20261022122733_game_logos_and_box_sides.sql` adds the logo and box-side tables
+with the same admin-only write policies as existing artwork.

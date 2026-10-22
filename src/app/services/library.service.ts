@@ -57,6 +57,8 @@ export class LibraryService {
     }
   }
 
+  sideImage(game: BoardGame): string | null { return this.covers.sideForGame(game); }
+
   game(id: string): BoardGame | undefined {
     return this.games().find((game) => game.id === id);
   }

@@ -1,3 +1,4 @@
+import {GameCoverService} from '../services/game-cover.service';
 import {makeSearchScorer} from '../../utils/search';
 import { Component, DestroyRef, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -24,7 +25,7 @@ export class FriendCollectionComponent implements OnInit {
   readonly error = signal('');
   private version = 0;
 
-  constructor(private readonly friends: FriendsService, private readonly route: ActivatedRoute, private readonly destroyRef: DestroyRef) {}
+  constructor(private readonly friends: FriendsService, private readonly route: ActivatedRoute, private readonly destroyRef: DestroyRef, private readonly covers: GameCoverService) {}
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
@@ -79,6 +80,8 @@ export class FriendCollectionComponent implements OnInit {
     const box = this.collection.boxes.find(b => b.id === this.boxFor(game));
     return box?.description ?? box?.label ?? 'Unassigned';
   }
+
+  sideImage(game: BoardGame): string | null { return this.covers.sideForGame(game); }
 
   width(game: BoardGame, box: ContainerBox): number { return Math.min(100, game.box_width_mm / box.inner_width_mm * 100); }
   height(game: BoardGame, box: ContainerBox): number {

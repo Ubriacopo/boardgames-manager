@@ -4,6 +4,10 @@
 
 ### Added
 
+- Separate admin uploads for game-page logos and Kallax box-side artwork. Logos retain their image proportions inside rounded bounds; browsing continues to use covers. Shelf artwork uses the box side first, then wallpaper, then the cover when neither is available, in both vertical and horizontal layouts.
+
+- Game pages have a shaded wallpaper behind the cover and title. Admins can upload and crop a separate wallpaper with a landscape preset; the cover remains independent.
+
 - Cover uploads now offer a draggable crop preview, zoom, position sliders, and portrait, square, or original proportions before saving.
 
 - Login and registration show a modal loading overlay through authentication and library navigation, with reduced-motion support.
@@ -23,6 +27,8 @@
 - Public profile requests have a 15-second network timeout.
 
 ### Changed
+
+- Logo crops are saved as PNG with transparency preserved, including semi-transparent edges, and displayed without a background or hover tint.
 
 - The cover editor keeps Crop & zoom collapsed by default and removes nested side padding on mobile.
 

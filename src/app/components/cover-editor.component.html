@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>Update cover</h2>
+<h2 mat-dialog-title>Update {{ artworkLabel }}</h2>
 <form (ngSubmit)="save()">
     <mat-dialog-content>
         <div class="cover-file-picker mt-4 flex flex-wrap items-center gap-3">
@@ -8,8 +8,11 @@
                     aria-describedby="cover-file-hint">Browse image
             </button>
             <span class="min-w-0 break-all text-sm text-muted"
-                  role="status">{{ file?.name || (data.imageUrl ? 'Current cover' : 'No image selected') }}</span>
+                  role="status">{{ file?.name || (data.imageUrl ? 'Current ' + artworkLabel : 'No image selected') }}</span>
         </div>
+        @if (data.kind === 'logo') {
+            <p class="mt-3 text-sm text-muted">Transparent PNG and WebP logos keep their transparency when cropped and saved.</p>
+        }
         @if (loading()) {
             <p role="status" class="mt-4 text-sm text-muted">Preparing image…</p>
         }
@@ -18,14 +21,14 @@
                              (afterExpand)="drawPreview()">
             <mat-expansion-panel-header>
                 <mat-panel-title>Crop &amp; zoom</mat-panel-title>
-                <mat-panel-description>{{ ready() ? 'Adjust your cover' : loading() ? 'Preparing image…' : 'Choose an image to begin' }}</mat-panel-description>
+                <mat-panel-description>{{ ready() ? 'Adjust your ' + artworkLabel : loading() ? 'Preparing image…' : 'Choose an image to begin' }}</mat-panel-description>
             </mat-expansion-panel-header>
             @if (ready()) {
                 <p id="crop-help" class="text-sm text-muted">Drag the image to move the crop, then use the controls to
                     fine-tune it.</p>
                 <div class="cover-crop-workspace pl-4 pr-4">
                     <div class="cover-crop-preview" [style.aspect-ratio]="aspectRatio" [style.width]="previewWidth">
-                        <canvas #cropCanvas class="cover-crop-canvas" role="img" aria-label="Preview of the cover crop"
+                        <canvas #cropCanvas class="cover-crop-canvas" role="img" [attr.aria-label]="'Preview of the ' + artworkLabel + ' crop'"
                                 aria-describedby="crop-help"
                                 (pointerdown)="startDrag($event)" (pointermove)="moveDrag($event)"
                                 (pointerup)="endDrag($event)"
@@ -37,6 +40,9 @@
                         <label class="grid gap-2 text-sm font-semibold">Crop shape
                             <select class="social-input" name="shape" [ngModel]="shape"
                                     (ngModelChange)="changeShape($event)">
+                                @if (data.kind === 'wallpaper') {
+                                    <option value="landscape">Wallpaper (16:9)</option>
+                                }
                                 <option value="portrait">Portrait (4:5)</option>
                                 <option value="square">Square</option>
                                 <option value="original">Original proportions</option>
@@ -60,7 +66,7 @@
                     </fieldset>
                 </div>
             } @else {
-                <p class="m-0 text-sm text-muted">{{ loading() ? 'Preparing your cover for cropping…' : 'Browse for an image above, then expand Crop & zoom to adjust it.' }}</p>
+                <p class="m-0 text-sm text-muted">{{ loading() ? 'Preparing your ' + artworkLabel + ' for cropping…' : 'Browse for an image above, then expand Crop & zoom to adjust it.' }}</p>
             }
         </mat-expansion-panel>
         @if (error()) {
@@ -70,7 +76,7 @@
     <mat-dialog-actions align="end">
         <button mat-button type="button" [disabled]="saving()" (click)="dialog.close()">Cancel</button>
         <button mat-flat-button type="submit"
-                [disabled]="saving() || loading() || !ready()">{{ saving() ? 'Saving…' : 'Save cropped cover' }}
+                [disabled]="saving() || loading() || !ready()">{{ saving() ? 'Saving…' : 'Save ' + artworkLabel }}
         </button>
     </mat-dialog-actions>
 </form>

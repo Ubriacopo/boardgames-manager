@@ -4,7 +4,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { GameCoverService } from '../services/game-cover.service';
+import { GameCoverService, type ArtworkKind } from '../services/game-cover.service';
 import { cropRectangle } from '../../utils/imageCrop';
 
 @Component({
@@ -17,7 +17,7 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
   zoom = 1;
   horizontal = 50;
   vertical = 50;
-  shape: 'portrait' | 'square' | 'original' = 'portrait';
+  shape: 'portrait' | 'landscape' | 'square' | 'original' = 'portrait';
   readonly cropExpanded = signal(false);
   readonly saving = signal(false);
   readonly loading = signal(false);
@@ -35,10 +35,15 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) readonly data: { bggId: number; name: string; imageUrl?: string | null },
+    @Inject(MAT_DIALOG_DATA) readonly data: { bggId: number; name: string; imageUrl?: string | null; kind?: ArtworkKind },
     readonly dialog: MatDialogRef<CoverEditorComponent>,
     private readonly covers: GameCoverService,
-  ) {}
+  ) {
+    if (data.kind === 'wallpaper') this.shape = 'landscape';
+    if (data.kind === 'logo' || data.kind === 'box-side') this.shape = 'original';
+  }
+
+  get artworkLabel(): string { return this.data.kind === 'box-side' ? 'box side' : this.data.kind ?? 'cover'; }
 
   async ngOnInit(): Promise<void> {
     if (!this.data.imageUrl) return;
@@ -46,6 +51,7 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
   }
 
   get aspectRatio(): number {
+    if (this.shape === 'landscape') return 16 / 9;
     if (this.shape === 'square') return 1;
     if (this.shape === 'original' && this.image) return this.image.naturalWidth / this.image.naturalHeight;
     return 4 / 5;
@@ -87,7 +93,7 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
       this.ready.set(true);
     } catch {
       if (version === this.loadVersion) this.error.set(currentCover
-        ? 'The current cover could not be opened for cropping. Browse to upload a replacement image.'
+        ? `The current ${this.artworkLabel} could not be opened for cropping. Browse to upload a replacement image.`
         : 'This image could not be opened. Please choose another file.');
     } finally { if (version === this.loadVersion) this.loading.set(false); }
   }
@@ -97,7 +103,7 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
     this.drawPreview();
   }
 
-  changeShape(shape: 'portrait' | 'square' | 'original'): void {
+  changeShape(shape: 'portrait' | 'landscape' | 'square' | 'original'): void {
     this.shape = shape;
     this.resetCrop();
   }
@@ -108,9 +114,10 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
     const width = Math.max(1, Math.round(Math.min(640, 800 * this.aspectRatio)));
     this.canvas.width = width;
     this.canvas.height = Math.max(1, Math.round(width / this.aspectRatio));
-    const context = this.canvas.getContext('2d');
+    const context = this.canvas.getContext('2d', { alpha: true });
     if (!context) return;
     context.imageSmoothingQuality = 'high';
+    context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     context.drawImage(this.image, crop.x, crop.y, crop.width, crop.height, 0, 0, this.canvas.width, this.canvas.height);
   }
 
@@ -150,19 +157,33 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
   private async croppedFile(): Promise<File> {
     if (!this.image) throw new Error('Load an image before cropping.');
     const crop = this.currentCrop();
-    const scale = Math.min(1, 1600 / crop.width, 2000 / crop.height);
+    const wallpaper = this.data.kind === 'wallpaper';
+    const scale = Math.min(1, (wallpaper ? 2560 : 1600) / crop.width, (wallpaper ? 1440 : 2000) / crop.height);
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(crop.width * scale));
     canvas.height = Math.max(1, Math.round(crop.height * scale));
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { alpha: true });
     if (!context) throw new Error('Your browser could not prepare the cropped image.');
     context.imageSmoothingQuality = 'high';
-    context.drawImage(this.image, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(
-      result => result ? resolve(result) : reject(new Error('The cropped image could not be saved.')),
-      'image/webp', 0.92,
-    ));
-    return new File([blob], `cover-${this.data.bggId}.${blob.type === 'image/webp' ? 'webp' : 'png'}`, { type: blob.type });
+    const logo = this.data.kind === 'logo';
+    const type = logo ? 'image/png' : 'image/webp';
+    const encode = async (): Promise<Blob> => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(this.image!, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
+      return new Promise<Blob>((resolve, reject) => canvas.toBlob(
+        result => result ? resolve(result) : reject(new Error('The cropped image could not be saved.')),
+        type, 0.92,
+      ));
+    };
+    // Logos use lossless PNG so transparent and semi-transparent edges survive cropping.
+    let blob = await encode();
+    while (logo && blob.size > 5 * 1024 * 1024 && canvas.width > 1 && canvas.height > 1) {
+      canvas.width = Math.max(1, Math.floor(canvas.width * 0.8));
+      canvas.height = Math.max(1, Math.floor(canvas.height * 0.8));
+      context.imageSmoothingQuality = 'high';
+      blob = await encode();
+    }
+    return new File([blob], `${this.data.kind ?? 'cover'}-${this.data.bggId}.${blob.type === 'image/webp' ? 'webp' : 'png'}`, { type: blob.type });
   }
 
   async save(): Promise<void> {
@@ -170,10 +191,10 @@ export class CoverEditorComponent implements OnInit, OnDestroy {
     this.saving.set(true); this.error.set(''); this.dialog.disableClose = true;
     try {
       const file = await this.croppedFile();
-      await this.covers.save(this.data.bggId, '', file);
+      await this.covers.save(this.data.bggId, '', file, this.data.kind ?? 'cover');
       this.dialog.close(true);
     } catch (error) {
-      this.error.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to update this cover.');
+      this.error.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : `Unable to update this ${this.artworkLabel}.`);
     } finally { this.saving.set(false); this.dialog.disableClose = false; }
   }
 

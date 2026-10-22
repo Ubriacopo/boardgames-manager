@@ -61,7 +61,7 @@
 .game-spine { align-items: center; background: var(--coral); color: white; cursor: grab; display: flex; flex: 0 0 auto; font-size: .55rem; font-style: normal; font-weight: 700; justify-content: center; max-width: none; overflow: hidden; writing-mode: vertical-rl; }
 .game-spine:nth-child(2n) { background: var(--forest); }.game-spine:nth-child(3n) { background: var(--mustard); color: var(--ink); }
 .game-spine.horizontal { align-self: end; max-width: none; writing-mode: initial; }
-.game-spine.horizontal img { height: 100%; object-fit: cover; width: 100%; }
+.game-spine img { height: 100%; object-fit: cover; width: 100%; }
 .cube-overview { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); border-radius: 15px; max-height: min(68vh, 760px); overflow-y: auto; padding: 16px; }
 .cube-overview > ng-container > header, .cube-overview header { align-items: start; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; }
 .cube-overview h3 { font-family: 'Fraunces'; font-size: 1.2rem; margin: 0; }
@@ -227,3 +227,28 @@ html[data-theme='light'] .zoom-controls span, html[data-theme='light'] .small-em
   .cover-editor-dialog .cover-crop-panel .mat-expansion-panel-header { padding-inline: 12px; }
   .cover-editor-dialog .cover-crop-panel .mat-expansion-panel-body { padding-inline: 0; }
 }
+
+.game-detail-stage { background: var(--cream); isolation: isolate; position: relative; }
+.game-detail-content { position: relative; z-index: 1; }
+.game-detail-wallpaper { background: radial-gradient(ellipse at 70% 10%, var(--mint), transparent 75%); height: min(760px, 85dvh); inset: 0 0 auto; min-height: 480px; overflow: hidden; pointer-events: none; position: absolute; }
+.game-detail-wallpaper img { height: 100%; object-fit: cover; object-position: center; opacity: .8; width: 100%; }
+.game-detail-wallpaper.is-fallback img { filter: blur(12px) saturate(.8); opacity: .5; transform: scale(1.05); }
+.game-detail-wallpaper::after { background: linear-gradient(90deg, color-mix(in srgb, var(--cream) 50%, transparent), transparent 65%), linear-gradient(180deg, color-mix(in srgb, var(--cream) 30%, transparent), color-mix(in srgb, var(--cream) 78%, transparent) 65%, var(--cream)); content: ''; inset: 0; position: absolute; }
+.game-wallpaper-edit { background: color-mix(in srgb, var(--paper) 85%, transparent) !important; backdrop-filter: blur(8px); }
+@media (max-width: 600px) {
+  .game-detail-wallpaper { height: 560px; min-height: 0; }
+}
+
+
+.game-logo-slot { align-self: start; display: flex; justify-content: center; justify-self: center; max-width: 380px; width: 100%; }
+.game-logo-artwork { background: transparent; border-radius: 24px; max-width: 100%; overflow: hidden; position: relative; }
+.game-logo-image { background: transparent; border-radius: 24px; display: block; height: auto; width: 100%; }
+.game-logo-placeholder { align-items: center; aspect-ratio: 1; background: var(--mint); display: flex; font-family: 'Fraunces', serif; font-size: 6rem; justify-content: center; width: 100%; }
+.game-logo-edit { align-items: flex-end; background: transparent; border: 0; display: flex; inset: 0; justify-content: center; padding: 12px; position: absolute; width: 100%; }
+.game-logo-edit:focus-visible { border-radius: 24px; outline: 3px solid var(--forest); outline-offset: -3px; }
+.game-spine img { display: block; flex: none; user-select: none; }
+
+
+.game-artwork-actions { display: flex; flex-wrap: nowrap; gap: 8px; max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 4px 2px 8px; scrollbar-color: var(--forest) var(--line); scrollbar-width: thin; }
+.game-artwork-actions > button { flex: 0 0 auto; white-space: nowrap; }
+.game-artwork-actions:focus-visible { border-radius: 8px; outline: 2px solid var(--forest); outline-offset: 2px; }

@@ -1,9 +1,28 @@
-<main class="mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
-    <div>
-        <button mat-button type="button" class="mb-6" (click)="back.emit()">
+<div class="game-detail-stage">
+    <div class="game-detail-wallpaper" [class.is-fallback]="!wallpaperUrl()" aria-hidden="true">
+        @if (wallpaperUrl() || coverUrl(); as wallpaper) {
+            <img [src]="wallpaper" alt="" fetchpriority="high">
+        }
+    </div>
+<main class="game-detail-content mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <button mat-button type="button" (click)="back.emit()">
             <mat-icon>arrow_back</mat-icon>
             {{ backLabel }}
         </button>
+        @if (auth.isAdmin() && coverGameId) {
+            <div class="game-artwork-actions" role="group" aria-label="Game artwork" tabindex="0">
+                <button mat-stroked-button type="button" class="game-wallpaper-edit" (click)="editCover()">
+                    <mat-icon>photo_library</mat-icon>Edit cover
+                </button>
+                <button mat-stroked-button type="button" class="game-wallpaper-edit" (click)="editWallpaper()">
+                    <mat-icon>wallpaper</mat-icon>{{ wallpaperUrl() ? 'Edit wallpaper' : 'Add wallpaper' }}
+                </button>
+                <button mat-stroked-button type="button" class="game-wallpaper-edit" (click)="editBoxSide()">
+                    <mat-icon>view_week</mat-icon>{{ hasBoxSide() ? 'Edit box side' : 'Add box side' }}
+                </button>
+            </div>
+        }
     </div>
     <div class="fixed top-4 right-4 z-30 flex gap-2 lg:top-6 lg:right-6">
         @if (bggUrl) {
@@ -22,18 +41,19 @@
         }
     </div>
     <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
-        <div class="relative flex aspect-4/5 w-[min(58vw,18rem)] items-center justify-center justify-self-center overflow-hidden rounded-3xl bg-mint font-display text-7xl shadow-2xl lg:w-full lg:max-w-95 lg:text-8xl">
-            @if (coverUrl(); as cover) {
-                <img class="size-full object-cover" [src]="cover" [alt]="name + ' cover'">
-            } @else {
-                <span>{{ name.slice(0, 1) }}</span>
-            }
-            @if (auth.isAdmin() && coverGameId) {
-                <button type="button" class="absolute inset-0 flex items-end justify-center bg-black/0 pb-4 transition hover:bg-black/15 focus-visible:outline-4 focus-visible:outline-accent"
-                        (click)="editCover()" [attr.aria-label]="'Update cover for ' + name">
-                    <span class="flex items-center gap-2 rounded-full bg-surface px-4 py-2 font-sans text-sm font-bold text-ink shadow-lg"><mat-icon>edit</mat-icon>Edit cover</span>
-                </button>
-            }
+        <div class="game-logo-slot">
+            <div class="game-logo-artwork" [style.width]="logoWidth()">
+                @if (logoUrl(); as logo) {
+                    <img class="game-logo-image" [src]="logo" [alt]="name + ' logo'" (load)="onLogoLoad($event)">
+                } @else {
+                    <span class="game-logo-placeholder">{{ name.slice(0, 1) }}</span>
+                }
+                @if (auth.isAdmin() && coverGameId) {
+                    <button type="button" class="game-logo-edit" (click)="editLogo()" [attr.aria-label]="'Update logo for ' + name">
+                        <span class="sr-only">Edit {{ name }} logo</span>
+                    </button>
+                }
+            </div>
         </div>
 
         <div class="relative self-center">
@@ -217,3 +237,4 @@
         </div>
     </section>
 </main>
+</div>

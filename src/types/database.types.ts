@@ -18,6 +18,24 @@ export type Database = {
         Update: { bgg_id?: number; image_url?: string; updated_at?: string }
         Relationships: []
       }
+      game_wallpapers: {
+        Row: { bgg_id: number; image_url: string; updated_at: string }
+        Insert: { bgg_id: number; image_url: string; updated_at?: string }
+        Update: { bgg_id?: number; image_url?: string; updated_at?: string }
+        Relationships: []
+      }
+      game_logos: {
+        Row: { bgg_id: number; image_url: string; updated_at: string }
+        Insert: { bgg_id: number; image_url: string; updated_at?: string }
+        Update: { bgg_id?: number; image_url?: string; updated_at?: string }
+        Relationships: []
+      }
+      game_box_sides: {
+        Row: { bgg_id: number; image_url: string; updated_at: string }
+        Insert: { bgg_id: number; image_url: string; updated_at?: string }
+        Update: { bgg_id?: number; image_url?: string; updated_at?: string }
+        Relationships: []
+      }
       social_profiles: {
         Row: { id: string; handle: string; display_name: string; connection_mode: 'approval' | 'follow' }
         Insert: { id: string; handle: string; display_name: string; connection_mode?: 'approval' | 'follow' }
