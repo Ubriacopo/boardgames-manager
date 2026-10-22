@@ -4,6 +4,8 @@
 
 ### Added
 
+- Shared WebStorm **Kallboard LAN** launch configuration, `npm run dev:lan`, and a Windows firewall setup script limited to TCP 4200 from local subnets.
+
 - Shared game definitions, reusable edition/country box-size variants, and owned-copy associations with private size overrides. Adding a game now includes a size choice, and owned games can switch variants or add another copy.
 
 - Profile display zoom from 100% to 200%, saved in this browser, enlarging Kallax labels, game rows, and the wider interface. Game rows scale their covers and spacing and wrap titles.
@@ -35,6 +37,8 @@
 - Public profile requests have a 15-second network timeout.
 
 ### Changed
+
+- Box-size inputs, edition options, and shelf dimension labels now use centimetres with 0.1 cm increments. Existing millimetre storage and physical shelf calculations are preserved.
 
 - Updated compatible dependencies, including Angular 20 security patches, Supabase, DOMPurify, and Marked. Replaced the build-tool package with `@angular/build` to remove unused Webpack dependencies. The dependency audit now reports only the existing low-severity Quill HTML-export advisory, which has no published patch.
 

@@ -81,6 +81,19 @@ npm run dev
 
 Open `http://localhost:4200`.
 
+For access from another device on the same network, run the shared WebStorm
+configuration **Kallboard LAN**, or `npm run dev:lan`. It listens on all interfaces
+on port 4200; Angular prints the network URLs in the terminal. Open
+`http://<your-PC-LAN-IP>:4200` on the other device. Stop an existing local server
+on port 4200 before launching this configuration.
+
+On Windows, run `./scripts/enable-lan-firewall.ps1` once from an administrator
+PowerShell to allow TCP 4200 from local subnets. The rule also works when Windows
+classifies the network as Public. Remove it with
+`Remove-NetFirewallRule -Name Kallboard-Dev-LAN-TCP-4200` from an administrator
+PowerShell when no longer needed. Network client isolation can still prevent
+devices from connecting to one another.
+
 ## Commands
 
 - `npm run dev` — start Angular's development server
@@ -109,7 +122,7 @@ erDiagram
 ```
 
 **Adding a game** opens an edition/size selector before creating the owned copy.
-Choose an existing variant or enter custom measurements in millimetres. You can
+Choose an existing variant or enter custom measurements in centimetres (0.1 cm increments). Measurements are stored in millimetres for shelf calculations. You can
 publish a named variant with an optional country for other collectors to use.
 Published variants are immutable; corrections use a new variant, while personal
 adjustments stay on your own copy. No measured variants are fabricated when a

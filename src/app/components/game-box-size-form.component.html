@@ -11,7 +11,7 @@
                 class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink">
           <option [ngValue]="null">Custom size / edition not listed</option>
           @for (size of sizes(); track size.id) {
-            <option [ngValue]="size.id">{{ size.label }}{{ size.country ? ' · ' + size.country : '' }} — {{ size.width_mm }} × {{ size.height_mm }} × {{ size.depth_mm }} mm</option>
+            <option [ngValue]="size.id">{{ size.label }}{{ size.country ? ' · ' + size.country : '' }} — {{ size.width_mm / 10 }} × {{ size.height_mm / 10 }} × {{ size.depth_mm / 10 }} cm</option>
           }
         </select>
       </label>
@@ -25,19 +25,19 @@
         </label>
       }
       <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
-        <label class="grid gap-2 text-sm font-bold">Width (mm)
+        <label class="grid gap-2 text-sm font-bold">Width (cm)
           <input name="width" type="number" [(ngModel)]="dimensions.width" [readonly]="!customize"
-                 min="1" max="2000" step="1" required
+                 min="0.1" max="200" step="0.1" required
                  class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2 read-only:text-muted">
         </label>
-        <label class="grid gap-2 text-sm font-bold">Height (mm)
+        <label class="grid gap-2 text-sm font-bold">Height (cm)
           <input name="height" type="number" [(ngModel)]="dimensions.height" [readonly]="!customize"
-                 min="1" max="2000" step="1" required
+                 min="0.1" max="200" step="0.1" required
                  class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2 read-only:text-muted">
         </label>
-        <label class="grid gap-2 text-sm font-bold">Depth (mm)
+        <label class="grid gap-2 text-sm font-bold">Depth (cm)
           <input name="depth" type="number" [(ngModel)]="dimensions.depth" [readonly]="!customize"
-                 min="1" max="2000" step="1" required
+                 min="0.1" max="200" step="0.1" required
                  class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2 read-only:text-muted">
         </label>
       </div>

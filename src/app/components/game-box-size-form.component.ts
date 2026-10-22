@@ -25,7 +25,7 @@ export class GameBoxSizeFormComponent implements OnChanges {
   readonly loadError = signal('');
   sizeId: string | null = null;
   customize = true;
-  dimensions = { ...estimatedDimensions };
+  dimensions = this.toCentimetres(estimatedDimensions);
   label = '';
   country = '';
   private loadVersion = 0;
@@ -53,19 +53,19 @@ export class GameBoxSizeFormComponent implements OnChanges {
   private resetSelection(): void {
     this.sizeId = this.selectedSizeId;
     this.customize = !!this.customDimensions || !this.sizeId;
-    this.dimensions = { ...(this.customDimensions ?? this.variantDimensions()) };
+    this.dimensions = this.toCentimetres(this.customDimensions ?? this.variantDimensions());
   }
 
   chooseSize(id: string | null): void {
     this.sizeId = id;
     this.customize = !id;
-    this.dimensions = { ...this.variantDimensions() };
+    this.dimensions = this.toCentimetres(this.variantDimensions());
     this.feedback.set('');
   }
 
   toggleCustom(value: boolean): void {
     this.customize = value;
-    if (!value) this.dimensions = { ...this.variantDimensions() };
+    if (!value) this.dimensions = this.toCentimetres(this.variantDimensions());
   }
 
   private variantDimensions(): BoxDimensions {
@@ -73,11 +73,26 @@ export class GameBoxSizeFormComponent implements OnChanges {
     return size ? { width: size.width_mm, height: size.height_mm, depth: size.depth_mm } : estimatedDimensions;
   }
 
+  private toCentimetres(dimensions: BoxDimensions): BoxDimensions {
+    return { width: dimensions.width / 10, height: dimensions.height / 10, depth: dimensions.depth / 10 };
+  }
+
+  private toMillimetres(): BoxDimensions {
+    if (Object.values(this.dimensions).some(value => !Number.isFinite(value) || value < 0.1 || value > 200
+      || Math.abs(value * 10 - Math.round(value * 10)) > 1e-7)) {
+      throw new Error('Enter dimensions between 0.1 and 200 cm, in steps of 0.1 cm.');
+    }
+    // Round only floating-point noise so decimal centimetres remain integer millimetres.
+    const dimensions = { width: Math.round(this.dimensions.width * 10),
+      height: Math.round(this.dimensions.height * 10), depth: Math.round(this.dimensions.depth * 10) };
+    validateDimensions(dimensions);
+    return dimensions;
+  }
+
   submit(): void {
     this.feedback.set('');
     try {
-      if (this.customize) validateDimensions(this.dimensions);
-      this.selectionSave.emit({ sizeId: this.sizeId, customDimensions: this.customize ? { ...this.dimensions } : null });
+      this.selectionSave.emit({ sizeId: this.sizeId, customDimensions: this.customize ? this.toMillimetres() : null });
     } catch (error) { this.feedback.set(this.message(error)); }
   }
 
@@ -85,7 +100,7 @@ export class GameBoxSizeFormComponent implements OnChanges {
     if (this.publishing() || this.saving) return;
     this.publishing.set(true); this.feedback.set('');
     try {
-      const size = await this.catalog.publishSize(this.gameId, this.label, this.country, this.dimensions);
+      const size = await this.catalog.publishSize(this.gameId, this.label, this.country, this.toMillimetres());
       this.sizes.update(sizes => [...sizes, size]);
       this.sizeId = size.id; this.customize = false; this.label = ''; this.country = '';
       this.feedback.set('Size variant published and selected. Save to apply it to your copy.');

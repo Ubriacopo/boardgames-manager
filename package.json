@@ -9,6 +9,7 @@
   "scripts": {
     "ng": "ng",
     "dev": "node scripts/write-angular-env.mjs && ng serve",
+    "dev:lan": "npm run dev -- --host 0.0.0.0 --port 4200",
     "start": "npm run dev",
     "build": "node scripts/write-angular-env.mjs && ng build",
     "test": "ng test",
