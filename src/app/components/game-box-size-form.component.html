@@ -1,0 +1,69 @@
+@if (loading()) {
+  <p role="status" class="py-4 text-muted">Loading box-size variants…</p>
+} @else if (loadError()) {
+  <p role="alert" class="text-red-600">{{ loadError() }}</p>
+  <button mat-stroked-button type="button" (click)="load()">Try again</button>
+} @else {
+  <form #sizeForm="ngForm" (ngSubmit)="submit()" class="grid gap-5">
+    <fieldset [disabled]="saving || publishing()" class="grid min-w-0 gap-5 disabled:opacity-60">
+      <label class="grid gap-2 text-sm font-bold">Edition / box size
+        <select name="size" [ngModel]="sizeId" (ngModelChange)="chooseSize($event)"
+                class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink">
+          <option [ngValue]="null">Custom size / edition not listed</option>
+          @for (size of sizes(); track size.id) {
+            <option [ngValue]="size.id">{{ size.label }}{{ size.country ? ' · ' + size.country : '' }} — {{ size.width_mm }} × {{ size.height_mm }} × {{ size.depth_mm }} mm</option>
+          }
+        </select>
+      </label>
+      @if (!sizes().length) {
+        <p class="m-0 text-sm text-muted">No edition sizes have been defined yet. Enter your measurements below. The initial values are estimates.</p>
+      }
+      @if (sizeId) {
+        <label class="flex items-center gap-3 text-sm">
+          <input name="customize" type="checkbox" class="size-5 accent-brand" [ngModel]="customize" (ngModelChange)="toggleCustom($event)">
+          Customize the dimensions for my copy
+        </label>
+      }
+      <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
+        <label class="grid gap-2 text-sm font-bold">Width (mm)
+          <input name="width" type="number" [(ngModel)]="dimensions.width" [readonly]="!customize"
+                 min="1" max="2000" step="1" required
+                 class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2 read-only:text-muted">
+        </label>
+        <label class="grid gap-2 text-sm font-bold">Height (mm)
+          <input name="height" type="number" [(ngModel)]="dimensions.height" [readonly]="!customize"
+                 min="1" max="2000" step="1" required
+                 class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2 read-only:text-muted">
+        </label>
+        <label class="grid gap-2 text-sm font-bold">Depth (mm)
+          <input name="depth" type="number" [(ngModel)]="dimensions.depth" [readonly]="!customize"
+                 min="1" max="2000" step="1" required
+                 class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2 read-only:text-muted">
+        </label>
+      </div>
+      <p class="m-0 text-sm text-muted">Custom dimensions affect only this copy. Choose a listed size and turn off customization to use its original dimensions again.</p>
+      <details class="rounded-xl border border-line p-4">
+        <summary class="cursor-pointer font-semibold text-brand">Define a reusable edition size</summary>
+        <div class="mt-4 grid gap-3">
+          <p class="m-0 text-sm text-muted">Publish the measurements above for other collectors to choose. Use an edition name such as Retail or Kickstarter and an optional country. Published sizes cannot be edited; private adjustments belong on your copy.</p>
+          <label class="grid gap-2 text-sm font-bold">Edition name
+            <input name="editionLabel" [(ngModel)]="label" maxlength="120" placeholder="e.g. Kickstarter deluxe"
+                   class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2">
+          </label>
+          <label class="grid gap-2 text-sm font-bold">Country / market (optional)
+            <input name="editionCountry" [(ngModel)]="country" maxlength="80" placeholder="e.g. Italy"
+                   class="w-full min-w-0 rounded-lg border border-line bg-canvas px-3 py-2">
+          </label>
+          <button mat-stroked-button type="button" [disabled]="!label.trim() || sizeForm.invalid" (click)="publish()">
+            {{ publishing() ? 'Publishing…' : 'Publish size variant' }}
+          </button>
+        </div>
+      </details>
+      <button mat-flat-button type="submit" [disabled]="sizeForm.invalid" class="justify-self-start">
+        {{ saving ? 'Saving…' : submitLabel }}
+      </button>
+    </fieldset>
+    @if (feedback()) { <p role="status" class="m-0 text-sm text-brand">{{ feedback() }}</p> }
+    @if (error) { <p role="alert" class="m-0 text-red-600">{{ error }}</p> }
+  </form>
+}
