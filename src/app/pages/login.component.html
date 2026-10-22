@@ -1,6 +1,7 @@
 <main class="grid min-h-dvh lg:grid-cols-[1.05fr_.95fr]">
     <section
-            class="relative flex min-h-105 flex-col justify-between overflow-hidden bg-[#10241b] p-6 text-white lg:min-h-dvh lg:p-[clamp(32px,6vw,80px)]">
+            class="relative flex min-h-105 flex-col justify-between overflow-hidden bg-[#10241b] p-6 text-white lg:min-h-dvh
+                   lg:p-[clamp(32px,6vw,80px)]">
         <div class="flex w-max items-center gap-2.5 font-display text-xl font-bold">
             <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white"><mat-icon>casino</mat-icon></span>
             Meeple House
@@ -29,7 +30,8 @@
             </p>
             @if (mode === 'sign-up') {
                 <label class="grid gap-2 text-sm font-bold">Your handle
-                    <input class="social-input" type="text" name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
+                    <input class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
+                           focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" type="text" name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
                            autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="40" pattern="[a-z0-9.]{3,40}" placeholder="e.g. meeple.master" aria-describedby="signup-handle-hint">
                     <span id="signup-handle-hint" class="text-sm font-normal text-muted">Letters, numbers, and dots. Your handle is unique and you can change it later.</span>
                 </label>
@@ -46,13 +48,13 @@
                        type="password" name="password" [(ngModel)]="password" minlength="6" required>
             </label>
             @if (message()) {
-                <p [class.error]="isError">{{ message() }}</p>
+                <p class="[&.error]:text-[#a53525]" [class.error]="isError">{{ message() }}</p>
             }
-            <button mat-flat-button class="primary-action" [disabled]="working() || loginForm.invalid">
+            <button mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" [disabled]="working() || loginForm.invalid">
                 {{ working() ? 'One moment…' : mode === 'sign-in' ? 'Sign in' : 'Create account' }}
                 <mat-icon>arrow_forward</mat-icon>
             </button>
-            <button type="button" class="text-button" [disabled]="working()" (click)="toggle()">
+            <button type="button" class="cursor-pointer border-0 bg-none font-bold text-brand" [disabled]="working()" (click)="toggle()">
                 {{ mode === 'sign-in' ? 'New here? Create an account' : 'Already have an account? Sign in' }}
             </button>
         </form>

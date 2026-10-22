@@ -1,6 +1,7 @@
 <div class="min-h-dvh bg-canvas text-ink">
     @if (auth.session()) {
-        <header class="lg:sticky lg:top-0 lg:z-20 lg:grid lg:min-h-19 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:border-b lg:border-line lg:bg-surface lg:px-[clamp(20px,5vw,76px)]">
+        <header class="lg:sticky lg:top-0 lg:z-20 lg:grid lg:min-h-19 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:border-b
+               lg:border-line lg:bg-surface lg:px-[clamp(20px,5vw,76px)]">
             <a routerLink="/library" class="hidden w-max items-center gap-2.5 font-display text-xl font-bold lg:flex"
                aria-label="Meeple House home">
         <span class="flex size-9 -rotate-3 items-center justify-center rounded-[12px_12px_12px_4px] bg-accent text-white">
@@ -11,7 +12,9 @@
 
             <nav
                     aria-label="Main navigation"
-                    class="fixed inset-x-0 bottom-0 z-50 grid min-h-16 grid-cols-5 items-center border-t border-line bg-surface px-1 py-1 pb-[max(5px,env(safe-area-inset-bottom))] lg:static lg:flex lg:justify-center lg:gap-2 lg:border-0 lg:bg-transparent lg:p-0"
+                    class="fixed inset-x-0 bottom-0 z-50 grid min-h-16 grid-cols-5 items-center border-t border-line bg-surface px-1 py-1
+                           pb-[max(5px,env(safe-area-inset-bottom))] lg:static lg:flex lg:justify-center lg:gap-2 lg:border-0
+                           lg:bg-transparent lg:p-0"
             >
                 <a routerLink="/games" routerLinkActive="bg-mint! text-brand!" aria-label="Discover"
                    class="col-start-1 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
@@ -22,12 +25,15 @@
                     <mat-icon>people</mat-icon><span class="hidden md:block">Friends</span>
                 </a>
                 <a routerLink="/library" routerLinkActive="ring-2 ring-brand" aria-label="My Kallax shelf"
-                   class="col-start-3 -mt-7 flex size-15 items-center justify-center justify-self-center rounded-full border-5 border-canvas bg-emerald-700 text-white shadow-xl lg:mt-0 lg:h-auto lg:w-auto lg:gap-1.5 lg:border-0 lg:px-4 lg:py-2.5 lg:shadow-none">
+                   class="col-start-3 -mt-7 flex size-15 items-center justify-center justify-self-center rounded-full border-5
+                          border-canvas bg-emerald-700 text-white shadow-xl lg:mt-0 lg:h-auto lg:w-auto lg:gap-1.5 lg:border-0 lg:px-4
+                          lg:py-2.5 lg:shadow-none">
                     <mat-icon>grid_view</mat-icon><span class="hidden lg:block">Kallax</span>
                 </a>
                 <button
                     type="button"
-                    class="col-start-4 flex items-center justify-center gap-1.5 rounded-full border-0 bg-transparent px-2 py-2.5 font-semibold text-muted disabled:opacity-45 lg:px-4"
+                    class="col-start-4 flex items-center justify-center gap-1.5 rounded-full border-0 bg-transparent px-2 py-2.5
+                           font-semibold text-muted disabled:opacity-45 lg:px-4"
                     (click)="createSession()"
                     [disabled]="isCreatingSession || !library.games().length"
                     [attr.aria-label]="isCreatingSession ? 'Starting session' : 'Start a session'"

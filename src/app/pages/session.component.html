@@ -20,7 +20,8 @@
             <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 lg:grid-cols-4">
                 @for (item of lobby.session_games; track item.game_id) {
                     <button
-                            class="vote-card grid cursor-pointer gap-3 overflow-hidden rounded-2xl border-3 border-transparent bg-surface pb-4 text-left text-ink"
+                            class="grid cursor-pointer gap-3 overflow-hidden rounded-2xl border-3 border-transparent bg-surface pb-4 text-left
+                                   text-ink [&.my-vote]:border-accent [&.my-vote]:shadow-[0_0_0_4px_rgba(233,106,74,.25)]"
                             (click)="vote(item.game_id)"
                             [class.my-vote]="myVote === item.game_id"
                     >

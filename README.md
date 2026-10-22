@@ -89,15 +89,95 @@ Open `http://localhost:4200`.
 - `npm run backfill:bgg-images` — run the existing BGG image backfill
 - `npm run backfill:search-images` — run the existing search image backfill
 
+## Game catalogue, owned copies, and box sizes
+
+The database separates shared game information from physical copies:
+
+| Table | Purpose |
+| --- | --- |
+| `games` | One shared definition per BGG game: name, release year, BGG link, and fallback cover. |
+| `game_box_sizes` | Reusable box dimensions for an edition and optional country/market. One game can have many variants, such as Retail or Kickstarter deluxe. |
+| `board_games_box_association` | One owned copy, linked to a library and optionally a Kallax cube. Stores the selected size variant, private custom dimensions, favorite flag, capacity units, and shelf order. |
+
+```mermaid
+erDiagram
+    games ||--o{ game_box_sizes : "has variants"
+    games ||--o{ board_games_box_association : "has owned copies"
+    game_box_sizes |o--o{ board_games_box_association : "selected for"
+    libraries ||--o{ board_games_box_association : contains
+    container_box |o--o{ board_games_box_association : "places on shelf"
+```
+
+**Adding a game** opens an edition/size selector before creating the owned copy.
+Choose an existing variant or enter custom measurements in millimetres. You can
+publish a named variant with an optional country for other collectors to use.
+Published variants are immutable; corrections use a new variant, while personal
+adjustments stay on your own copy. No measured variants are fabricated when a
+game has none: the custom-size form explicitly identifies its initial values as
+estimates.
+
+Under an owned game's **Box Dims.** tab, change the variant or customize its
+width, height, and depth. Turning off customization restores the selected
+variant's dimensions. Each copy can use different measurements; use **Add
+another edition or copy** to own several editions of the same game. Kallax
+rendering resolves custom measurements first, then the selected variant.
+
+`20261022142359_normalize_game_catalog_and_box_sizes.sql` renames the old
+`board_games` table to `board_games_box_association`, extracts shared definitions,
+and merges the old placement records into each copy. Existing copy UUIDs,
+favorites, custom dimensions, and placements are preserved. The original rows
+and placements are retained in the private `migration_archive` schema for
+recovery. Older rows without a library remain inaccessible and are not assigned
+to another collector. Existing custom dimensions are not published as shared
+edition sizes.
+
+Collection reads and writes use the new tables; shared collection access remains
+read-only, and writes require ownership. `move_collection_game` handles shelf
+moves and ordering atomically. The size/game composite foreign key prevents a
+copy from choosing a variant belonging to a different game. Maintenance image
+backfills now update `games`. Rebuild/deploy the updated frontend with this
+migration: older builds still refer to the removed public table names.
+
+## UI styling
+
+Use Tailwind utilities in Angular templates for layout, typography, spacing,
+responsive behavior, theme colors, and interaction states, as required by
+`AGENTS.md`. Shared UI such as game spines and crop sliders reuses Angular
+components or directives with Tailwind utilities. Theme values and document
+base styles live in `src/index.css`; `src/App.css` contains only scoped library
+overrides, layered image effects, and the cube-sheet animation.
+
+## Display settings
+
+Under **Profile → Appearance → Display zoom**, choose 100%, 110%, 125%, 150%,
+175%, or 200%. Changes apply immediately to Kallax labels, game and collection
+row text, covers and spacing, and the rest of the interface where supported.
+Game titles wrap and rows grow to keep larger text readable. Row metadata hides
+when space is limited. **Reset to 100%** restores the default.
+
+The preference is saved in this browser and survives reloads; it does not sync
+between devices. It also works alongside browser zoom and your browser's default
+font size. The shelf's existing zoom controls still adjust the shelf separately.
+
 ## Friends and shared collections
 
-The Friends tab lets signed-in collectors search by public handle, request
-friendship, or follow collectors who allow it. Set your display name, handle,
-and connection preference under **Profile → Public profile & friends**.
+The Friends page has **Followed** and **Followers** tabs. Each collector row shows
+a profile picture (or initials), a handle, and a collection link. Use the **+**
+button to find people by handle or name and follow them or send a friend request.
+Incoming requests appear under Followers; sent requests appear under Followed.
+Approved friends appear in both tabs because their connection is mutual.
+
+Set your handle, profile picture, and connection preference under **Profile**.
+Pictures accept JPG, PNG, or WebP files up to 5 MB. They are stored in the public
+`profile-pictures` bucket, with uploads restricted to each user's own folder.
+`20261022134355_profile_pictures.sql` adds the avatar field and upload policy.
+
 Friend requests require acceptance and share collections in both directions.
-Following shares the followed collector's collection in one direction. Switching
-to approval mode stops existing followers from accessing your collection;
-approved friendships remain connected. Connections can be removed in Friends.
+Following shares the followed collector's collection in one direction. A follower
+who you do not follow back can be followed or sent a friend request from their
+row to enable collection access. Switching to approval mode stops existing
+followers from accessing your collection; approved friendships remain connected.
+Connections can be removed from either tab.
 
 Shared collections provide a Kallax view with selectable cubes and a searchable
 game list. They are read-only, including game placement and shelf layout.
@@ -146,5 +226,7 @@ original proportions by default in the crop editor; the page fits logos into
 rounded bounds without cropping. Until a logo is uploaded, the page uses its
 cover. Shelves use box-side artwork, fall back to wallpaper, then to the cover
 when neither is available. The same rules apply to friends' shelves.
+Each game box shows its name in readable 0.85rem uppercase text on a centered, rounded white label,
+with a border in the active theme’s brand color, following the box's vertical or horizontal orientation.
 `20261022122733_game_logos_and_box_sides.sql` adds the logo and box-side tables
 with the same admin-only write policies as existing artwork.

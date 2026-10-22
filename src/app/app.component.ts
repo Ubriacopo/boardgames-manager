@@ -8,6 +8,7 @@ import { AuthService } from './services/auth.service';
 import { LibraryService } from './services/library.service';
 import { VotingSessionService } from './services/voting-session.service';
 import { ThemeService } from './services/theme.service';
+import { DisplaySettingsService } from './services/display-settings.service';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ export class AppComponent implements OnInit {
     readonly auth: AuthService,
     readonly library: LibraryService,
     readonly theme: ThemeService,
+    readonly display: DisplaySettingsService,
     private readonly votingSessions: VotingSessionService,
     private readonly snackBar: MatSnackBar,
   ) {}

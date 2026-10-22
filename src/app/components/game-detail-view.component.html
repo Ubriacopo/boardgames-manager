@@ -1,24 +1,30 @@
-<div class="game-detail-stage">
-    <div class="game-detail-wallpaper" [class.is-fallback]="!wallpaperUrl()" aria-hidden="true">
+<div class="relative isolate bg-canvas">
+    <div class="game-detail-wallpaper pointer-events-none absolute inset-[0_0_auto] h-[min(760px,_85dvh)] min-h-[480px]
+           overflow-hidden bg-[radial-gradient(ellipse_at_70%_10%,_var(--mint),_transparent_75%)] after:absolute
+           after:inset-0 after:content-[''] max-[600px]:h-[560px] max-[600px]:min-h-0" [class.is-fallback]="!wallpaperUrl()" aria-hidden="true">
         @if (wallpaperUrl() || coverUrl(); as wallpaper) {
-            <img [src]="wallpaper" alt="" fetchpriority="high">
+            <img class="h-full w-full object-cover object-center opacity-80 [.is-fallback_&]:scale-105 [.is-fallback_&]:opacity-50
+                   [.is-fallback_&]:[filter:blur(12px)_saturate(.8)]" [src]="wallpaper" alt="" fetchpriority="high">
         }
     </div>
-<main class="game-detail-content mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
+<main class="relative z-1 mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)]
+       lg:px-16 lg:py-14">
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button mat-button type="button" (click)="back.emit()">
             <mat-icon>arrow_back</mat-icon>
             {{ backLabel }}
         </button>
         @if (auth.isAdmin() && coverGameId) {
-            <div class="game-artwork-actions" role="group" aria-label="Game artwork" tabindex="0">
-                <button mat-stroked-button type="button" class="game-wallpaper-edit" (click)="editCover()">
+            <div class="flex max-w-full min-w-0 [scrollbar-width:thin] [scrollbar-color:var(--forest)_var(--line)] flex-nowrap gap-2
+                   overflow-x-auto overscroll-x-contain px-0.5 pt-1 pb-2 focus-visible:rounded-lg focus-visible:outline-2
+                   focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" role="group" aria-label="Game artwork" tabindex="0">
+                <button mat-stroked-button type="button" class="flex-none bg-[color-mix(in_srgb,_var(--paper)_85%,_transparent)]! whitespace-nowrap backdrop-blur-[8px]" (click)="editCover()">
                     <mat-icon>photo_library</mat-icon>Edit cover
                 </button>
-                <button mat-stroked-button type="button" class="game-wallpaper-edit" (click)="editWallpaper()">
+                <button mat-stroked-button type="button" class="flex-none bg-[color-mix(in_srgb,_var(--paper)_85%,_transparent)]! whitespace-nowrap backdrop-blur-[8px]" (click)="editWallpaper()">
                     <mat-icon>wallpaper</mat-icon>{{ wallpaperUrl() ? 'Edit wallpaper' : 'Add wallpaper' }}
                 </button>
-                <button mat-stroked-button type="button" class="game-wallpaper-edit" (click)="editBoxSide()">
+                <button mat-stroked-button type="button" class="flex-none bg-[color-mix(in_srgb,_var(--paper)_85%,_transparent)]! whitespace-nowrap backdrop-blur-[8px]" (click)="editBoxSide()">
                     <mat-icon>view_week</mat-icon>{{ hasBoxSide() ? 'Edit box side' : 'Add box side' }}
                 </button>
             </div>
@@ -34,22 +40,23 @@
         @if (!owned) {
             <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
                     (click)="primaryAction.emit()" [disabled]="actionDisabled"
-                    [attr.aria-label]="actionDisabled ? name + ' is already in your library' : 'Add ' + name + ' to your library'"
-                    [title]="actionDisabled ? 'Already in your library' : actionLabel">
-                <mat-icon>{{ actionDisabled ? 'check' : 'library_add' }}</mat-icon>
+                    [attr.aria-label]="actionLabel + ': ' + name"
+                    [title]="actionLabel">
+                <mat-icon>library_add</mat-icon>
             </button>
         }
     </div>
     <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
-        <div class="game-logo-slot">
-            <div class="game-logo-artwork" [style.width]="logoWidth()">
+        <div class="flex w-full max-w-[380px] justify-center self-start justify-self-center">
+            <div class="relative max-w-full overflow-hidden rounded-3xl bg-transparent" [style.width]="logoWidth()">
                 @if (logoUrl(); as logo) {
-                    <img class="game-logo-image" [src]="logo" [alt]="name + ' logo'" (load)="onLogoLoad($event)">
+                    <img class="block h-auto w-full rounded-3xl bg-transparent" [src]="logo" [alt]="name + ' logo'" (load)="onLogoLoad($event)">
                 } @else {
-                    <span class="game-logo-placeholder">{{ name.slice(0, 1) }}</span>
+                    <span class="flex aspect-square w-full items-center justify-center bg-mint font-display text-8xl">{{ name.slice(0, 1) }}</span>
                 }
                 @if (auth.isAdmin() && coverGameId) {
-                    <button type="button" class="game-logo-edit" (click)="editLogo()" [attr.aria-label]="'Update logo for ' + name">
+                    <button type="button" class="absolute inset-0 flex w-full items-end justify-center border-0 bg-transparent p-3 focus-visible:rounded-3xl
+                           focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-brand focus-visible:outline-solid" (click)="editLogo()" [attr.aria-label]="'Update logo for ' + name">
                         <span class="sr-only">Edit {{ name }} logo</span>
                     </button>
                 }
@@ -106,7 +113,8 @@
             }
           </span>
                     <button type="button" (click)="detailTab = 'ratings'"
-                            class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2 focus:outline-accent"
+                            class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2
+                                   focus:outline-accent"
                             aria-label="View ratings and reviews">
                         <mat-icon class="text-accent">reviews</mat-icon>
                         <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
@@ -135,22 +143,26 @@
             }
 
             @if (error) {
-                <p class="error my-5">{{ error }}</p>
+                <p class="my-5 text-[#a53525]">{{ error }}</p>
             }
 
             <div class="flex flex-wrap gap-3">
                 @if (owned) {
-                    <a mat-flat-button class="primary-action" [routerLink]="['/reviews', bggId, 'write']">
+                    <a mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" [routerLink]="['/reviews', bggId, 'write']">
                         <mat-icon>rate_review</mat-icon>
                         Leave a review
                     </a>
+                } @else {
+                    <button mat-flat-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
+                        <mat-icon>library_add</mat-icon>{{ actionLabel }}
+                    </button>
                 }
             </div>
             } @else if (detailTab === 'ratings') {
                 <section aria-label="BoardGameGeek comments">
                     <header class="mb-5 border-b border-line pb-4">
                         <div>
-                            <p class="eyebrow">BoardGameGeek</p>
+                            <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">BoardGameGeek</p>
                             <h2 class="font-display text-3xl">Community comments</h2>
                         </div>
                     </header>
@@ -174,7 +186,7 @@
                 <section class="mt-10" aria-label="Meeple House reviews">
                     <header class="mb-5 border-b border-line pb-4">
                         <div>
-                            <p class="eyebrow">Meeple House</p>
+                            <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Meeple House</p>
                             <h2 class="font-display text-3xl">Reviews</h2>
                         </div>
                     </header>
@@ -185,7 +197,10 @@
                                     <strong>Meeple House member</strong>
                                     <span class="text-accent">★ {{ review.rating }}/10</span>
                                 </div>
-                                <div class="review-markdown mb-3 leading-6 text-muted" [innerHTML]="renderReview(review.body)"></div>
+                                <div class="mb-3 leading-6 text-muted [&_>_:first-child]:mt-0 [&_>_:last-child]:mb-0 [&_a]:text-accent [&_a]:underline
+                                       [&_blockquote]:ml-0 [&_blockquote]:border-l-3 [&_blockquote]:border-l-accent [&_blockquote]:pl-3
+                                       [&_code]:rounded [&_code]:bg-mint [&_code]:px-1 [&_code]:py-px [&_pre]:overflow-x-auto [&_pre]:rounded-lg
+                                       [&_pre]:bg-mint [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0" [innerHTML]="renderReview(review.body)"></div>
                                 <time class="text-xs text-muted" [attr.datetime]="review.updated_at">
                                     Updated {{ review.updated_at | date:'mediumDate' }}
                                 </time>
@@ -195,7 +210,7 @@
                         }
                     </div>
                     @if (owned) {
-                        <a mat-flat-button class="primary-action mt-5" [routerLink]="['/reviews', bggId, 'write']">
+                        <a mat-flat-button class="mt-5 [--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" [routerLink]="['/reviews', bggId, 'write']">
                             <mat-icon>rate_review</mat-icon>
                             Leave a review
                         </a>
@@ -204,33 +219,15 @@
             } @else {
                 <section aria-label="Box dimensions">
                     <header class="mb-5 border-b border-line pb-4">
-                        <p class="eyebrow">Physical copy</p>
+                        <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Physical copy</p>
                         <h2 class="font-display text-3xl">Box dimensions</h2>
                         <p class="text-sm text-muted">Used to size this game in your Kallax. Values are in millimetres.</p>
                     </header>
-                    <form class="flex flex-wrap items-end gap-4" (ngSubmit)="saveDimensions()">
-                        <label class="grid gap-1 text-sm font-bold">
-                            Width
-                            <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="width"
-                                   [(ngModel)]="dimensions.width" min="1" max="2000" step="1" required>
-                        </label>
-                        <label class="grid gap-1 text-sm font-bold">
-                            Height
-                            <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="height"
-                                   [(ngModel)]="dimensions.height" min="1" max="2000" step="1" required>
-                        </label>
-                        <label class="grid gap-1 text-sm font-bold">
-                            Depth
-                            <input class="w-28 rounded-lg border border-line bg-page px-3 py-2" type="number" name="depth"
-                                   [(ngModel)]="dimensions.depth" min="1" max="2000" step="1" required>
-                        </label>
-                        <button mat-flat-button class="primary-action" type="submit" [disabled]="savingDimensions">
-                            <mat-icon>save</mat-icon>
-                            {{ savingDimensions ? 'Saving…' : 'Save dimensions' }}
-                        </button>
-                    </form>
-                    @if (dimensionsError) {
-                        <p class="error mt-3">{{ dimensionsError }}</p>
+                    <app-game-box-size-form [gameId]="gameDefinitionId" [selectedSizeId]="selectedSizeId"
+                        [customDimensions]="customDimensions" [saving]="savingDimensions" [error]="dimensionsError"
+                        (selectionSave)="boxSizeSave.emit($event)" />
+                    @if (bggId) {
+                        <a mat-stroked-button class="mt-5" [routerLink]="['/games/discover', bggId]">Add another edition or copy</a>
                     }
                 </section>
             }

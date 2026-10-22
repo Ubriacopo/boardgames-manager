@@ -1,3 +1,4 @@
+import { CropSliderDirective } from './crop-slider.directive';
 import { Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -9,7 +10,7 @@ import { cropRectangle } from '../../utils/imageCrop';
 
 @Component({
   standalone: true,
-  imports: [DecimalPipe, FormsModule, MatDialogModule, MatButtonModule, MatExpansionModule],
+  imports: [CropSliderDirective, DecimalPipe, FormsModule, MatDialogModule, MatButtonModule, MatExpansionModule],
   templateUrl: './cover-editor.component.html',
 })
 export class CoverEditorComponent implements OnInit, OnDestroy {

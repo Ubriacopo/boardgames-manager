@@ -24,7 +24,7 @@ if (!bggAccessToken) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const { data: games, error } = await supabase
-  .from('board_games')
+  .from('games')
   .select('id, name, bgg_id, bgg_url, image_url')
   .is('image_url', null)
   .order('name', { ascending: true });
@@ -52,7 +52,7 @@ for (let index = 0; index < gamesWithBggId.length; index += chunkSize) {
     }
 
     const { error: updateError } = await supabase
-      .from('board_games')
+      .from('games')
       .update({ image_url: imageUrl })
       .eq('id', game.id);
 

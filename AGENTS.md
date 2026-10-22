@@ -34,6 +34,12 @@ exists; inspect the implementation before treating a roadmap item as absent.
 - `src/utils/`: typed Supabase client, BGG metadata helpers, and Markdown rendering.
 - `src/index.css` and `src/App.css`: global styling; both are registered in
   `angular.json`.
+- Game storage uses `games` for shared definitions, `game_box_sizes` for edition/
+  country variants, and `board_games_box_association` for owned copies, shelf
+  placement/order, favorites, and private dimension overrides. `BoardGame` is a
+  presentation projection of these records; `GamePlacement` is derived from a
+  copy rather than a separate table. Do not reintroduce duplicated game metadata
+  or placement storage on owned copies.
 - `supabase/migrations/`: versioned SQL schema and access policies.
 - `public/bgg-data/boardgames_ranks.csv`: bundled BGG catalog data.
 - `scripts/`: environment generation and image backfill utilities.
@@ -78,6 +84,29 @@ are currently ignored. Do not change dependency or lockfile policy incidentally.
 - Preserve the existing Markdown sanitization path when changing review display.
 - Keep changes focused. Update documentation when behavior or setup changes, and
   distinguish planned features from completed changes in the changelog.
+
+## Styling: Tailwind first
+
+- Use Tailwind utilities in Angular templates wherever practical. This is the
+  required default for new UI and changes to existing UI, even when nearby code
+  uses custom CSS.
+- Express layout, spacing, sizing, typography, colors, borders, responsive rules,
+  interaction states, and container queries with utilities and variants. Use
+  arbitrary values or CSS-variable utilities when the standard scale does not
+  cover the design.
+- Reuse existing theme tokens so styles follow the selected theme. Prefer
+  relative units for text and controls that should follow display zoom.
+- Do not add custom classes, inline component styles, global selectors, or
+  `@apply` blocks merely to group declarations that utilities can express.
+  Reuse Angular components for repeated UI patterns.
+- Reserve custom CSS for shared theme variables, base styles, third-party
+  integration overrides, or behavior that utilities cannot reasonably express.
+  Keep each exception minimal and explain why it is needed in a nearby comment.
+- When touching an existing custom rule, move the affected styling into template
+  utilities where practical and remove obsolete declarations. Keep this cleanup
+  scoped to the requested change.
+- Before finishing UI work, review added or modified CSS against these rules and
+  replace avoidable custom CSS with Tailwind utilities.
 
 ## Backend work
 

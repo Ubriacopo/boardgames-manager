@@ -1,73 +1,116 @@
 <main class="mx-auto max-w-5xl px-5 py-10 pb-28 lg:px-12">
-  <header class="mb-8">
-    <p class="eyebrow">Better together</p>
-    <h1 class="font-display text-5xl font-bold">Friends</h1>
-    <p class="mt-3 text-muted">Find your people and explore what’s on their shelves.</p>
-    <a routerLink="/profile" class="mt-3 inline-block font-semibold text-brand">Edit your public handle and connection preferences</a>
+  <header class="mb-7 flex items-center justify-between gap-4">
+    <div>
+      <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Better together</p>
+      <h1 class="font-display text-5xl font-bold">Friends</h1>
+      <p class="mt-3 text-muted">Your people and their collections.</p>
+    </div>
+    <div class="flex shrink-0 items-center gap-2">
+      <button mat-icon-button type="button" [disabled]="loading() || busy()" (click)="ngOnInit()" aria-label="Refresh connections" title="Refresh connections"><mat-icon>refresh</mat-icon></button>
+      <button mat-mini-fab type="button" class="!bg-accent !text-white" [disabled]="loading()" (click)="openAddFriend()" aria-label="Add a friend" title="Add a friend"><mat-icon>add</mat-icon></button>
+    </div>
   </header>
   @if (error()) { <p role="alert" class="mb-5 rounded-xl border border-line p-4">{{ error() }}</p> }
   @if (notice()) { <p role="status" class="mb-5 rounded-xl bg-mint p-4 text-brand">{{ notice() }}</p> }
   @if (loading()) { <p role="status">Loading your connections…</p> }
   @else {
-    <section class="social-panel">
-      <h2 class="font-display text-2xl">Find collectors</h2>
-      <form (ngSubmit)="search()" class="mt-4 flex flex-wrap gap-3">
-        <label class="min-w-0 flex-1">
-          <span class="sr-only">Search by public handle</span>
-          <input class="social-input" type="search" name="query" [(ngModel)]="query" placeholder="Search by @handle" minlength="2" maxlength="41" required>
-        </label>
-        <button mat-flat-button type="submit" [disabled]="searching() || query.trim().length < 2">{{ searching() ? 'Searching…' : 'Search' }}</button>
-      </form>
-      <p class="mt-2 text-sm text-muted">Use at least two letters. Similar handles and display names are included.</p>
-      @for (person of results; track person.id) {
-        <article class="social-person">
-          <div class="min-w-0"><strong class="block truncate">{{ person.display_name }}</strong><span class="break-all text-sm text-muted">@{{ person.handle }}</span></div>
-          @if (existing(person); as connection) {
-            @if (canBrowse(connection)) { <a mat-stroked-button [routerLink]="['/friends', person.id]">View collection</a> }
-            @else { <span class="text-sm text-muted">{{ connection.status === 'pending' ? 'Request pending' : 'Approval now required' }}</span> }
-          } @else {
-            <button mat-stroked-button type="button" [disabled]="busy()" (click)="connect(person)">{{ person.connection_mode === 'follow' ? 'Follow' : 'Add friend' }}</button>
+    <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="selectedTab.set($event)" animationDuration="0ms" mat-stretch-tabs="false">
+      <mat-tab>
+        <ng-template mat-tab-label>Followed <span class="ml-2 min-w-6 rounded-full bg-mint px-[7px] py-0.5 text-xs text-brand">{{ followed.length }}</span></ng-template>
+        <section class="pt-4" aria-label="Collectors you follow">
+          @for (connection of followed; track connection.id) {
+            <ng-container [ngTemplateOutlet]="connectionRow" [ngTemplateOutletContext]="{ $implicit: connection, direction: 'followed' }" />
+          } @empty {
+            <div class="mb-6 rounded-3xl border border-line bg-surface p-[clamp(20px,_4vw,_32px)] py-10 text-center">
+              <mat-icon class="mb-3 text-accent">people_outline</mat-icon>
+              <p class="text-muted">Follow collectors or add friends to explore their games.</p>
+              <button mat-stroked-button type="button" (click)="openAddFriend()"><mat-icon>add</mat-icon>Add a friend</button>
+            </div>
           }
-        </article>
-      } @empty { @if (searched() && !searching()) { <p class="mt-5 text-muted">No collectors found. Check their public handle.</p> } }
-    </section>
-
-    <section class="social-panel">
-      <h2 class="font-display text-2xl">Friend requests</h2>
-      @for (connection of incoming; track connection.id) {
-        <article class="social-person">
-          <div><strong>{{ other(connection)?.display_name }}</strong><p class="text-sm text-muted">@{{ other(connection)?.handle }}</p></div>
-          <div class="flex flex-wrap gap-2">
-            <button mat-flat-button [disabled]="busy()" (click)="accept(connection)">Accept</button>
-            <button mat-stroked-button [disabled]="busy()" (click)="remove(connection)">Decline</button>
-          </div>
-        </article>
-      } @empty { <p class="mt-4 text-muted">No incoming requests.</p> }
-      @for (connection of outgoing; track connection.id) {
-        <article class="social-person"><div><strong>{{ other(connection)?.display_name }}</strong><p class="text-sm text-muted">Request pending · @{{ other(connection)?.handle }}</p></div><button mat-stroked-button [disabled]="busy()" (click)="remove(connection)">Cancel request</button></article>
-      }
-    </section>
-
-    <section class="social-panel">
-      <h2 class="font-display text-2xl">Friends &amp; following</h2>
-      @for (connection of connected; track connection.id) {
-        <article class="social-person">
-          <div class="min-w-0"><strong class="block truncate">{{ other(connection)?.display_name }}</strong><p class="break-all text-sm text-muted">@{{ other(connection)?.handle }} · {{ connection.kind === 'friend' ? 'Friend' : 'Following' }}</p></div>
-          <div class="flex flex-wrap gap-2">
-            @if (canBrowse(connection)) { <a mat-flat-button [routerLink]="['/friends', other(connection)?.id]">View collection</a> }
-            @else { <span class="text-sm text-muted">This collector now requires approval.</span> }
-            <button mat-stroked-button [disabled]="busy()" (click)="remove(connection)">{{ connection.kind === 'friend' ? 'Remove friend' : 'Unfollow' }}</button>
-          </div>
-        </article>
-      } @empty { <p class="mt-4 text-muted">Your next game night starts here. Search for a collector to connect.</p> }
-    </section>
-    <section class="social-panel">
-      <h2 class="font-display text-2xl">Followers</h2>
-      <p class="mt-2 text-sm text-muted">Following is one way. Follow someone back to see their collection, or send a friend request if they require approval.</p>
-      @for (connection of followers; track connection.id) {
-        <article class="social-person"><div><strong>{{ other(connection)?.display_name }}</strong><p class="break-all text-sm text-muted">@{{ other(connection)?.handle }}</p></div><button mat-stroked-button [disabled]="busy()" (click)="remove(connection)">Remove follower</button></article>
-      } @empty { <p class="mt-4 text-muted">No followers yet.</p> }
-    </section>
-    <button mat-stroked-button type="button" [disabled]="busy()" (click)="ngOnInit()">Refresh connections</button>
+          @if (outgoing.length) {
+            <section class="mt-6 mb-6 rounded-3xl border border-line bg-surface p-[clamp(20px,_4vw,_32px)]" aria-label="Sent friend requests">
+              <h2 class="font-display text-2xl">Pending requests</h2>
+              @for (connection of outgoing; track connection.id) {
+                @if (other(connection); as person) {
+                  <article class="flex flex-wrap items-center justify-between gap-4 border-b border-b-line px-0 py-4.5 last:[border-bottom:0]">
+                    <div class="flex min-w-0 [flex:1_1_180px] items-center gap-3.5"><app-profile-avatar [profile]="person" /><div class="min-w-0"><strong>{{ person.display_name }}</strong><p class="m-0 text-sm break-all text-muted">@{{ person.handle }} · Request pending</p></div></div>
+                    <button mat-stroked-button type="button" [disabled]="busy()" (click)="remove(connection)">Cancel request</button>
+                  </article>
+                }
+              }
+            </section>
+          }
+        </section>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>Followers <span class="ml-2 min-w-6 rounded-full bg-mint px-[7px] py-0.5 text-xs text-brand">{{ followers.length }}</span>@if (incoming.length) { <span class="ml-2 text-xs text-brand">{{ incoming.length }} new</span> }</ng-template>
+        <section class="pt-4" aria-label="Your followers">
+          @if (incoming.length) {
+            <section class="mb-6 rounded-3xl border border-line bg-surface p-[clamp(20px,_4vw,_32px)]" aria-label="Incoming friend requests">
+              <h2 class="font-display text-2xl">Friend requests</h2>
+              @for (connection of incoming; track connection.id) {
+                @if (other(connection); as person) {
+                  <article class="flex flex-wrap items-center justify-between gap-4 border-b border-b-line px-0 py-4.5 last:[border-bottom:0]">
+                    <div class="flex min-w-0 [flex:1_1_180px] items-center gap-3.5"><app-profile-avatar [profile]="person" /><div class="min-w-0"><strong>{{ person.display_name }}</strong><p class="m-0 text-sm break-all text-muted">@{{ person.handle }}</p></div></div>
+                    <div class="flex gap-2"><button mat-flat-button type="button" [disabled]="busy()" (click)="accept(connection)">Accept</button><button mat-stroked-button type="button" [disabled]="busy()" (click)="remove(connection)">Decline</button></div>
+                  </article>
+                }
+              }
+            </section>
+          }
+          @for (connection of followers; track connection.id) {
+            <ng-container [ngTemplateOutlet]="connectionRow" [ngTemplateOutletContext]="{ $implicit: connection, direction: 'followers' }" />
+          } @empty {
+            <div class="mb-6 rounded-3xl border border-line bg-surface p-[clamp(20px,_4vw,_32px)] py-10 text-center"><p class="m-0 text-muted">No followers yet. Share your handle so friends can find you.</p><a routerLink="/profile" class="mt-3 inline-block font-semibold text-brand">View your profile</a></div>
+          }
+        </section>
+      </mat-tab>
+    </mat-tab-group>
   }
 </main>
+
+<ng-template #connectionRow let-connection let-direction="direction">
+  @if (other(connection); as person) {
+    <article class="mb-3 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-line bg-surface px-5 py-4.5
+           max-[600px]:p-4">
+      <div class="flex min-w-0 [flex:1_1_180px] items-center gap-3.5">
+        <app-profile-avatar [profile]="person" />
+        <div class="min-w-0"><strong class="block truncate">{{ person.display_name }}</strong><p class="m-0 text-sm break-all text-muted">@{{ person.handle }} · {{ connection.kind === 'friend' ? 'Friend' : direction === 'followed' ? 'Following' : 'Follows you' }}</p></div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 max-[600px]:w-full">
+        <a mat-stroked-button [routerLink]="canBrowse(person) ? ['/friends', person.id] : null" [disabled]="!canBrowse(person)"><mat-icon>inventory_2</mat-icon>View collection</a>
+        @if (!canBrowse(person)) {
+          @if (pendingFor(person)) { <span class="text-sm text-muted">Friend request pending</span> }
+          @else { <button mat-flat-button type="button" [disabled]="busy()" (click)="connect(person)">{{ person.connection_mode === 'follow' ? 'Follow back' : 'Request access' }}</button> }
+        }
+        <button mat-icon-button type="button" [disabled]="busy()" (click)="remove(connection)"
+                [attr.aria-label]="(connection.kind === 'friend' ? 'Remove friend ' : direction === 'followed' ? 'Unfollow ' : 'Remove follower ') + person.handle"
+                [title]="connection.kind === 'friend' ? 'Remove friend' : direction === 'followed' ? 'Unfollow' : 'Remove follower'"><mat-icon>person_remove</mat-icon></button>
+      </div>
+      @if (!canBrowse(person)) { <p class="m-0 w-full text-xs text-muted">Follow this collector or get their approval to view their collection.</p> }
+    </article>
+  }
+</ng-template>
+
+<ng-template #addFriendDialog>
+  <h2 mat-dialog-title>Add a friend</h2>
+  <mat-dialog-content>
+    <form (ngSubmit)="search()" class="flex flex-wrap gap-3">
+      <label class="min-w-0 flex-1"><span class="sr-only">Search by handle or name</span><input class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
+             focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" type="search" name="query" [(ngModel)]="query" placeholder="Search by @handle or name" minlength="2" maxlength="41" required></label>
+      <button mat-flat-button type="submit" [disabled]="searching() || query.trim().length < 2">{{ searching() ? 'Searching…' : 'Search' }}</button>
+    </form>
+    <p class="mt-2 text-sm text-muted">Use at least two letters. Similar handles and names are included.</p>
+    @if (error()) { <p role="alert">{{ error() }}</p> }
+    @if (notice()) { <p role="status" class="text-brand">{{ notice() }}</p> }
+    @for (person of results; track person.id) {
+      <article class="flex flex-wrap items-center justify-between gap-4 border-b border-b-line px-0 py-4.5 last:[border-bottom:0]">
+        <div class="flex min-w-0 [flex:1_1_180px] items-center gap-3.5"><app-profile-avatar [profile]="person" /><div class="min-w-0"><strong class="block truncate">{{ person.display_name }}</strong><span class="text-sm break-all text-muted">@{{ person.handle }}</span></div></div>
+        @if (canBrowse(person)) { <a mat-stroked-button [routerLink]="['/friends', person.id]">View collection</a> }
+        @else if (pendingFor(person)) { <span class="text-sm text-muted">Request pending</span> }
+        @else { <button mat-stroked-button type="button" [disabled]="busy()" (click)="connect(person)">{{ person.connection_mode === 'follow' ? 'Follow' : 'Add friend' }}</button> }
+      </article>
+    } @empty { @if (searched() && !searching()) { <p class="mt-5 text-muted">No collectors found. Check their public handle.</p> } }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end"><button mat-button type="button" mat-dialog-close>Done</button></mat-dialog-actions>
+</ng-template>

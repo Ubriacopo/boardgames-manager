@@ -16,6 +16,7 @@ export class GameListRowComponent {
     @Input({required: true}) year: number | null = null;
     @Input({required: true}) link: unknown[] = [];
     @Input() imageUrl: string | null = null;
+    @Input() edition: string | null = null;
     @Input() category = '';
     @Input() location = '';
     @Input() rank: number | null = null;

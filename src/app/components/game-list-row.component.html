@@ -1,16 +1,26 @@
-<div class="swipe-row-shell mt-0.5 mb-0.5"
+<div class="@container relative mt-0.5 mb-0.5 overflow-hidden rounded-[10px] bg-surface transition-[background]
+       duration-120 ease-[ease] [&.reveal-delete]:bg-[#8f2639] [&.reveal-favorite]:bg-[#287f82]"
      [class.reveal-delete]="swipeDirection === 'delete'"
      [class.reveal-favorite]="swipeDirection === 'favorite'">
     @if (draggable) {
-        <span class="swipe-action swipe-action-delete" aria-hidden="true">
-      <mat-icon>delete</mat-icon><small>Remove</small>
+        <span class="absolute top-0 bottom-0 left-0 flex items-center justify-start gap-1.5 px-4.5 py-0 font-bold text-white
+               opacity-0 transition-opacity duration-120 ease-[ease] max-[650px]:px-[13px] max-[650px]:py-0
+               [.reveal-delete_&]:opacity-100" aria-hidden="true">
+      <mat-icon class="size-[22px]!">delete</mat-icon><small class="text-[.72rem] max-[650px]:hidden">Remove</small>
     </span>
-        <span class="swipe-action swipe-action-favorite" aria-hidden="true">
-      <small>Favorite</small><mat-icon>favorite</mat-icon>
+        <span class="absolute top-0 right-0 bottom-0 flex items-center justify-end gap-1.5 px-4.5 py-0 font-bold text-white
+               opacity-0 transition-opacity duration-120 ease-[ease] max-[650px]:px-[13px] max-[650px]:py-0
+               [.reveal-favorite_&]:opacity-100" aria-hidden="true">
+      <small class="text-[.72rem] max-[650px]:hidden">Favorite</small><mat-icon class="size-[22px]!">favorite</mat-icon>
     </span>
     }
 
-    <article class="recent-game-row relative" [class.is-favorite]="favorite"
+    <article class="relative grid min-h-[4.375rem] grid-cols-[3.625rem_minmax(0,_1fr)_minmax(6.875rem,_11.25rem)_4.5rem_1.5rem]
+           items-center gap-3.5 rounded-[10px] border border-transparent bg-surface py-1.5 pr-3 pl-1.5 transition-colors
+           duration-150 ease-[ease] hover:border-line hover:bg-mint max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_1.5rem]
+           max-[650px]:gap-2.5 @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_1.5rem] @max-[40rem]:gap-2.5
+           [&.cdk-drag]:cursor-grab [&.cdk-drag]:touch-pan-y [&.cdk-drag]:select-none [&.cdk-drag]:active:cursor-grabbing
+           [&.cdk-drag]:active:transition-none [&.cdk-drag-preview]:shadow-[0_16px_35px_rgba(0,0,0,.45)]" [class.is-favorite]="favorite"
              [class.!cursor-pointer]="!draggable"
              cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable"
              (cdkDragMoved)="dragMoved.emit($event)" (cdkDragEnded)="dragEnded.emit($event)">
@@ -19,17 +29,19 @@
             <span class="sr-only">View details for {{ name }}</span>
         </a>
 
-        <span class="recent-game-cover">
+        <span class="flex aspect-square items-center justify-center overflow-hidden rounded-md bg-mint font-display text-2xl">
       @if (imageUrl) {
-          <img [src]="imageUrl" [alt]="name + ' cover'" loading="lazy">
+          <img class="h-full w-full object-cover" [src]="imageUrl" [alt]="name + ' cover'" loading="lazy">
       } @else {
           {{ name.slice(0, 1) }}
       }
     </span>
-        <span class="recent-game-main">
-      <strong>{{ name }}</strong>
-      <small>
+        <span class="grid min-w-0">
+      <strong class="wrap-anywhere [.is-favorite_&]:after:ml-2 [.is-favorite_&]:after:text-[#4a9da0]
+             [.is-favorite_&]:after:content-['★']">{{ name }}</strong>
+      <small class="text-[.76rem] wrap-anywhere text-muted">
         {{ year ?? 'Year unknown' }}
+          @if (edition) { · {{ edition }} }
           @if (category) {
               · {{ category }}
           }
@@ -39,13 +51,13 @@
       </small>
     </span>
         @if (location) {
-            <span class="recent-game-location"><mat-icon>inventory_2</mat-icon>
+            <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base!">inventory_2</mat-icon>
                 {{ location }}</span>
         } @else {
-            <span class="recent-game-location"><mat-icon>leaderboard</mat-icon>#{{ rank ?? '—' }}</span>
+            <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base!">leaderboard</mat-icon>#{{ rank ?? '—' }}</span>
         }
         @if (rating) {
-            <span class="recent-game-rating"><mat-icon>star</mat-icon>
+            <span class="flex items-center justify-end gap-[5px] text-[.78rem] font-bold max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base! text-[#f5b942]">star</mat-icon>
                 {{ rating | number:'1.1-1' }}</span>
         }
         @if (actionLink) {
@@ -54,7 +66,7 @@
                 <mat-icon>{{ actionIcon }}</mat-icon>
             </a>
         } @else {
-            <mat-icon class="recent-game-arrow">chevron_right</mat-icon>
+            <mat-icon class="text-muted">chevron_right</mat-icon>
         }
     </article>
 </div>

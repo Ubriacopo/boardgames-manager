@@ -1,3 +1,4 @@
+import { GameSpineComponent } from '../components/game-spine.component';
 import {DecimalPipe} from '@angular/common';
 import {Component, computed, HostListener} from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -24,6 +25,7 @@ import {GameListRowComponent} from '../components/game-list-row.component';
 @Component({
     standalone: true,
     imports: [
+        GameSpineComponent,
         DecimalPipe,
         FormsModule,
         CdkDrag,

@@ -4,6 +4,12 @@
 
 ### Added
 
+- Shared game definitions, reusable edition/country box-size variants, and owned-copy associations with private size overrides. Adding a game now includes a size choice, and owned games can switch variants or add another copy.
+
+- Profile display zoom from 100% to 200%, saved in this browser, enlarging Kallax labels, game rows, and the wider interface. Game rows scale their covers and spacing and wrap titles.
+
+- Public profile pictures with upload controls in Profile and initials for missing or unavailable pictures.
+
 - Separate admin uploads for game-page logos and Kallax box-side artwork. Logos retain their image proportions inside rounded bounds; browsing continues to use covers. Shelf artwork uses the box side first, then wallpaper, then the cover when neither is available, in both vertical and horizontal layouts.
 
 - Game pages have a shaded wallpaper behind the cover and title. Admins can upload and crop a separate wallpaper with a landscape preset; the cover remains independent.
@@ -28,6 +34,14 @@
 
 ### Changed
 
+- Normalized `board_games` into `games`, `game_box_sizes`, and `board_games_box_association`; placement and order now live on each copy. Existing records are preserved with private recovery snapshots, and collection moves use an atomic database function.
+
+- Replaced custom presentation CSS with Tailwind utilities across shelves, game rows, social pages, artwork controls, and dialogs. Shared game spines and crop sliders reuse Angular components/directives.
+
+- Kallax game boxes show larger centered uppercase names on rounded white labels with theme-colored borders in both personal and friends' shelves.
+
+- Friends now has Followed and Followers tabs with profile pictures and collection links, a + button for search, and incoming/sent requests under the corresponding tabs.
+
 - Logo crops are saved as PNG with transparency preserved, including semi-transparent edges, and displayed without a background or hover tint.
 
 - The cover editor keeps Crop & zoom collapsed by default and removes nested side padding on mobile.
@@ -48,7 +62,7 @@
 
 - Render each Kallax cube as a filled shelf using game-box spine artwork when it is available, with a generated visual fallback when it is not.
 - Add a game-image catalog that records trusted cover and spine image sources, attribution, and user overrides.
-- Store physical box dimensions and a placement for every owned game, including vertical or horizontal orientation and its display order inside a Kallax cube.
+- Extend the existing physical box-size variants and placements with per-copy orientation; vertical or horizontal layout currently belongs to each cube.
 - Track reviews as part of the owned-game record and show review state from the collection.
 - Record play history, including play date, player count, participants when desired, and preferred player counts for each game.
 

@@ -1,28 +1,37 @@
-<main class="content-page library-page max-lg:!h-[calc(100dvh-64px)] max-lg:!overflow-hidden max-lg:!pb-[42px]">
-    <nav class="library-tabs max-lg:fixed max-lg:inset-x-0 max-lg:bottom-16 max-lg:z-40 max-lg:justify-around max-lg:bg-surface max-lg:shadow-[0_-8px_24px_rgba(0,0,0,.28)]"
+<main class="mx-auto my-0 flex h-[calc(100dvh_-_4rem)] min-h-0 max-w-none flex-col overflow-hidden p-0 max-[650px]:p-0
+       max-lg:!h-[calc(100dvh-64px)] max-lg:!overflow-hidden max-lg:!pb-[42px] min-[1024px]:h-[calc(100dvh_-_4.75rem)]">
+    <nav class="m-0 flex min-h-10.5 flex-none gap-0.5 border-b border-b-line px-[clamp(12px,3vw,40px)] py-0 max-[650px]:m-0
+           max-[650px]:px-1.5 max-[650px]:py-0 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-16 max-lg:z-40
+           max-lg:justify-around max-lg:bg-surface max-lg:shadow-[0_-8px_24px_rgba(0,0,0,.28)]"
          aria-label="Library views">
-        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button"
+        <button class="flex cursor-pointer items-center gap-[5px] border-0 border-b-2 border-b-transparent bg-transparent px-[11px]
+               pt-2 pb-1.5 text-[.82rem] font-bold text-muted max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center
+               [&.active]:border-b-accent [&.active]:text-ink" type="button"
                 [class.active]="activeTab === 'shelf'" (click)="activeTab = 'shelf'">
-            <mat-icon>view_module</mat-icon>
+            <mat-icon class="size-[19px]! text-[19px]!">view_module</mat-icon>
             Kallax
         </button>
-        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button"
+        <button class="flex cursor-pointer items-center gap-[5px] border-0 border-b-2 border-b-transparent bg-transparent px-[11px]
+               pt-2 pb-1.5 text-[.82rem] font-bold text-muted max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center
+               [&.active]:border-b-accent [&.active]:text-ink" type="button"
                 [class.active]="activeTab === 'recent'" (click)="activeTab = 'recent'">
-            <mat-icon>history</mat-icon>
+            <mat-icon class="size-[19px]! text-[19px]!">history</mat-icon>
             New
         </button>
-        <button class="max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center" type="button"
+        <button class="flex cursor-pointer items-center gap-[5px] border-0 border-b-2 border-b-transparent bg-transparent px-[11px]
+               pt-2 pb-1.5 text-[.82rem] font-bold text-muted max-lg:max-w-55 max-lg:flex-1 max-lg:justify-center
+               [&.active]:border-b-accent [&.active]:text-ink" type="button"
                 [class.active]="activeTab === 'collection'" (click)="activeTab = 'collection'">
-            <mat-icon>library_books</mat-icon>
+            <mat-icon class="size-[19px]! text-[19px]!">library_books</mat-icon>
             Collection
         </button>
     </nav>
 
     @if (library.error()) {
-        <p class="notice error">{{ library.error() }}</p>
+        <p class="text-[#a53525]">{{ library.error() }}</p>
     }
     @if (library.loading()) {
-        <div class="loading-block">
+        <div class="flex min-h-[300px] items-center justify-center gap-3.5">
             <mat-spinner diameter="36"/>
             <p>Opening your library…</p>
         </div>
@@ -30,25 +39,29 @@
 
     @if (!library.loading()) {
         @if (activeTab === 'shelf') {
-            <section class="shelf-section">
-                <header class="relative flex w-full items-center justify-center">
-                    <div class="shelf-header-actions">
-                        <button mat-stroked-button type="button" class="unassigned-toggle"
+            <section class="shelf-section relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-[#080909]
+                   p-[clamp(12px,_2vw,_24px)] text-white light:bg-[#f4f1f8] light:text-ink">
+                <header class="relative mb-3 flex w-full items-center justify-between max-[650px]:flex-row max-[650px]:items-center
+                       max-[650px]:gap-2.5 max-[650px]:px-1.5 max-[650px]:py-0">
+                    <div class="flex items-center gap-1 max-[650px]:flex-wrap max-[650px]:justify-end">
+                        <button mat-stroked-button type="button" class="text-[#bed0c5]!"
                                 (click)="unassignedOpen = !unassignedOpen"
                                 [attr.aria-expanded]="unassignedOpen"
                                 aria-controls="unassigned-games">
                             <mat-icon>{{ unassignedOpen ? 'box' : 'cross' }}</mat-icon>
-                            <span>Unassigned</span>
-                            <strong>{{ library.unassigned().length }}</strong>
+                            <span class="max-[650px]:hidden">Unassigned</span>
+                            <strong class="inline-flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-accent px-1.5 py-0 text-[.72rem]
+                                   text-white">{{ library.unassigned().length }}</strong>
                         </button>
-                        <div class="zoom-controls" aria-label="Kallax zoom controls">
-                            <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                        <div class="flex items-center gap-1 rounded-full border border-[rgba(255,255,255,.12)] bg-white/6 px-1 py-0
+                               light:border-line light:bg-white" aria-label="Kallax zoom controls">
+                            <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0 light:text-brand"
                                     type="button" (click)="zoomOut()" [disabled]="kallaxZoom <= 0.5"
                                     aria-label="Zoom out">
                                 <mat-icon>remove</mat-icon>
                             </button>
-                            <span>{{ kallaxZoom * 100 | number:'1.0-0' }}%</span>
-                            <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0"
+                            <span class="min-w-[38px] text-center text-[.72rem] text-[#bed0c5] tabular-nums light:text-muted">{{ kallaxZoom * 100 | number:'1.0-0' }}%</span>
+                            <button mat-icon-button class="!inline-flex !items-center !justify-center !p-0 light:text-brand"
                                     type="button" (click)="zoomIn()" [disabled]="kallaxZoom >= 1.5"
                                     aria-label="Zoom in">
                                 <mat-icon>add</mat-icon>
@@ -56,7 +69,7 @@
                         </div>
                         <button
                                 mat-icon-button
-                                class="layout-settings-button !inline-flex !items-center !justify-center !p-0"
+                                class="!inline-flex !items-center !justify-center !p-0 text-muted hover:bg-mint hover:text-brand"
                                 type="button"
                                 (click)="openLayoutSettings()"
                                 aria-label="Change Kallax layout"
@@ -64,7 +77,8 @@
                         >
                             <mat-icon>grid_view</mat-icon>
                         </button>
-                        <a mat-flat-button class="primary-action desktop-add-game" routerLink="/games">
+                        <a mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]
+                               max-[1000px]:hidden!" routerLink="/games">
                             <mat-icon>add</mat-icon>
                             Add a game
                         </a>
@@ -87,7 +101,9 @@
                         </button>
                     </div>
                 </header>
-                <div class="shelf-workspace" cdkDropListGroup>
+                <div class="grid h-0 min-h-0 flex-1 [touch-action:pan-x_pan-y] grid-cols-[minmax(0,_1fr)_minmax(220px,_280px)] items-start
+                       gap-5 overflow-auto overscroll-contain pb-2 max-[1000px]:grid-cols-[1fr] max-[650px]:flex max-[650px]:h-0
+                       max-[650px]:flex-col max-[650px]:gap-4.5 max-[650px]:overflow-auto" cdkDropListGroup>
                     @if (unassignedOpen) {
                         <aside
                                 id="unassigned-games"
@@ -95,37 +111,48 @@
                                 cdkDrag
                                 cdkDragBoundary=".shelf-section"
                                 [cdkDropListData]="library.unassigned()"
-                                class="unassigned-column floating-unassigned max-sm:!bottom-[118px]"
+                                class="absolute top-[72px] left-4.5 z-20 max-h-[min(68vh,_760px)] min-h-[300px] w-[260px] max-w-[calc(100%_-_36px)]
+                                       overflow-y-auto rounded-[15px] border border-[rgba(255,255,255,.12)] bg-[#151918] p-4
+                                       shadow-[0_20px_55px_rgba(0,0,0,.55)] max-[650px]:fixed max-[650px]:top-auto max-[650px]:bottom-[4.75rem]
+                                       max-[650px]:left-2 max-[650px]:order-0 max-[650px]:max-h-[min(55dvh,_430px)] max-[650px]:min-h-[120px]
+                                       max-[650px]:w-[min(300px,_calc(100vw_-_16px))] max-sm:!bottom-[118px] light:border-line light:bg-white
+                                       [&.is-empty]:min-h-0 [&.is-empty]:self-start"
                                 [class.is-empty]="!library.unassigned().length"
                                 (cdkDropListDropped)="unassign($event)"
                         >
-                            <div class="panel-title" cdkDragHandle title="Drag this panel">
+                            <div class="mb-3.5 flex cursor-move touch-none grid-cols-[1fr_auto_auto] items-center justify-between [.is-empty_&]:mb-1.5" cdkDragHandle title="Drag this panel">
                                 <span>Unassigned</span>
-                                <strong>{{ library.unassigned().length }}</strong>
+                                <strong class="flex h-7 w-7 items-center justify-center rounded-full bg-accent">{{ library.unassigned().length }}</strong>
                                 <mat-icon>drag_indicator</mat-icon>
                             </div>
                             @for (game of library.unassigned(); track game.id) {
                                 <div
-                                        class="mini-game"
+                                        class="mb-2 grid grid-cols-[34px_1fr_auto] items-center gap-[9px] rounded-[9px] bg-surface p-2 text-ink"
                                         cdkDrag
                                         [cdkDragData]="game.id"
                                 >
-                <span class="mini-cover">
+                <span class="h-9 w-[34px] overflow-hidden rounded bg-mint">
                   @if (game.image_url) {
-                      <img [src]="game.image_url" alt="">
+                      <img class="h-full w-full object-cover" [src]="game.image_url" alt="">
                   }
                 </span>
-                                    <a [routerLink]="['/games', game.id]">{{ game.name }}</a>
+                                    <a class="overflow-hidden text-[.84rem] font-bold text-ellipsis whitespace-nowrap" [routerLink]="['/games', game.id]">{{ game.name }}</a>
                                     <mat-icon>drag_indicator</mat-icon>
                                 </div>
                             }
                             @if (!library.unassigned().length) {
-                                <p class="small-empty">Everything has a home. Lovely.</p>
+                                <p class="px-2 py-8 text-center text-[.85rem] text-[#bed0c5] light:text-muted [.is-empty_&]:m-0 [.is-empty_&]:px-1
+                                       [.is-empty_&]:pt-2 [.is-empty_&]:pb-0.5">Everything has a home. Lovely.</p>
                             }
                         </aside>
                     }
                     <section
-                            class="kallax-shell"
+                            class="grid aspect-[var(--kallax-columns)_/_var(--kallax-rows)] max-h-none min-h-[260px] w-auto max-w-none shrink-0
+                                   grid-cols-[repeat(var(--kallax-columns),_minmax(0,_1fr))]
+                                   grid-rows-[repeat(var(--kallax-rows),_minmax(0,_1fr))] gap-2.5 self-start justify-self-start rounded-md
+                                   border-14 border-[#4a3022] bg-[#76513a] p-2.5 shadow-[inset_0_0_20px_rgba(0,0,0,.45)] [--kallax-columns:4]
+                                   [--kallax-rows:4] max-[650px]:order-1 max-[650px]:gap-[5px] max-[650px]:self-start max-[650px]:border-8
+                                   max-[650px]:p-[5px]"
                             [style.--kallax-columns]="gridColumns"
                             [style.--kallax-rows]="gridRows"
                             [style.height.%]="kallaxZoom * 100"
@@ -135,64 +162,79 @@
                                     cdkDropList
                                     [cdkDropListData]="gamesInBox(box.id)"
                                     (cdkDropListDropped)="drop(box.id, $event)"
-                                    class="shelf-cube"
+                                    class="relative grid aspect-square min-h-0 min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]
+                                           border-3 border-[#4a3022] bg-[#29251f] p-[9px] text-left text-ink max-[650px]:border-2 max-[650px]:p-[5px]
+                                           [&.selected]:shadow-[inset_0_0_0_3px_var(--coral)]"
                                     type="button"
                                     (click)="selectBox(box.id, $event)"
                                     [class.selected]="selectedBox === box.id"
                             >
-                                <span>{{ box.description }}</span>
-                                <div class="book-spines" [class.horizontal]="boxDirection(box) === 'horizontal'">
+                                <span class="relative z-1 col-start-1 row-start-1 self-start text-[.68rem] font-bold text-[#cbb9a9] uppercase
+                                       max-[650px]:text-[.56rem]">{{ box.description }}</span>
+                                <div class="col-start-1 row-start-1 flex h-full w-full flex-nowrap items-end gap-0 overflow-hidden max-[650px]:gap-px
+                                       [&.horizontal]:flex-wrap [&.horizontal]:content-end" [class.horizontal]="boxDirection(box) === 'horizontal'">
                                     @for (game of gamesInBox(box.id); track game.id) {
-                                        <span
+                                        <span app-game-spine
                                                 cdkDrag
                                                 [cdkDragData]="game.id"
-                                                class="game-spine"
-                                                [class.horizontal]="boxDirection(box) === 'horizontal'"
+                                                [horizontal]="boxDirection(box) === 'horizontal'"
                                                 [style.width.%]="spineWidthPercent(game, box)"
                                                 [style.height.%]="spineHeightPercent(game, box)"
                                                 [title]="'Drag ' + game.name"
-                                        >
-                                            @if (library.sideImage(game); as side) {
-                                                <img [src]="side" alt="" draggable="false">
-                                            } @else {
-                                                {{ initials(game.name) }}
-                                            }
-                                        </span>
+                                                [name]="game.name"
+                                                [imageUrl]="library.sideImage(game)"
+                                                [spineDraggable]="true"
+                                        ></span>
                                     }
                                 </div>
-                                <small>{{ capacity(box.id) }}/{{ box.capacity }}</small>
+                                <small class="relative z-1 col-start-1 row-start-1 self-end text-right text-[.68rem] font-bold text-[#cbb9a9] uppercase
+                                       max-[650px]:text-[.56rem]">{{ capacity(box.id) }}/{{ box.capacity }}</small>
                             </button>
                         }
                     </section>
                     <aside
-                            class="cube-overview max-sm:!bottom-[106px]"
+                            class="max-h-[min(68vh,_760px)] overflow-y-auto rounded-[15px] border border-[rgba(255,255,255,.12)] bg-white/4 p-4
+                                   max-[650px]:fixed max-[650px]:right-0 max-[650px]:bottom-[4rem] max-[650px]:left-0 max-[650px]:z-45
+                                   max-[650px]:m-0 max-[650px]:hidden max-[650px]:max-h-[min(62vh,_560px)] max-[650px]:overflow-y-auto
+                                   max-[650px]:rounded-[20px_20px_0_0] max-[650px]:border max-[650px]:border-line max-[650px]:bg-[#111313]
+                                   max-[650px]:px-4 max-[650px]:pt-3 max-[650px]:pb-[calc(16px+env(safe-area-inset-bottom))]
+                                   max-[650px]:shadow-[0_-18px_50px_rgba(0,0,0,.5)] max-sm:!bottom-[106px] light:border-line light:bg-white
+                                   max-[650px]:[&.is-open]:block max-[650px]:[&.is-open]:animate-[sheet-in_.2s_ease-out]
+                                   max-[650px]:[&.is-open]:before:mx-auto max-[650px]:[&.is-open]:before:mt-0 max-[650px]:[&.is-open]:before:mb-3
+                                   max-[650px]:[&.is-open]:before:block max-[650px]:[&.is-open]:before:h-1 max-[650px]:[&.is-open]:before:w-10.5
+                                   max-[650px]:[&.is-open]:before:rounded-full max-[650px]:[&.is-open]:before:bg-line
+                                   max-[650px]:[&.is-open]:before:content-[''] max-[650px]:[&.is-open]:motion-reduce:animate-none"
                             [class.is-open]="selectedBoxInfo"
                             [attr.aria-hidden]="selectedBoxInfo ? null : true"
                             (click)="$event.stopPropagation()"
                     >
                         @if (selectedBoxInfo; as box) {
-                            <header>
+                            <header class="mb-3 flex items-start justify-between border-b border-b-line pb-3">
                                 <div>
-                                    <p class="eyebrow">Selected cube</p>
-                                    <input class="cube-label-input" type="text" aria-label="Cube name"
+                                    <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase last:text-[#bed0c5]">Selected cube</p>
+                                    <input class="max-w-[190px] border-0 border-b border-b-transparent bg-transparent px-0 py-px font-display text-[1.2rem]
+                                           font-bold text-ink outline-none focus:border-b-accent" type="text" aria-label="Cube name"
                                            [(ngModel)]="selectedBoxLabel" [ngModelOptions]="{standalone: true}"
                                            (click)="$event.stopPropagation()" (keydown.enter)="renameSelectedCube()"
                                            (blur)="renameSelectedCube()">
                                 </div>
-                                <div class="overview-actions">
-                                    <span>{{ selectedGames.length }}/{{ box.capacity }}</span>
-                                    <button type="button" class="sheet-close" (click)="toggleSelectedCubeDirection()"
+                                <div class="flex items-center gap-1">
+                                    <span class="rounded-full bg-mint px-[9px] py-1.5 text-[.72rem] font-bold text-brand">{{ selectedGames.length }}/{{ box.capacity }}</span>
+                                    <button type="button" class="hidden max-[650px]:inline-flex max-[650px]:cursor-pointer max-[650px]:items-center max-[650px]:border-0
+                                           max-[650px]:bg-transparent max-[650px]:p-[5px] max-[650px]:text-muted" (click)="toggleSelectedCubeDirection()"
                                             [attr.aria-label]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'"
                                             [title]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'">
                                         <mat-icon>screen_rotation</mat-icon>
                                     </button>
-                                    <button type="button" class="sheet-close" (click)="removeSelectedCube()"
+                                    <button type="button" class="hidden max-[650px]:inline-flex max-[650px]:cursor-pointer max-[650px]:items-center max-[650px]:border-0
+                                           max-[650px]:bg-transparent max-[650px]:p-[5px] max-[650px]:text-muted" (click)="removeSelectedCube()"
                                             [disabled]="library.boxes().length <= 1" aria-label="Remove this cube" title="Remove this cube">
                                         <mat-icon>delete_outline</mat-icon>
                                     </button>
                                     <button
                                             type="button"
-                                            class="sheet-close"
+                                            class="hidden max-[650px]:inline-flex max-[650px]:cursor-pointer max-[650px]:items-center max-[650px]:border-0
+                                                   max-[650px]:bg-transparent max-[650px]:p-[5px] max-[650px]:text-muted"
                                             (click)="selectedBox = null"
                                             aria-label="Close cube contents"
                                     >
@@ -201,26 +243,28 @@
                                 </div>
                             </header>
                             @if (!selectedGames.length) {
-                                <p class="small-empty">
+                                <p class="px-2 py-8 text-center text-[.85rem] text-[#bed0c5] light:text-muted">
                                     This cube is empty. Drag a game here to fill it.
                                 </p>
                             }
                             @if (selectedGames.length) {
-                                <ul>
+                                <ul class="m-0 grid list-none gap-[7px] p-0">
                                     @for (game of selectedGames; track game.id) {
-                                        <li>
-                                            <a [routerLink]="['/games', game.id]">
-                        <span class="overview-cover">
+                                        <li class="grid grid-cols-[minmax(0,_1fr)_auto] items-center rounded-[9px] border border-line bg-surface p-[7px]
+                                               max-[650px]:p-2.5">
+                                            <a class="grid grid-cols-[34px_minmax(0,_1fr)] items-center gap-[9px]" [routerLink]="['/games', game.id]">
+                        <span class="h-10.5 w-[34px] overflow-hidden rounded-[5px] bg-mint last:grid last:min-w-0 max-[650px]:h-12
+                               max-[650px]:w-[39px]">
                           @if (game.image_url) {
-                              <img [src]="game.image_url" alt="">
+                              <img class="h-full w-full object-cover" [src]="game.image_url" alt="">
                           }
                         </span>
-                                                <span>
-                          <strong>{{ game.name }}</strong>
-                          <small>{{ boxDirection(box) }} layout · {{ game.box_width_mm }} × {{ game.box_height_mm }} mm</small>
+                                                <span class="last:grid last:min-w-0">
+                          <strong class="overflow-hidden text-[.78rem] text-ellipsis whitespace-nowrap">{{ game.name }}</strong>
+                          <small class="text-[.68rem] text-muted">{{ boxDirection(box) }} layout · {{ game.box_width_mm }} × {{ game.box_height_mm }} mm</small>
                         </span>
                                             </a>
-                                            <button
+                                            <button class="cursor-pointer border-0 bg-transparent p-[5px] text-muted hover:text-accent"
                                                     type="button"
                                                     (click)="move(game.id, null)"
                                                     [attr.aria-label]="'Move ' + game.name + ' to unassigned'"
@@ -232,9 +276,9 @@
                                 </ul>
                             }
                         } @else {
-                            <div class="overview-placeholder">
-                                <mat-icon>ads_click</mat-icon>
-                                <h3>Select a cube</h3>
+                            <div class="flex min-h-[230px] flex-col items-center justify-center text-center text-muted">
+                                <mat-icon class="size-9! text-4xl! text-accent">ads_click</mat-icon>
+                                <h3 class="m-0 font-display text-[1.2rem]">Select a cube</h3>
                                 <p>Its games and capacity will appear here.</p>
                             </div>
                         }
@@ -243,18 +287,19 @@
             </section>
         }
         @if (activeTab === 'recent' && library.games().length) {
-            <section class="recent-section">
-                <header>
+            <section class="min-h-0 flex-1 overflow-auto p-[clamp(18px,_3vw,_40px)] max-[650px]:px-2 max-[650px]:py-3.5">
+                <header class="mb-3 flex items-center justify-between">
                     <div>
-                        <p class="eyebrow">Collection</p>
+                        <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Collection</p>
                         <h2>Recently added</h2>
                     </div>
                 </header>
-                <div class="recent-game-list">
+                <div class="mx-auto my-0 grid max-w-[1100px] gap-0">
                     @for (game of recentlyAdded(); track game.id) {
                         <app-game-list-row
                                 [name]="game.name"
                                 [year]="game.release_year"
+                    [edition]="game.box_size_label"
                                 [link]="['/games', game.id]"
                                 [imageUrl]="game.image_url"
                                 [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
@@ -271,50 +316,52 @@
             </section>
         }
         @if (activeTab === 'collection') {
-            <app-collection-list/>
+            <app-collection-list class="contents"/>
         }
         @if (!library.games().length) {
-            <section class="empty-state">
+            <section>
                 <mat-icon>extension</mat-icon>
                 <h2>Your shelf is waiting</h2>
                 <p>Add your first game to start building the collection.</p>
-                <a mat-flat-button class="primary-action" routerLink="/games">Discover games</a>
+                <a mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" routerLink="/games">Discover games</a>
             </section>
         }
     }
 </main>
 
 @if (layoutOpen) {
-    <div class="modal-backdrop" (click)="layoutOpen = false">
-        <section class="dialog-card layout-dialog" (click)="$event.stopPropagation()">
-            <header>
+    <div class="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-[rgba(15,27,21,.62)] px-5 py-[7vh]" (click)="layoutOpen = false">
+        <section class="grid w-full max-w-[660px] gap-5.5 rounded-[20px] bg-surface p-7 shadow-[var(--shadow)]" (click)="$event.stopPropagation()">
+            <header class="flex items-start justify-between">
                 <div>
-                    <p class="eyebrow">Shelf layout</p>
-                    <h2>Arrange your Kallax</h2>
+                    <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Shelf layout</p>
+                    <h2 class="m-0">Arrange your Kallax</h2>
                 </div>
-                <button class="icon-plain" type="button" (click)="layoutOpen = false"
+                <button class="cursor-pointer border-0 bg-none font-bold text-brand" type="button" (click)="layoutOpen = false"
                         aria-label="Close layout settings">
                     <mat-icon>close</mat-icon>
                 </button>
             </header>
-            <p class="subtle">Choose the visible grid. Only your {{ library.boxes().length }} existing cubes are
+            <p class="text-muted">Choose the visible grid. Only your {{ library.boxes().length }} existing cubes are
                 rendered.</p>
-            <form class="grid-controls" (ngSubmit)="applyGridLayout()">
-                <label>
+            <form class="flex flex-wrap items-end justify-start gap-2 max-[650px]:w-full max-[650px]:justify-start" (ngSubmit)="applyGridLayout()">
+                <label class="grid gap-1 text-[.66rem] font-bold tracking-[.08em] text-muted uppercase">
                     Columns
-                    <input type="number" name="columns" [(ngModel)]="draftColumns" min="1" max="12">
+                    <input class="w-[64px] rounded-lg border border-line bg-[#0d110f] p-2 text-ink" type="number" name="columns" [(ngModel)]="draftColumns" min="1" max="12">
                 </label>
-                <span>×</span>
-                <label>
+                <span class="mb-2 text-muted">×</span>
+                <label class="grid gap-1 text-[.66rem] font-bold tracking-[.08em] text-muted uppercase">
                     Rows
-                    <input type="number" name="rows" [(ngModel)]="draftRows" min="1" max="12">
+                    <input class="w-[64px] rounded-lg border border-line bg-[#0d110f] p-2 text-ink" type="number" name="rows" [(ngModel)]="draftRows" min="1" max="12">
                 </label>
                 @if (!gridLayoutValid) {
-                    <small>Grid needs at least {{ library.boxes().length }} spaces.</small>
+                    <small class="basis-full text-left text-accent max-[650px]:text-left">Grid needs at least {{ library.boxes().length }} spaces.</small>
                 }
-                <div class="layout-dialog-actions">
-                    <button type="button" class="text-button" (click)="layoutOpen = false">Cancel</button>
-                    <button type="submit" class="layout-apply-button" [disabled]="!gridLayoutValid || changingCubes">Apply layout
+                <div class="mt-3 flex basis-full items-center justify-end gap-2.5">
+                    <button type="button" class="cursor-pointer rounded-lg border-0 bg-transparent px-3 py-[9px] font-bold text-brand
+                           disabled:cursor-not-allowed disabled:opacity-45" (click)="layoutOpen = false">Cancel</button>
+                    <button type="submit" class="cursor-pointer rounded-lg border-0 bg-accent! px-3 py-[9px] font-bold text-white! disabled:cursor-not-allowed
+                           disabled:opacity-45" [disabled]="!gridLayoutValid || changingCubes">Apply layout
                     </button>
                 </div>
             </form>

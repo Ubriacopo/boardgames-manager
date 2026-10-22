@@ -21,11 +21,11 @@
                               [sanitize]="true" placeholder="What did you think?"></quill-editor>
             </label>
             @if (error) {
-                <p class="error m-0">{{ error }}</p>
+                <p class="m-0 text-[#a53525]">{{ error }}</p>
             }
             <div class="flex flex-wrap gap-3">
                 <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
-                <button mat-flat-button class="primary-action" type="submit" [disabled]="saving">
+                <button mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" type="submit" [disabled]="saving">
                     <mat-icon>publish</mat-icon>
                     {{ saving ? 'Publishing…' : 'Publish review' }}
                 </button>

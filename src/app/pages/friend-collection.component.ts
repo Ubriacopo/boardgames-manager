@@ -1,3 +1,4 @@
+import { GameSpineComponent } from '../components/game-spine.component';
 import {GameCoverService} from '../services/game-cover.service';
 import {makeSearchScorer} from '../../utils/search';
 import { Component, DestroyRef, OnInit, signal } from '@angular/core';
@@ -12,7 +13,7 @@ import { FriendCollection, FriendsService, SocialProfile } from '../services/fri
 
 @Component({
   standalone: true,
-  imports: [FormsModule, RouterLink, MatButtonModule, MatIconModule],
+  imports: [GameSpineComponent, FormsModule, RouterLink, MatButtonModule, MatIconModule],
   templateUrl: './friend-collection.component.html',
 })
 export class FriendCollectionComponent implements OnInit {

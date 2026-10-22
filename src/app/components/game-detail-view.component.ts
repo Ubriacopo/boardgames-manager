@@ -1,3 +1,5 @@
+import type { BoxDimensions, BoxSizeSelection } from '../../entities/BoardGame';
+import { GameBoxSizeFormComponent } from './game-box-size-form.component';
 import {DatePipe, DecimalPipe} from '@angular/common';
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -22,7 +24,7 @@ import {ReviewService, type LocalReviewSummary} from '../services/review.service
 @Component({
     selector: 'app-game-detail-view',
     standalone: true,
-    imports: [DatePipe, DecimalPipe, FormsModule, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
+    imports: [GameBoxSizeFormComponent, DatePipe, DecimalPipe, FormsModule, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
     templateUrl: './game-detail-view.component.html',
 })
 export class GameDetailViewComponent implements OnChanges {
@@ -38,21 +40,20 @@ export class GameDetailViewComponent implements OnChanges {
     @Input() actionLabel = 'Add to library';
     @Input() actionDisabled = false;
     @Input() error = '';
-    @Input() boxWidthMm: number | null = null;
-    @Input() boxHeightMm: number | null = null;
-    @Input() boxDepthMm: number | null = null;
+    @Input() gameDefinitionId = '';
+    @Input() selectedSizeId: string | null = null;
+    @Input() customDimensions: BoxDimensions | null = null;
     @Input() savingDimensions = false;
     @Input() dimensionsError = '';
     @Output() readonly back = new EventEmitter<void>();
     @Output() readonly primaryAction = new EventEmitter<void>();
-    @Output() readonly dimensionsSave = new EventEmitter<{ width: number; height: number; depth: number }>();
+    @Output() readonly boxSizeSave = new EventEmitter<BoxSizeSelection>();
 
     localSummary: LocalReviewSummary = {average: null, count: 0, rank: null, reviews: []};
     bggReviews: BggReview[] = [];
     bggOverview?: BggOverview;
     private readonly logoRatio = signal(1);
     detailTab: 'overview' | 'ratings' | 'dimensions' = 'overview';
-    dimensions = {width: 50, height: 200, depth: 100};
 
     constructor(private readonly reviews: ReviewService, readonly auth: AuthService, private readonly covers: GameCoverService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
     }
@@ -103,17 +104,6 @@ export class GameDetailViewComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['bggId'] && this.bggId) void this.loadReviews();
-        if (changes['boxWidthMm'] || changes['boxHeightMm'] || changes['boxDepthMm']) {
-            this.dimensions = {
-                width: this.boxWidthMm ?? 50,
-                height: this.boxHeightMm ?? 200,
-                depth: this.boxDepthMm ?? 100,
-            };
-        }
-    }
-
-    saveDimensions(): void {
-        this.dimensionsSave.emit({...this.dimensions});
     }
 
     renderReview(markdown: string): string {

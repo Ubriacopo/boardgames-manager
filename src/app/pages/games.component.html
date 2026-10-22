@@ -32,7 +32,7 @@
     @if (loading()) {
         <p class="py-20 text-center text-muted">Opening the catalog…</p>
     } @else if (error()) {
-        <p class="error py-20 text-center">{{ error() }}</p>
+        <p class="py-20 text-center text-[#a53525]">{{ error() }}</p>
     } @else {
         <div class="mb-4 flex items-center justify-between">
             <p class="m-0 text-sm text-muted">Showing the first {{ results().length }} matches</p>

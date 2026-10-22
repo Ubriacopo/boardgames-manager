@@ -44,7 +44,7 @@ export class LoginComponent {
                 width: '360px',
                 maxWidth: '92vw',
                 panelClass: 'login-loading-dialog',
-                backdropClass: 'login-loading-backdrop',
+                backdropClass: ['bg-black/55!', 'backdrop-blur-[5px]'],
                 enterAnimationDuration: reducedMotion ? 0 : 150,
                 exitAnimationDuration: reducedMotion ? 0 : 100,
             });

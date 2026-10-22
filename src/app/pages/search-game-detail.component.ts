@@ -1,3 +1,7 @@
+import { firstValueFrom } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { GameCatalogService } from '../services/game-catalog.service';
+import { AddGameDialogComponent } from '../components/add-game-dialog.component';
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {getBggMetadataByIds, getBggOverview, type BggGameMetadata} from '../../utils/bggData';
@@ -6,7 +10,7 @@ import {GameDetailViewComponent} from '../components/game-detail-view.component'
 
 @Component({
     standalone: true,
-    imports: [GameDetailViewComponent],
+    imports: [GameDetailViewComponent, MatDialogModule],
     templateUrl: './search-game-detail.component.html',
 })
 export class SearchGameDetailComponent implements OnInit {
@@ -15,7 +19,7 @@ export class SearchGameDetailComponent implements OnInit {
     error = '';
     adding = false;
 
-    constructor(readonly library: LibraryService, private readonly route: ActivatedRoute, private readonly router: Router,) {
+    constructor(readonly library: LibraryService, private readonly route: ActivatedRoute, private readonly router: Router, private readonly catalog: GameCatalogService, private readonly dialog: MatDialog,) {
     }
 
     async ngOnInit(): Promise<void> {
@@ -39,7 +43,8 @@ export class SearchGameDetailComponent implements OnInit {
     }
 
     async add(): Promise<void> {
-        if (!this.game) return;
+        if (!this.game || this.adding) return;
+        this.error = '';
         this.adding = true;
         try {
             let imageUrl: string | null = null;
@@ -48,15 +53,17 @@ export class SearchGameDetailComponent implements OnInit {
             } catch {
                 // A cover is optional; adding a game must still work when BGG is unavailable.
             }
-            await this.library.addGame({
+            const definition = await this.catalog.ensureGame({
                 bgg_id: this.game.bggId,
                 bgg_url: `https://boardgamegeek.com/boardgame/${this.game.bggId}`,
                 name: this.game.name,
                 release_year: this.game.yearPublished ?? new Date().getFullYear(),
-                size: 1,
                 image_url: imageUrl,
             });
-            await this.router.navigate(['/library']);
+            const copy = await firstValueFrom(this.dialog.open(AddGameDialogComponent, {
+                data: definition, width: '640px', maxWidth: '95vw',
+            }).afterClosed());
+            if (copy) await this.router.navigate(['/games', copy.id]);
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Unable to add this game.';
         } finally {

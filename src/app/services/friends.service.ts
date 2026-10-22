@@ -1,3 +1,5 @@
+import { GameCatalogService } from './game-catalog.service';
+import { placementForGame } from '../../entities/GamePlacement';
 import { Injectable } from '@angular/core';
 import { validateHandle } from '../../utils/handles';
 import { GameCoverService } from './game-cover.service';
@@ -13,7 +15,7 @@ export type FriendCollection = { games: BoardGame[]; boxes: ContainerBox[]; plac
 
 @Injectable({ providedIn: 'root' })
 export class FriendsService {
-  constructor(private readonly covers: GameCoverService) {}
+  constructor(private readonly covers: GameCoverService, private readonly catalog: GameCatalogService) {}
   async ensureProfile(userId: string): Promise<SocialProfile> {
     // ignoreDuplicates avoids overwriting a collector's chosen identity/settings.
     const result = await supabase.from('social_profiles').upsert({
@@ -38,6 +40,19 @@ export class FriendsService {
       handle, display_name: displayName.trim(), connection_mode: mode,
     }).eq('id', userId).select('id').single();
     if (error) throw error;
+  }
+
+  async saveAvatar(userId: string, file: File): Promise<SocialProfile> {
+    const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.type];
+    if (!extension || file.size > 5 * 1024 * 1024) throw new Error('Choose a JPG, PNG, or WebP picture up to 5 MB.');
+    const path = `${userId}/${crypto.randomUUID()}.${extension}`;
+    const upload = await supabase.storage.from('profile-pictures').upload(path, file, { contentType: file.type, upsert: false });
+    if (upload.error) throw upload.error;
+    const url = supabase.storage.from('profile-pictures').getPublicUrl(path).data.publicUrl;
+    const { data, error } = await supabase.from('social_profiles').update({ avatar_url: url })
+      .eq('id', userId).select('*').single();
+    if (error) throw error;
+    return data;
   }
 
   async saveConnectionMode(userId: string, connectionMode: SocialProfile['connection_mode']): Promise<void> {
@@ -92,15 +107,10 @@ export class FriendsService {
     if (library.error) throw library.error;
     if (!library.data) throw new Error('This collection is unavailable. You may need an approved friendship or to follow this collector.');
     const [games, boxes] = await Promise.all([
-      supabase.from('board_games').select('*').eq('library_id', library.data.id).order('name'),
+      this.catalog.collection(library.data.id),
       supabase.from('container_box').select('*').eq('library_id', library.data.id).order('id'),
     ]);
-    if (games.error) throw games.error;
     if (boxes.error) throw boxes.error;
-    const placements = games.data.length
-      ? await supabase.from('game_placements').select('*').in('game_id', games.data.map(game => game.id))
-      : { data: [], error: null };
-    if (placements.error) throw placements.error;
-    return { games: games.data.map(game => this.covers.forGame(game)), boxes: boxes.data, placements: placements.data ?? [], columns: library.data.shelf_columns, rows: library.data.shelf_rows };
+    return { games: games.map(game => this.covers.forGame(game)), boxes: boxes.data, placements: games.map(placementForGame), columns: library.data.shelf_columns, rows: library.data.shelf_rows };
   }
 }

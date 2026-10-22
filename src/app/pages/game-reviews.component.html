@@ -10,7 +10,7 @@
             <h1 class="font-display text-4xl font-bold lg:text-6xl">{{ gameName }}</h1>
             <p class="mt-2 text-muted">Reviews</p>
         </div>
-        <button mat-flat-button class="primary-action" type="button" (click)="writeReview()">
+        <button mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" type="button" (click)="writeReview()">
             <mat-icon>rate_review</mat-icon>
             Write a review
         </button>
@@ -26,7 +26,10 @@
                         <strong>Meeple House member</strong>
                         <span class="text-accent">★ {{ review.rating }}/10</span>
                     </div>
-                    <div class="review-markdown leading-6 text-muted" [innerHTML]="renderReview(review.body)"></div>
+                    <div class="leading-6 text-muted [&_>_:first-child]:mt-0 [&_>_:last-child]:mb-0 [&_a]:text-accent [&_a]:underline
+                           [&_blockquote]:ml-0 [&_blockquote]:border-l-3 [&_blockquote]:border-l-accent [&_blockquote]:pl-3
+                           [&_code]:rounded [&_code]:bg-mint [&_code]:px-1 [&_code]:py-px [&_pre]:overflow-x-auto [&_pre]:rounded-lg
+                           [&_pre]:bg-mint [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0" [innerHTML]="renderReview(review.body)"></div>
                 </article>
             } @empty {
                 <p class="rounded-xl bg-mint p-4 text-muted">No reviews yet. Be the first to review it.</p>
@@ -38,7 +41,7 @@
             <button mat-stroked-button type="button" class="mx-auto mt-6 flex" (click)="loadMore()">Load more</button>
         }
         @if (error) {
-            <p class="error mt-5">{{ error }}</p>
+            <p class="mt-5 text-[#a53525]">{{ error }}</p>
         }
     }
 </main>

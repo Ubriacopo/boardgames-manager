@@ -6,16 +6,16 @@
             [imageUrl]="game.image_url"
             [metadata]="library.metadata()[game.id]"
             [owned]="true"
-            [boxWidthMm]="game.box_width_mm"
-            [boxHeightMm]="game.box_height_mm"
-            [boxDepthMm]="game.box_depth_mm"
-            [savingDimensions]="savingDimensions"
-            [dimensionsError]="dimensionsError"
+            [gameDefinitionId]="game.game_id"
+            [selectedSizeId]="game.game_box_size_id"
+            [customDimensions]="customDimensions(game)"
+            [savingDimensions]="savingDimensions()"
+            [dimensionsError]="dimensionsError()"
             [location]="location(game.box)"
             [bggUrl]="game.bgg_url"
             backLabel="My collection"
             (back)="back()"
-            (dimensionsSave)="saveDimensions($event)"
+            (boxSizeSave)="saveBoxSize($event)"
     />
 } @else {
     <main class="flex min-h-[calc(100dvh-76px)] flex-col items-center justify-center px-5 text-center">
