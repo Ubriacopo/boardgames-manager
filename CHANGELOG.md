@@ -29,10 +29,14 @@
 
 ### Fixed
 
+- Added the tracked Tailwind PostCSS configuration so fresh checkouts generate utility styles instead of shipping unprocessed Tailwind directives.
+
 - Profile and friends pages now use reactive loading, error, and action state so completed Supabase requests update the screen immediately.
 - Public profile requests have a 15-second network timeout.
 
 ### Changed
+
+- Updated compatible dependencies, including Angular 20 security patches, Supabase, DOMPurify, and Marked. Replaced the build-tool package with `@angular/build` to remove unused Webpack dependencies. The dependency audit now reports only the existing low-severity Quill HTML-export advisory, which has no published patch.
 
 - Normalized `board_games` into `games`, `game_box_sizes`, and `board_games_box_association`; placement and order now live on each copy. Existing records are preserved with private recovery snapshots, and collection moves use an atomic database function.
 
