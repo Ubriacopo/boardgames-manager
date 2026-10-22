@@ -26,3 +26,7 @@ src/environments/environment.generated.ts
 *.njsproj
 *.sln
 *.sw?
+.postcssrc.json
+supabase/.temp/
+.agents/
+.ai/
