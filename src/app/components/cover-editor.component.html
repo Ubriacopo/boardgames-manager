@@ -1,0 +1,76 @@
+<h2 mat-dialog-title>Update cover</h2>
+<form (ngSubmit)="save()">
+    <mat-dialog-content>
+        <div class="cover-file-picker mt-4 flex flex-wrap items-center gap-3">
+            <input #coverFile type="file" hidden accept="image/jpeg,image/png,image/webp"
+                   [disabled]="saving()" (change)="chooseFile($event)">
+            <button mat-stroked-button type="button" [disabled]="saving()" (click)="coverFile.click()"
+                    aria-describedby="cover-file-hint">Browse image
+            </button>
+            <span class="min-w-0 break-all text-sm text-muted"
+                  role="status">{{ file?.name || (data.imageUrl ? 'Current cover' : 'No image selected') }}</span>
+        </div>
+        @if (loading()) {
+            <p role="status" class="mt-4 text-sm text-muted">Preparing image…</p>
+        }
+        <mat-expansion-panel class="cover-crop-panel" [expanded]="cropExpanded()"
+                             (opened)="cropExpanded.set(true)" (closed)="cropExpanded.set(false)"
+                             (afterExpand)="drawPreview()">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Crop &amp; zoom</mat-panel-title>
+                <mat-panel-description>{{ ready() ? 'Adjust your cover' : loading() ? 'Preparing image…' : 'Choose an image to begin' }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            @if (ready()) {
+                <p id="crop-help" class="text-sm text-muted">Drag the image to move the crop, then use the controls to
+                    fine-tune it.</p>
+                <div class="cover-crop-workspace pl-4 pr-4">
+                    <div class="cover-crop-preview" [style.aspect-ratio]="aspectRatio" [style.width]="previewWidth">
+                        <canvas #cropCanvas class="cover-crop-canvas" role="img" aria-label="Preview of the cover crop"
+                                aria-describedby="crop-help"
+                                (pointerdown)="startDrag($event)" (pointermove)="moveDrag($event)"
+                                (pointerup)="endDrag($event)"
+                                (pointercancel)="endDrag($event)" (lostpointercapture)="endDrag($event)"></canvas>
+                        <div class="cover-crop-guides" aria-hidden="true"></div>
+                    </div>
+                    <fieldset class="cover-crop-controls" [disabled]="saving()">
+                        <legend class="sr-only">Adjust image crop</legend>
+                        <label class="grid gap-2 text-sm font-semibold">Crop shape
+                            <select class="social-input" name="shape" [ngModel]="shape"
+                                    (ngModelChange)="changeShape($event)">
+                                <option value="portrait">Portrait (4:5)</option>
+                                <option value="square">Square</option>
+                                <option value="original">Original proportions</option>
+                            </select>
+                        </label>
+                        <label class="grid gap-1 text-sm font-semibold">Zoom · {{ zoom | number:'1.2-2' }}×
+                            <input type="range" name="zoom" min="1" max="4" step="0.01" [(ngModel)]="zoom"
+                                   (ngModelChange)="drawPreview()">
+                        </label>
+                        <label class="grid gap-1 text-sm font-semibold">Horizontal position
+                            · {{ horizontal | number:'1.0-0' }}%
+                            <input type="range" name="horizontal" min="0" max="100" step="0.1" [(ngModel)]="horizontal"
+                                   (ngModelChange)="drawPreview()">
+                        </label>
+                        <label class="grid gap-1 text-sm font-semibold">Vertical position
+                            · {{ vertical | number:'1.0-0' }}%
+                            <input type="range" name="vertical" min="0" max="100" step="0.1" [(ngModel)]="vertical"
+                                   (ngModelChange)="drawPreview()">
+                        </label>
+                        <button mat-stroked-button type="button" (click)="resetCrop()">Reset crop</button>
+                    </fieldset>
+                </div>
+            } @else {
+                <p class="m-0 text-sm text-muted">{{ loading() ? 'Preparing your cover for cropping…' : 'Browse for an image above, then expand Crop & zoom to adjust it.' }}</p>
+            }
+        </mat-expansion-panel>
+        @if (error()) {
+            <p role="alert" class="mt-4">{{ error() }}</p>
+        }
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button mat-button type="button" [disabled]="saving()" (click)="dialog.close()">Cancel</button>
+        <button mat-flat-button type="submit"
+                [disabled]="saving() || loading() || !ready()">{{ saving() ? 'Saving…' : 'Save cropped cover' }}
+        </button>
+    </mat-dialog-actions>
+</form>

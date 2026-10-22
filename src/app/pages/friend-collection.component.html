@@ -1,0 +1,74 @@
+<main class="mx-auto max-w-6xl px-5 py-10 pb-28 lg:px-12">
+  <a routerLink="/friends" class="mb-6 inline-flex items-center gap-2 font-semibold text-brand"><mat-icon>arrow_back</mat-icon>Friends</a>
+  @if (loading()) { <p role="status">Loading collection…</p> }
+  @else if (error()) {
+    <p role="alert" class="social-panel">{{ error() }}</p>
+    <button mat-stroked-button type="button" (click)="load()">Try again</button>
+  } @else if (profile) {
+    <header class="mb-8">
+      <p class="eyebrow">@{{ profile.handle }}</p>
+      <h1 class="font-display text-4xl font-bold">{{ profile.display_name }}’s collection</h1>
+      <p class="mt-3 text-muted">{{ collection.games.length }} games · {{ collection.boxes.length }} cubes</p>
+    </header>
+    <div class="mb-6 flex gap-3" role="group" aria-label="Collection view">
+      <button mat-stroked-button type="button" [attr.aria-pressed]="view === 'shelf'" [class.!bg-mint]="view === 'shelf'" (click)="view = 'shelf'"><mat-icon>grid_view</mat-icon>Kallax</button>
+      <button mat-stroked-button type="button" [attr.aria-pressed]="view === 'list'" [class.!bg-mint]="view === 'list'" (click)="view = 'list'"><mat-icon>view_list</mat-icon>Game list</button>
+    </div>
+    @if (view === 'shelf') {
+      <div class="overflow-x-auto pb-4">
+        <section class="kallax-shell friend-shelf" aria-label="Collector’s Kallax shelf"
+                 [style.--kallax-columns]="columns" [style.--kallax-rows]="rows" [style.min-width.px]="columns * 110">
+          @for (box of collection.boxes; track box.id) {
+            <button class="shelf-cube" type="button" [class.selected]="selectedBox === box.id"
+                    [attr.aria-pressed]="selectedBox === box.id"
+                    [attr.aria-label]="(box.description || box.label || 'Cube') + ': ' + gamesInBox(box.id).length + ' games'"
+                    (click)="selectedBox = selectedBox === box.id ? null : box.id">
+              <span>{{ box.description || box.label }}</span>
+              <div class="book-spines" [class.horizontal]="box.layout_direction === 'horizontal'">
+                @for (game of gamesInBox(box.id); track game.id) {
+                  <span class="game-spine friend-spine" [class.horizontal]="box.layout_direction === 'horizontal'"
+                        [style.width.%]="width(game, box)" [style.height.%]="height(game, box)" [title]="game.name">
+                    @if (box.layout_direction === 'horizontal' && game.image_url) { <img [src]="game.image_url" alt=""> }
+                    @else { {{ initials(game.name) }} }
+                  </span>
+                }
+              </div>
+              <small>{{ gamesInBox(box.id).length }} games</small>
+            </button>
+          }
+        </section>
+      </div>
+      @if (!collection.boxes.length) { <p class="text-muted">No Kallax cubes yet.</p> }
+      @if (selectedCube; as box) {
+        <section class="social-panel">
+          <h2 class="font-display text-2xl">{{ box.description || box.label }}</h2>
+          <ul class="mt-4 space-y-3">
+            @for (game of gamesInBox(box.id); track game.id) {
+              <li><strong>{{ game.name }}</strong><span class="ml-3 text-muted">{{ game.release_year }}</span></li>
+            } @empty { <li class="text-muted">This cube is empty.</li> }
+          </ul>
+        </section>
+      }
+      <section class="social-panel">
+        <h2 class="font-display text-2xl">Unassigned games</h2>
+        <ul class="mt-4 space-y-3">
+          @for (game of unassigned; track game.id) { <li>{{ game.name }} <span class="text-muted">· {{ game.release_year }}</span></li> }
+          @empty { <li class="text-muted">All games have a place on the shelf.</li> }
+        </ul>
+      </section>
+    } @else {
+      <label class="mb-5 block"><span class="sr-only">Search this collection</span><input type="search" class="social-input" [(ngModel)]="query" placeholder="Search this collection"></label>
+      <div class="rounded-2xl border border-line bg-surface px-4">
+        @for (game of filtered; track game.id) {
+          <article class="social-person">
+            <div class="flex min-w-0 items-center gap-4">
+              @if (game.image_url) { <img [src]="game.image_url" alt="" loading="lazy" class="size-14 rounded-lg object-cover"> }
+              @else { <span class="flex size-14 shrink-0 items-center justify-center rounded-lg bg-mint text-brand"><mat-icon>casino</mat-icon></span> }
+              <div class="min-w-0"><h2 class="font-semibold">{{ game.name }}</h2><p class="text-sm text-muted">{{ game.release_year }} · {{ location(game) }}</p></div>
+            </div>
+          </article>
+        } @empty { <p class="py-10 text-center text-muted">{{ query ? 'No games match this search.' : 'This collection has no games yet.' }}</p> }
+      </div>
+    }
+  }
+</main>

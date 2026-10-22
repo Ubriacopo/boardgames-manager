@@ -88,3 +88,45 @@ Open `http://localhost:4200`.
 - `npm test` — run Angular tests
 - `npm run backfill:bgg-images` — run the existing BGG image backfill
 - `npm run backfill:search-images` — run the existing search image backfill
+
+## Friends and shared collections
+
+The Friends tab lets signed-in collectors search by public handle, request
+friendship, or follow collectors who allow it. Set your display name, handle,
+and connection preference under **Profile → Public profile & friends**.
+Friend requests require acceptance and share collections in both directions.
+Following shares the followed collector's collection in one direction. Switching
+to approval mode stops existing followers from accessing your collection;
+approved friendships remain connected. Connections can be removed in Friends.
+
+Shared collections provide a Kallax view with selectable cubes and a searchable
+game list. They are read-only, including game placement and shelf layout.
+Public profiles contain no account email addresses.
+
+Apply `supabase/migrations/20261022071931_add_friends_and_collection_sharing.sql`
+with the project's normal migration deployment workflow before using these
+features. It adds public social profiles, connections, sharing policies, and saved
+shelf grid dimensions. Existing collectors receive a generated `player_…` handle
+and default to requiring approval; they can personalize their handle in Profile.
+
+## Handles and cover administration
+
+Registration asks for a unique handle using 3–40 lowercase letters, numbers, or
+dots. Handles are reserved during account creation, including when email
+confirmation is required, and can be changed under Profile. The database
+normalizes case and rejects duplicates. Existing generated handles use `player.`
+followed by the account identifier until personalized.
+
+Admins can press the cover on a game detail page, choose **Browse image**, and
+upload a JPG, PNG, or WebP file up to 5 MB. Drag and zoom the preview to crop it
+before saving. Cover overrides are keyed by BGG game
+ID in `game_covers`, shared across discovery and collections, and take precedence
+over imported images. Uploaded artwork lives in the public `game-covers` bucket.
+The cover editor requires a valid BGG game ID.
+
+Admin authority uses the server-controlled `app_metadata.role = "admin"` value in
+Supabase Auth. Assign that role through a trusted administrative connection;
+users cannot grant it to themselves through profile or registration fields.
+After an admin role changes, sign out and back in to refresh the session.
+`20261022082322_admin_covers_and_registration_handles.sql` provisions registration
+triggers, handle rules, fuzzy collector search, cover tables, and upload policies.

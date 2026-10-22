@@ -1,3 +1,4 @@
+import {makeSearchScorer} from './search';
 export type BggGameMetadata = {
   bggId: number;
   name: string;
@@ -96,20 +97,11 @@ export async function searchBggMetadataByName(query: string, limit = 20) {
     return [];
   }
 
-  const matcher = createNameMatcher(normalizedQuery);
-  const results: BggGameMetadata[] = [];
-
-  for (const metadata of allMetadata.values()) {
-    if (matcher.test(metadata.name)) {
-      results.push(metadata);
-    }
-
-    if (results.length >= limit) {
-      break;
-    }
-  }
-
-  return results;
+  const score = makeSearchScorer(normalizedQuery);
+  return [...allMetadata.values()].map(metadata => ({ metadata, score: score(metadata.name) }))
+    .filter(result => result.score > 0)
+    .sort((a, b) => b.score - a.score || (a.metadata.rank ?? Infinity) - (b.metadata.rank ?? Infinity))
+    .slice(0, limit).map(result => result.metadata);
 }
 
 function getAllBggMetadata() {
@@ -174,18 +166,6 @@ function getRankTags(row: Record<string, string>) {
   ]
     .filter(([field]) => Boolean(row[field]))
     .map(([, label]) => label);
-}
-
-function createNameMatcher(query: string) {
-  try {
-    return new RegExp(query, 'i');
-  } catch {
-    return new RegExp(escapeRegExp(query), 'i');
-  }
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function toNumber(value: string | undefined) {

@@ -1,8 +1,10 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, computed, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {getBggCatalog, type BggGameMetadata} from '../../utils/bggData';
+import {makeSearchScorer} from '../../utils/search';
+import {GameCoverService} from '../services/game-cover.service';
 import {LibraryService} from '../services/library.service';
 import {GameListRowComponent} from '../components/game-list-row.component';
 
@@ -11,42 +13,56 @@ import {GameListRowComponent} from '../components/game-list-row.component';
     imports: [FormsModule, GameListRowComponent, MatButtonModule, MatIconModule],
     templateUrl: './games.component.html',
 })
-export class GamesComponent implements OnInit {
+export class GamesComponent implements OnInit, OnDestroy {
     readonly categories = ['All', 'Strategy', 'Family', 'Party', 'Thematic', 'Card game', 'Abstract', 'War', "Children's"];
-    catalog: BggGameMetadata[] = [];
-    query = '';
-    category = 'All';
-    sort: 'rank' | 'rating' | 'popular' | 'newest' = 'rank';
-    loading = true;
-    error = '';
+    readonly catalog = signal<BggGameMetadata[]>([]);
+    readonly query = signal('');
+    private readonly searchQuery = signal('');
+    private queryTimer?: ReturnType<typeof setTimeout>;
+    readonly category = signal('All');
+    readonly sort = signal<'rank' | 'rating' | 'popular' | 'newest'>('rank');
+    readonly loading = signal(true);
+    readonly error = signal('');
 
-    constructor(readonly library: LibraryService) {
+    constructor(readonly library: LibraryService, readonly covers: GameCoverService) {
     }
 
     async ngOnInit(): Promise<void> {
         try {
-            this.catalog = await getBggCatalog();
+            this.catalog.set(await getBggCatalog());
         } catch (error) {
-            this.error = error instanceof Error ? error.message : 'Unable to load the game catalog.';
+            this.error.set(error instanceof Error ? error.message : 'Unable to load the game catalog.');
         } finally {
-            this.loading = false;
+            this.loading.set(false);
         }
     }
 
-    results(): BggGameMetadata[] {
-        const query = this.query.trim().toLowerCase();
-        return this.catalog
-            .filter((game) => !game.isExpansion)
-            .filter((game) => this.category === 'All' || game.themes.includes(this.category))
-            .filter((game) => !query || game.searchText.includes(query))
-            .sort((a, b) => {
-                if (this.sort === 'rating') return (b.avgRating ?? 0) - (a.avgRating ?? 0);
-                if (this.sort === 'popular') return (b.usersRated ?? 0) - (a.usersRated ?? 0);
-                if (this.sort === 'newest') return (b.yearPublished ?? 0) - (a.yearPublished ?? 0);
-                return (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
-            })
-            .slice(0, 100);
+    setQuery(value: string): void {
+        this.query.set(value);
+        clearTimeout(this.queryTimer);
+        this.queryTimer = setTimeout(() => this.searchQuery.set(value), 180);
     }
+
+    ngOnDestroy(): void { clearTimeout(this.queryTimer); }
+
+    readonly results = computed(() => {
+        const query = this.searchQuery().trim();
+        const score = makeSearchScorer(query);
+        const category = this.category();
+        const sort = this.sort();
+        return this.catalog()
+            .filter(game => !game.isExpansion && (category === 'All' || game.themes.includes(category)))
+            .map(game => ({ game, score: query ? Math.max(score(game.name) * 1.1, score(game.searchText)) : 1 }))
+            .filter(result => result.score > 0)
+            .sort((left, right) => {
+                if (query && left.score !== right.score) return right.score - left.score;
+                const a = left.game, b = right.game;
+                if (sort === 'rating') return (b.avgRating ?? 0) - (a.avgRating ?? 0);
+                if (sort === 'popular') return (b.usersRated ?? 0) - (a.usersRated ?? 0);
+                if (sort === 'newest') return (b.yearPublished ?? 0) - (a.yearPublished ?? 0);
+                return (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
+            }).slice(0, 100).map(result => result.game);
+    });
 
     owned(bggId: number): boolean {
         return this.library.games().some((game) => game.bgg_id === bggId);

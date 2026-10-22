@@ -12,6 +12,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_covers: {
+        Row: { bgg_id: number; image_url: string; updated_at: string }
+        Insert: { bgg_id: number; image_url: string; updated_at?: string }
+        Update: { bgg_id?: number; image_url?: string; updated_at?: string }
+        Relationships: []
+      }
+      social_profiles: {
+        Row: { id: string; handle: string; display_name: string; connection_mode: 'approval' | 'follow' }
+        Insert: { id: string; handle: string; display_name: string; connection_mode?: 'approval' | 'follow' }
+        Update: { handle?: string; display_name?: string; connection_mode?: 'approval' | 'follow' }
+        Relationships: [{ foreignKeyName: "social_profiles_id_fkey"; columns: ["id"]; isOneToOne: true; referencedRelation: "app_users"; referencedColumns: ["id"] }]
+      }
+      social_connections: {
+        Row: { id: string; requester_id: string; recipient_id: string; kind: 'friend' | 'follow'; status: 'pending' | 'accepted'; created_at: string }
+        Insert: { id?: string; requester_id: string; recipient_id: string; kind: 'friend' | 'follow'; status: 'pending' | 'accepted'; created_at?: string }
+        Update: { status?: 'pending' | 'accepted' }
+        Relationships: [
+          { foreignKeyName: "social_connections_requester_id_fkey"; columns: ["requester_id"]; isOneToOne: false; referencedRelation: "social_profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "social_connections_recipient_id_fkey"; columns: ["recipient_id"]; isOneToOne: false; referencedRelation: "social_profiles"; referencedColumns: ["id"] }
+        ]
+      }
       app_users: {
         Row: {
           created_at: string
@@ -34,18 +55,24 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          shelf_columns: number | null
+          shelf_rows: number | null
           name: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          shelf_columns?: number | null
+          shelf_rows?: number | null
           name?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          shelf_columns?: number | null
+          shelf_rows?: number | null
           name?: string
           user_id?: string
         }
@@ -280,7 +307,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_collectors: {
+        Args: { query: string }
+        Returns: Database['public']['Tables']['social_profiles']['Row'][]
+      }
+
     }
     Enums: {
       [_ in never]: never

@@ -1,3 +1,4 @@
+import {makeSearchScorer} from '../../utils/search';
 import {Component} from '@angular/core';
 import {CdkDragEnd, CdkDragMove} from '@angular/cdk/drag-drop';
 import {FormsModule} from '@angular/forms';
@@ -25,9 +26,10 @@ export class CollectionListComponent {
     filtered(): BoardGame[] {
         const query = this.query.trim().toLowerCase();
         const metadata = this.library.metadata();
+        const score = makeSearchScorer(query);
         return this.library.games().filter((game) => {
             const meta = metadata[game.id];
-            return !query || [game.name, game.release_year, ...(meta?.themes ?? [])].join(' ').toLowerCase().includes(query);
+            return !query || score([game.name, game.release_year, ...(meta?.themes ?? [])].join(' ')) > 0;
         }).sort((a, b) => {
             if (this.sort === 'newest') return b.release_year - a.release_year;
             if (this.sort === 'rating') return (metadata[b.id]?.avgRating ?? 0) - (metadata[a.id]?.avgRating ?? 0);

@@ -22,11 +22,17 @@
         }
     </div>
     <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
-        <div class="flex aspect-4/5 w-[min(58vw,18rem)] items-center justify-center justify-self-center overflow-hidden rounded-3xl bg-mint font-display text-7xl shadow-2xl lg:w-full lg:max-w-95 lg:text-8xl">
-            @if (imageUrl || bggOverview?.imageUrl; as cover) {
+        <div class="relative flex aspect-4/5 w-[min(58vw,18rem)] items-center justify-center justify-self-center overflow-hidden rounded-3xl bg-mint font-display text-7xl shadow-2xl lg:w-full lg:max-w-95 lg:text-8xl">
+            @if (coverUrl(); as cover) {
                 <img class="size-full object-cover" [src]="cover" [alt]="name + ' cover'">
             } @else {
                 <span>{{ name.slice(0, 1) }}</span>
+            }
+            @if (auth.isAdmin() && coverGameId) {
+                <button type="button" class="absolute inset-0 flex items-end justify-center bg-black/0 pb-4 transition hover:bg-black/15 focus-visible:outline-4 focus-visible:outline-accent"
+                        (click)="editCover()" [attr.aria-label]="'Update cover for ' + name">
+                    <span class="flex items-center gap-2 rounded-full bg-surface px-4 py-2 font-sans text-sm font-bold text-ink shadow-lg"><mat-icon>edit</mat-icon>Edit cover</span>
+                </button>
             }
         </div>
 
@@ -52,7 +58,7 @@
                 @if (owned) {
                     <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'dimensions'"
                             [class.!text-white]="detailTab === 'dimensions'" (click)="detailTab = 'dimensions'">
-                        Box dimensions
+                        Box Dims.
                     </button>
                 }
             </nav>

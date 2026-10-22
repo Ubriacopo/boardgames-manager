@@ -7,10 +7,10 @@
         <div class="flex flex-col gap-3 sm:flex-row">
             <label class="flex flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4 focus-within:border-brand">
                 <mat-icon>search</mat-icon>
-                <input class="w-full bg-transparent py-3 outline-none" type="search" [(ngModel)]="query"
+                <input class="w-full bg-transparent py-3 outline-none" type="search" [ngModel]="query()" (ngModelChange)="setQuery($event)"
                        placeholder="Search every board game">
             </label>
-            <select class="rounded-xl border border-line bg-surface px-4 py-3" [(ngModel)]="sort">
+            <select class="rounded-xl border border-line bg-surface px-4 py-3" [ngModel]="sort()" (ngModelChange)="sort.set($event)">
                 <option value="rank">Best ranked</option>
                 <option value="rating">Highest rating</option>
                 <option value="popular">Most popular</option>
@@ -20,19 +20,19 @@
         <div class="flex gap-2 overflow-x-auto pb-1">
             @for (item of categories; track item) {
                 <button mat-stroked-button type="button" class="shrink-0"
-                        [class.!bg-accent]="category === item"
-                        [class.!text-white]="category === item"
-                        (click)="category = item">
+                        [class.!bg-accent]="category() === item"
+                        [class.!text-white]="category() === item"
+                        (click)="category.set(item)">
                     {{ item }}
                 </button>
             }
         </div>
     </section>
 
-    @if (loading) {
+    @if (loading()) {
         <p class="py-20 text-center text-muted">Opening the catalog…</p>
-    } @else if (error) {
-        <p class="error py-20 text-center">{{ error }}</p>
+    } @else if (error()) {
+        <p class="error py-20 text-center">{{ error() }}</p>
     } @else {
         <div class="mb-4 flex items-center justify-between">
             <p class="m-0 text-sm text-muted">Showing the first {{ results().length }} matches</p>
@@ -41,6 +41,7 @@
             @for (game of results(); track game.bggId) {
                 <app-game-list-row
                         [name]="game.name"
+                        [imageUrl]="covers.urls()[game.bggId] ?? null"
                         [year]="game.yearPublished"
                         [category]="game.themes[0] || ''"
                         [rank]="game.rank"

@@ -47,6 +47,32 @@
 
     </section>
 
+    <section class="social-panel mt-6">
+        <h2 class="font-display text-2xl">Public profile &amp; friends</h2>
+        <p class="mt-2 text-sm text-muted">Collectors can find you by your handle. Your email stays private.</p>
+        @if (socialError()) { <p role="alert" class="mt-4">{{ socialError() }}</p> }
+        @if (socialNotice()) { <p role="status" class="mt-4 text-brand">{{ socialNotice() }}</p> }
+        @if (socialLoading()) { <p role="status" class="mt-4">Loading profile…</p> }
+        @else if (socialReady()) {
+            <form #handleForm="ngForm" (ngSubmit)="saveSocialProfile()" class="mt-5 flex flex-wrap items-end gap-3">
+                <label class="min-w-0 flex-1">Your handle
+                    <input class="social-input mt-2" name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="40" pattern="[a-z0-9.]{3,40}" aria-describedby="handle-hint">
+                </label>
+                <button mat-flat-button type="submit" [disabled]="saving() || handleForm.invalid">{{ saving() ? 'Saving…' : 'Save handle' }}</button>
+                <p id="handle-hint" class="w-full text-sm text-muted">3–40 letters, numbers, or dots. Your handle is unique.</p>
+            </form>
+            <label class="mt-5 block">How people connect with you
+                <select class="social-input mt-2" name="connectionMode" [ngModel]="connectionMode"
+                        (ngModelChange)="changeConnectionMode($event)" [disabled]="saving()">
+                    <option value="approval">Friend requests — I approve first</option>
+                    <option value="follow">Followers — no approval needed</option>
+                </select>
+            </label>
+            <p class="mt-3 text-sm text-muted">Approved friends share collections in both directions. Followers can see yours while you allow following.</p>
+        } @else { <button mat-stroked-button type="button" (click)="ngOnInit()">Try again</button> }
+    </section>
+
     <section class="mt-6 rounded-3xl border border-line bg-surface p-6 sm:p-8">
         <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Appearance</p>
         <h2 class="mb-5 font-display text-2xl">Color theme</h2>

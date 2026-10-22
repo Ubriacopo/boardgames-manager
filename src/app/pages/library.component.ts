@@ -64,8 +64,10 @@ export class LibraryComponent {
         const requestedTab = route.snapshot.queryParamMap.get('tab');
         if (requestedTab === 'recent' || requestedTab === 'collection') this.activeTab = requestedTab;
         const boxCount = Math.max(1, library.boxes().length);
-        this.gridColumns = Math.ceil(Math.sqrt(boxCount));
-        this.gridRows = Math.ceil(boxCount / this.gridColumns);
+        const saved = library.library();
+        const savedFits = saved?.shelf_columns && saved?.shelf_rows && saved.shelf_columns * saved.shelf_rows >= boxCount;
+        this.gridColumns = savedFits ? saved.shelf_columns! : Math.ceil(Math.sqrt(boxCount));
+        this.gridRows = savedFits ? saved.shelf_rows! : Math.ceil(boxCount / this.gridColumns);
         this.draftColumns = this.gridColumns;
         this.draftRows = this.gridRows;
     }
@@ -97,11 +99,19 @@ export class LibraryComponent {
         this.selectedBoxLabel = box?.description ?? box?.label ?? `Cube ${boxId}`;
     }
 
-    applyGridLayout(): void {
-        if (!this.gridLayoutValid) return;
-        this.gridColumns = this.draftColumns;
-        this.gridRows = this.draftRows;
-        this.layoutOpen = false;
+    async applyGridLayout(): Promise<void> {
+        if (!this.gridLayoutValid || this.changingCubes) return;
+        this.changingCubes = true;
+        const columns = this.draftColumns;
+        const rows = this.draftRows;
+        try {
+            await this.library.saveShelfLayout(columns, rows);
+            this.gridColumns = columns;
+            this.gridRows = rows;
+            this.layoutOpen = false;
+        } catch (error) {
+            this.snackBar.open(error instanceof Error ? error.message : 'Unable to save shelf layout.', 'Dismiss');
+        } finally { this.changingCubes = false; }
     }
 
     openLayoutSettings(): void {
@@ -126,6 +136,7 @@ export class LibraryComponent {
                 if (this.gridColumns <= this.gridRows) this.gridColumns += 1;
                 else this.gridRows += 1;
             }
+            await this.library.saveShelfLayout(this.gridColumns, this.gridRows);
         } catch (error) {
             this.snackBar.open(error instanceof Error ? error.message : 'Unable to add a cube.', 'Dismiss');
         } finally {

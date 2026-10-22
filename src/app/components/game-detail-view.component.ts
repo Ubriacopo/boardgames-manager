@@ -1,5 +1,5 @@
 import {DatePipe, DecimalPipe} from '@angular/common';
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -11,13 +11,18 @@ import {
     type BggOverview,
     type BggReview,
 } from '../../utils/bggData';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {AuthService} from '../services/auth.service';
+import {GameCoverService} from '../services/game-cover.service';
+import {CoverEditorComponent} from './cover-editor.component';
+import {getBggGameId} from '../../utils/bggData';
 import {renderMarkdown} from '../../utils/renderMarkdown';
 import {ReviewService, type LocalReviewSummary} from '../services/review.service';
 
 @Component({
     selector: 'app-game-detail-view',
     standalone: true,
-    imports: [DatePipe, DecimalPipe, FormsModule, MatButtonModule, MatIconModule, RouterLink],
+    imports: [DatePipe, DecimalPipe, FormsModule, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
     templateUrl: './game-detail-view.component.html',
 })
 export class GameDetailViewComponent implements OnChanges {
@@ -48,7 +53,21 @@ export class GameDetailViewComponent implements OnChanges {
     detailTab: 'overview' | 'ratings' | 'dimensions' = 'overview';
     dimensions = {width: 50, height: 200, depth: 100};
 
-    constructor(private readonly reviews: ReviewService) {
+    constructor(private readonly reviews: ReviewService, readonly auth: AuthService, private readonly covers: GameCoverService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
+    }
+
+    get coverGameId(): number { return this.bggId || getBggGameId(this.bggUrl) || 0; }
+
+    coverUrl(): string | null {
+        return this.covers.urls()[this.coverGameId] ?? this.imageUrl ?? this.bggOverview?.imageUrl ?? null;
+    }
+
+    editCover(): void {
+        if (!this.auth.isAdmin() || !this.coverGameId) return;
+        this.dialog.open(CoverEditorComponent, {
+            width: '760px', maxWidth: '95vw', panelClass: 'cover-editor-dialog',
+            data: { bggId: this.coverGameId, name: this.name, imageUrl: this.coverUrl() },
+        });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -76,6 +95,7 @@ export class GameDetailViewComponent implements OnChanges {
             getBggOverview(this.bggId).then((overview) => this.bggOverview = overview),
             getBggReviews(this.bggId).then((reviews) => this.bggReviews = reviews),
         ]);
+        this.changeDetector.markForCheck();
     }
 
     private async loadLocalReviews(): Promise<void> {

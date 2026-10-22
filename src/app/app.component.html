@@ -13,22 +13,17 @@
                     aria-label="Main navigation"
                     class="fixed inset-x-0 bottom-0 z-50 grid min-h-16 grid-cols-5 items-center border-t border-line bg-surface px-1 py-1 pb-[max(5px,env(safe-area-inset-bottom))] lg:static lg:flex lg:justify-center lg:gap-2 lg:border-0 lg:bg-transparent lg:p-0"
             >
-                <a routerLink="/library" routerLinkActive="bg-mint! text-brand!"
+                <a routerLink="/games" routerLinkActive="bg-mint! text-brand!" aria-label="Discover"
                    class="col-start-1 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
-                    <mat-icon>grid_view</mat-icon>
-                    <span class="hidden md:block">Library</span>
+                    <mat-icon>explore</mat-icon><span class="hidden md:block">Discover</span>
                 </a>
-                <button type="button" disabled
-                   class="absolute left-1/2 -mt-7 flex size-15 -translate-x-1/2 items-center justify-center rounded-full border-5 border-canvas bg-accent p-0 text-white shadow-xl lg:hidden"
-                   aria-label="Quick action coming soon"
-                   title="Quick action coming soon">
-                    <mat-icon>add</mat-icon>
-                    <span class="sr-only">Quick action coming soon</span>
-                </button>
-                <a routerLink="/games" routerLinkActive="bg-mint! text-brand!"
+                <a routerLink="/friends" routerLinkActive="bg-mint! text-brand!" aria-label="Friends"
                    class="col-start-2 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
-                    <mat-icon>explore</mat-icon>
-                    <span class="hidden md:block">Discover</span>
+                    <mat-icon>people</mat-icon><span class="hidden md:block">Friends</span>
+                </a>
+                <a routerLink="/library" routerLinkActive="ring-2 ring-brand" aria-label="My Kallax shelf"
+                   class="col-start-3 -mt-7 flex size-15 items-center justify-center justify-self-center rounded-full border-5 border-canvas bg-emerald-700 text-white shadow-xl lg:mt-0 lg:h-auto lg:w-auto lg:gap-1.5 lg:border-0 lg:px-4 lg:py-2.5 lg:shadow-none">
+                    <mat-icon>grid_view</mat-icon><span class="hidden lg:block">Kallax</span>
                 </a>
                 <button
                     type="button"
@@ -40,7 +35,7 @@
                     <mat-icon>group</mat-icon>
                     <span class="hidden md:block">{{ isCreatingSession ? 'Starting…' : 'Start a session' }}</span>
                 </button>
-                <a routerLink="/profile" routerLinkActive="bg-mint! text-brand!"
+                <a routerLink="/profile" aria-label="Profile" routerLinkActive="bg-mint! text-brand!"
                    class="col-start-5 flex items-center justify-center gap-1.5 rounded-full px-2 py-2.5 font-semibold text-muted lg:px-4">
                     <mat-icon>person</mat-icon>
                     <span class="hidden md:block">Profile</span>

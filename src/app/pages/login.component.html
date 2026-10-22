@@ -20,13 +20,20 @@
         </div>
     </section>
     <section class="flex items-center justify-center bg-surface p-6 lg:p-10">
-        <form class="grid w-full max-w-md gap-5" (ngSubmit)="submit()">
+        <form #loginForm="ngForm" class="grid w-full max-w-md gap-5" (ngSubmit)="submit()" [attr.aria-busy]="working()">
             <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">
                 Welcome {{ mode === 'sign-in' ? 'back' : 'in' }}</p>
             <h2 class="font-display text-4xl font-bold lg:text-5xl">{{ mode === 'sign-in' ? 'Sign in to your library' : 'Create your game library' }}</h2>
             <p class="text-muted">
                 {{ mode === 'sign-in' ? 'Your next game night starts here.' : 'A better home for every game you own.' }}
             </p>
+            @if (mode === 'sign-up') {
+                <label class="grid gap-2 text-sm font-bold">Your handle
+                    <input class="social-input" type="text" name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="40" pattern="[a-z0-9.]{3,40}" placeholder="e.g. meeple.master" aria-describedby="signup-handle-hint">
+                    <span id="signup-handle-hint" class="text-sm font-normal text-muted">Letters, numbers, and dots. Your handle is unique and you can change it later.</span>
+                </label>
+            }
             <label class="grid gap-2 text-sm font-bold">
                 Email address
                 <input class="rounded-xl border border-line bg-canvas px-4 py-3.5 outline-none focus:border-brand"
@@ -38,16 +45,27 @@
                 <input class="rounded-xl border border-line bg-canvas px-4 py-3.5 outline-none focus:border-brand"
                        type="password" name="password" [(ngModel)]="password" minlength="6" required>
             </label>
-            @if (message) {
-                <p [class.error]="isError">{{ message }}</p>
+            @if (message()) {
+                <p [class.error]="isError">{{ message() }}</p>
             }
-            <button mat-flat-button class="primary-action" [disabled]="working">
-                {{ working ? 'One moment…' : mode === 'sign-in' ? 'Sign in' : 'Create account' }}
+            <button mat-flat-button class="primary-action" [disabled]="working() || loginForm.invalid">
+                {{ working() ? 'One moment…' : mode === 'sign-in' ? 'Sign in' : 'Create account' }}
                 <mat-icon>arrow_forward</mat-icon>
             </button>
-            <button type="button" class="text-button" (click)="toggle()">
+            <button type="button" class="text-button" [disabled]="working()" (click)="toggle()">
                 {{ mode === 'sign-in' ? 'New here? Create an account' : 'Already have an account? Sign in' }}
             </button>
         </form>
     </section>
 </main>
+
+
+<ng-template #loadingDialog>
+    <div class="flex flex-col items-center gap-5 px-7 py-10 text-center" role="status" aria-live="polite" aria-atomic="true">
+        <mat-spinner [diameter]="44" aria-hidden="true"></mat-spinner>
+        <div>
+            <p class="mb-2 font-display text-2xl font-bold">{{ loadingLabel() }}</p>
+            <p class="m-0 text-sm text-muted">Your next game night is on its way.</p>
+        </div>
+    </div>
+</ng-template>
