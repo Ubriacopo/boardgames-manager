@@ -131,9 +131,12 @@
                     }
 
                     @if (owned && location) {
-                        <p class="my-7 flex items-center gap-2">
-                            <mat-icon>inventory_2</mat-icon>
-                            Stored in <strong>{{ location }}</strong>
+                        <p class="my-7 flex flex-wrap items-center gap-2">
+                            <mat-icon class="shrink-0">inventory_2</mat-icon>
+                            Stored in <strong class="min-w-0 wrap-anywhere">{{ location }}</strong>
+                            @if (libraryName) {
+                                <app-library-chip [name]="libraryName" [color]="libraryColor"/>
+                            }
                         </p>
                     }
 

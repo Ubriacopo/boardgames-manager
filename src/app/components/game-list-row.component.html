@@ -54,9 +54,7 @@
             }
         </span>
           @if (libraryName) {
-              <span class="max-w-full rounded-full bg-[var(--library-color)] px-2 py-0.5 text-[.7rem] font-semibold wrap-anywhere text-[var(--library-ink)]"
-                    [style.--library-color]="libraryColor" [style.--library-ink]="libraryInk"
-                    [attr.aria-label]="'Library: ' + libraryName">{{ libraryName }}</span>
+              <app-library-chip [name]="libraryName" [color]="libraryColor"/>
           }
       </small>
     </span>

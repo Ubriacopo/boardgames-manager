@@ -4,6 +4,8 @@
 
 ### Added
 
+- Owned game pages show the library's colored chip beside the stored-in cube name.
+
 - A label toggle beside Kallax zoom controls reveals spine artwork. The preference is saved in this browser and also applies to shared shelves.
 
 - Separate admin game editor opened from an edit icon on game pages, with shared name, year, fallback cover, and default format fields plus cover, wallpaper, logo, and box-side artwork controls. Saved details update discovery and collections.

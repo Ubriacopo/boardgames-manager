@@ -4,12 +4,13 @@ import {CdkDrag, CdkDragEnd, CdkDragMove} from '@angular/cdk/drag-drop';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
+import {LibraryChipComponent} from './library-chip.component';
 
 @Component({
     selector: 'app-game-list-row',
     standalone: true,
     host: {class: 'block'},
-    imports: [CdkDrag, DecimalPipe, MatButtonModule, MatIconModule, RouterLink],
+    imports: [CdkDrag, DecimalPipe, MatButtonModule, MatIconModule, RouterLink, LibraryChipComponent],
     templateUrl: './game-list-row.component.html',
 })
 export class GameListRowComponent {
@@ -22,14 +23,6 @@ export class GameListRowComponent {
     @Input() location = '';
     @Input() libraryName = '';
     @Input() libraryColor = '#287f82';
-
-    get libraryInk(): string {
-        const hex = /^#[0-9a-fA-F]{6}$/.test(this.libraryColor) ? this.libraryColor : '#287f82';
-        const channels = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255)
-                .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
-        const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
-        return luminance > 0.179 ? '#000000' : '#ffffff';
-    }
 
     @Input() rank: number | null = null;
     @Input() rating: number | null = null;

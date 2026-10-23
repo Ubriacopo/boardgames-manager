@@ -1,5 +1,6 @@
 import type {BoxDimensions, BoxSizeSelection} from '../../entities/BoardGame';
 import {GameBoxSizeFormComponent} from './game-box-size-form.component';
+import {LibraryChipComponent} from './library-chip.component';
 import {DatePipe, DecimalPipe} from '@angular/common';
 import {
     ChangeDetectorRef,
@@ -33,7 +34,7 @@ import {ReviewService, type LocalReviewSummary} from '../services/review.service
 @Component({
     selector: 'app-game-detail-view',
     standalone: true,
-    imports: [GameBoxSizeFormComponent, DatePipe, DecimalPipe, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
+    imports: [GameBoxSizeFormComponent, LibraryChipComponent, DatePipe, DecimalPipe, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
     templateUrl: './game-detail-view.component.html',
 })
 export class GameDetailViewComponent implements OnChanges {
@@ -44,6 +45,8 @@ export class GameDetailViewComponent implements OnChanges {
     @Input() metadata?: BggGameMetadata;
     @Input() owned = false;
     @Input() location = '';
+    @Input() libraryName = '';
+    @Input() libraryColor = '#287f82';
     @Input() bggUrl = '';
     @Input() backLabel = 'Back';
     @Input() actionLabel = 'Add to library';
