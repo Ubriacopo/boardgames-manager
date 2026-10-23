@@ -14,25 +14,22 @@
             <mat-icon>arrow_back</mat-icon>
             {{ backLabel }}
         </button>
-        @if (auth.isAdmin() && coverGameId) {
-            <div class="flex max-w-full min-w-0 [scrollbar-width:thin] [scrollbar-color:var(--forest)_var(--line)] flex-nowrap gap-2
-                   overflow-x-auto overscroll-x-contain px-0.5 pt-1 pb-2 focus-visible:rounded-lg focus-visible:outline-2
-                   focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" role="group" aria-label="Game artwork" tabindex="0">
-                <button mat-stroked-button type="button" class="flex-none bg-[color-mix(in_srgb,_var(--paper)_85%,_transparent)]! whitespace-nowrap backdrop-blur-[8px]" (click)="editCover()">
-                    <mat-icon>photo_library</mat-icon>Edit cover
-                </button>
-                <button mat-stroked-button type="button" class="flex-none bg-[color-mix(in_srgb,_var(--paper)_85%,_transparent)]! whitespace-nowrap backdrop-blur-[8px]" (click)="editWallpaper()">
-                    <mat-icon>wallpaper</mat-icon>{{ wallpaperUrl() ? 'Edit wallpaper' : 'Add wallpaper' }}
-                </button>
-                <button mat-stroked-button type="button" class="flex-none bg-[color-mix(in_srgb,_var(--paper)_85%,_transparent)]! whitespace-nowrap backdrop-blur-[8px]" (click)="editBoxSide()">
-                    <mat-icon>view_week</mat-icon>{{ hasBoxSide() ? 'Edit box side' : 'Add box side' }}
-                </button>
-            </div>
-        }
     </div>
+    @if (definitionError()) {
+        <div class="mb-5 flex flex-wrap items-center gap-2 text-sm text-muted" role="status">
+            <span>{{ definitionError() }}</span>
+            <button mat-button type="button" (click)="loadDefinition()"><mat-icon>refresh</mat-icon>Retry</button>
+        </div>
+    }
     <div class="fixed top-4 right-4 z-30 flex gap-2 lg:top-6 lg:right-6">
-        @if (bggUrl) {
-            <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="bggUrl"
+        @if (auth.isAdmin() && (coverGameId || gameDefinitionId)) {
+            <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
+                    (click)="editGame()" aria-label="Edit game" title="Edit game">
+                <mat-icon>edit</mat-icon>
+            </button>
+        }
+        @if (displayBggUrl) {
+            <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="displayBggUrl"
                target="_blank" rel="noreferrer" aria-label="Open on BoardGameGeek" title="Open on BoardGameGeek">
                 <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
             </a>
@@ -40,7 +37,7 @@
         @if (!owned || gameDefinitionId) {
             <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
                     (click)="primaryAction.emit()" [disabled]="actionDisabled"
-                    [attr.aria-label]="actionLabel + ': ' + name"
+                    [attr.aria-label]="actionLabel + ': ' + displayName"
                     [title]="actionLabel">
                 <mat-icon>library_add</mat-icon>
             </button>
@@ -50,25 +47,19 @@
         <div class="flex w-full max-w-[380px] justify-center self-start justify-self-center">
             <div class="relative max-w-full overflow-hidden rounded-3xl bg-transparent" [style.width]="logoWidth()">
                 @if (logoUrl(); as logo) {
-                    <img class="block h-auto w-full rounded-3xl bg-transparent" [src]="logo" [alt]="name + ' logo'" (load)="onLogoLoad($event)">
+                    <img class="block h-auto w-full rounded-3xl bg-transparent" [src]="logo" [alt]="displayName + ' logo'" (load)="onLogoLoad($event)">
                 } @else {
-                    <span class="flex aspect-square w-full items-center justify-center bg-mint font-display text-8xl">{{ name.slice(0, 1) }}</span>
-                }
-                @if (auth.isAdmin() && coverGameId) {
-                    <button type="button" class="absolute inset-0 flex w-full items-end justify-center border-0 bg-transparent p-3 focus-visible:rounded-3xl
-                           focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-brand focus-visible:outline-solid" (click)="editLogo()" [attr.aria-label]="'Update logo for ' + name">
-                        <span class="sr-only">Edit {{ name }} logo</span>
-                    </button>
+                    <span class="flex aspect-square w-full items-center justify-center bg-mint font-display text-8xl">{{ displayName.slice(0, 1) }}</span>
                 }
             </div>
         </div>
 
         <div class="relative self-center">
             <p class="mb-3 pr-14 text-xs font-bold tracking-[.14em] text-accent uppercase">
-                {{ releaseYear ?? 'Year unknown' }} ·
+                {{ displayYear ?? 'Year unknown' }} ·
                 {{ owned ? 'In your collection' : 'Meeple House preview' }}
             </p>
-            <h1 class="mb-6 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ name }}</h1>
+            <h1 class="mb-6 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ displayName }}</h1>
 
             <nav class="mb-6 flex gap-2" aria-label="Game detail section">
                 <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'overview'"

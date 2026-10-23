@@ -41,7 +41,7 @@
             @for (game of results(); track game.bggId) {
                 <app-game-list-row
                         [name]="game.name"
-                        [imageUrl]="covers.urls()[game.bggId] ?? null"
+                        [imageUrl]="coverUrl(game)"
                         [year]="game.yearPublished"
                         [category]="game.themes[0] || ''"
                         [rank]="game.rank"

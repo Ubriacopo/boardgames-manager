@@ -250,7 +250,7 @@ features. It adds public social profiles, connections, sharing policies, and sav
 shelf grid dimensions. Existing collectors receive a generated `player_…` handle
 and default to requiring approval; they can personalize their handle in Profile.
 
-## Handles and cover administration
+## Handles and game administration
 
 Registration asks for a unique handle using 3–40 lowercase letters, numbers, or
 dots. Handles are reserved during account creation, including when email
@@ -258,8 +258,15 @@ confirmation is required, and can be changed under Profile. The database
 normalizes case and rejects duplicates. Existing generated handles use `player.`
 followed by the account identifier until personalized.
 
-Admins can press the cover on a game detail page, choose **Browse image**, and
-upload a JPG, PNG, or WebP file up to 5 MB. Drag and zoom the preview to crop it
+Admins open the **Edit game** icon on a game detail page to access the separate
+game editor. Edit the shared name, release year, fallback cover URL, and default
+box format, then select **Save details**. Saved details update game pages,
+discovery search, and collection lists. Existing copies retain their selected
+box dimensions when the default changes.
+
+The editor also provides **Cover**, **Wallpaper**, **Logo**, and **Box side**
+controls. Each opens the artwork editor and has its own save action. Choose
+**Browse image** to upload a JPG, PNG, or WebP file up to 5 MB. Drag and zoom the preview to crop it
 before saving. Cover overrides are keyed by BGG game
 ID in `game_covers`, shared across discovery and collections, and take precedence
 over imported images. Uploaded artwork lives in the public `game-covers` bucket.
@@ -273,7 +280,7 @@ After an admin role changes, sign out and back in to refresh the session.
 triggers, handle rules, fuzzy collector search, cover tables, and upload policies.
 
 Game detail pages support separate wallpaper artwork behind the cover and title.
-Admins can use **Add wallpaper** or **Edit wallpaper** to upload or crop the
+Admins can use **Wallpaper** in the game editor to upload or crop the
 background, with a 16:9 crop preset. Wallpapers are stored in `game_wallpapers`
 and use the existing artwork Storage bucket. Editing a wallpaper leaves the cover
 unchanged. Without a custom wallpaper, the page uses a softened cover backdrop.
@@ -282,12 +289,12 @@ and admin-only write policies.
 
 Artwork has four independent roles: **cover** for browsing and collection lists,
 **logo** for the game page, **wallpaper** for its background, and **box side** for
-Kallax spines. Admins can edit each from the game page. Logos and box sides keep
+Kallax spines. Admins can edit each from the game editor. Logos and box sides keep
 original proportions by default in the crop editor; the page fits logos into
 rounded bounds without cropping. Until a logo is uploaded, the page uses its
 cover. Shelves use box-side artwork, fall back to wallpaper, then to the cover
 when neither is available. The same rules apply to friends' shelves.
-Each game box shows its name in readable 0.85rem uppercase text on a centered, rounded white label,
+Each game box shows its name in uppercase text that scales with spine thickness on a centered, rounded white label,
 with a border in the active theme’s brand color, following the box's vertical or horizontal orientation.
 `20261022122733_game_logos_and_box_sides.sql` adds the logo and box-side tables
 with the same admin-only write policies as existing artwork.

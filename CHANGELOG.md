@@ -4,6 +4,8 @@
 
 ### Added
 
+- Separate admin game editor opened from an edit icon on game pages, with shared name, year, fallback cover, and default format fields plus cover, wallpaper, logo, and box-side artwork controls. Saved details update discovery and collections.
+
 - Per-copy cube rotation beside the unassign button, cycling W×D, H×D, and W×H. Defaults follow cube layout (W×D horizontal, H×D vertical); saved faces appear on shared shelves.
 
 - Quick add uses the default box format; a separate **+ special** opens edition/custom dimensions. Admins can pin a default, otherwise one vote per collector/game determines the format. Existing copies retain their chosen sizes; games without a chosen default use explicitly reported estimated shelf dimensions.
@@ -38,6 +40,8 @@
 - Database policies for connection-based collection access while keeping account emails private and collection writes owner-only.
 
 ### Fixed
+
+- Kallax title fonts, padding, and borders scale with spine thickness in both orientations; long names still truncate with an ellipsis.
 
 - Kallax spines use box depth as their visible thickness: upright boxes render depth × height, and horizontal boxes render width × depth, in personal and shared shelves.
 

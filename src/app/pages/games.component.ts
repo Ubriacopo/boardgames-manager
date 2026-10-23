@@ -48,7 +48,12 @@ export class GamesComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         try {
-            this.catalog.set(await getBggCatalog());
+            const [catalog, definitions] = await Promise.allSettled([getBggCatalog(), this.gameCatalog.loadDefinitions()]);
+            if (catalog.status === 'rejected') throw catalog.reason;
+            this.catalog.set(catalog.value);
+            if (definitions.status === 'rejected') {
+                this.snackBar.open('Saved game details could not be loaded. Showing BoardGameGeek catalog details.', 'Dismiss');
+            }
         } catch (error) {
             this.error.set(error instanceof Error ? error.message : 'Unable to load the game catalog.');
         } finally {
@@ -64,12 +69,17 @@ export class GamesComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void { clearTimeout(this.queryTimer); }
 
+    coverUrl(game: BggGameMetadata): string | null {
+        return this.covers.urls()[game.bggId] ?? this.gameCatalog.definitionFor('', game.bggId)?.image_url ?? null;
+    }
+
     readonly results = computed(() => {
         const query = this.searchQuery().trim();
         const score = makeSearchScorer(query);
         const category = this.category();
         const sort = this.sort();
         return this.catalog()
+            .map(game => this.gameCatalog.metadataFor(game))
             .filter(game => !game.isExpansion && (category === 'All' || game.themes.includes(category)))
             .map(game => ({ game, score: query ? Math.max(score(game.name) * 1.1, score(game.searchText)) : 1 }))
             .filter(result => result.score > 0)

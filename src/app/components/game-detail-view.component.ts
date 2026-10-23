@@ -2,7 +2,6 @@ import type { BoxDimensions, BoxSizeSelection } from '../../entities/BoardGame';
 import { GameBoxSizeFormComponent } from './game-box-size-form.component';
 import {DatePipe, DecimalPipe} from '@angular/common';
 import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal} from '@angular/core';
-import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
@@ -15,8 +14,9 @@ import {
 } from '../../utils/bggData';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {AuthService} from '../services/auth.service';
-import {GameCoverService, type ArtworkKind} from '../services/game-cover.service';
-import {CoverEditorComponent} from './cover-editor.component';
+import {GameCoverService} from '../services/game-cover.service';
+import {GameCatalogService} from '../services/game-catalog.service';
+import {GameAdminEditorComponent} from './game-admin-editor.component';
 import {getBggGameId} from '../../utils/bggData';
 import {renderMarkdown} from '../../utils/renderMarkdown';
 import {ReviewService, type LocalReviewSummary} from '../services/review.service';
@@ -24,7 +24,7 @@ import {ReviewService, type LocalReviewSummary} from '../services/review.service
 @Component({
     selector: 'app-game-detail-view',
     standalone: true,
-    imports: [GameBoxSizeFormComponent, DatePipe, DecimalPipe, FormsModule, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
+    imports: [GameBoxSizeFormComponent, DatePipe, DecimalPipe, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
     templateUrl: './game-detail-view.component.html',
 })
 export class GameDetailViewComponent implements OnChanges {
@@ -54,15 +54,21 @@ export class GameDetailViewComponent implements OnChanges {
     bggReviews: BggReview[] = [];
     bggOverview?: BggOverview;
     private readonly logoRatio = signal(1);
+    readonly definitionError = signal('');
     detailTab: 'overview' | 'ratings' | 'dimensions' = 'overview';
 
-    constructor(private readonly reviews: ReviewService, readonly auth: AuthService, private readonly covers: GameCoverService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
+    constructor(private readonly reviews: ReviewService, readonly auth: AuthService, private readonly covers: GameCoverService, private readonly catalog: GameCatalogService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
     }
 
     get coverGameId(): number { return this.bggId || getBggGameId(this.bggUrl) || 0; }
+    get definition() { return this.catalog.definitionFor(this.gameDefinitionId, this.coverGameId); }
+    get displayName(): string { return this.definition?.name ?? this.name; }
+    get displayYear(): number | null { return this.definition?.release_year ?? this.releaseYear; }
+    get displayBggUrl(): string { return this.definition?.bgg_url ?? this.bggUrl; }
 
     coverUrl(): string | null {
-        return this.covers.urls()[this.coverGameId] ?? this.imageUrl ?? this.bggOverview?.imageUrl ?? null;
+        return this.covers.urls()[this.coverGameId]
+            ?? (this.definition ? this.definition.image_url : this.imageUrl) ?? this.bggOverview?.imageUrl ?? null;
     }
 
     wallpaperUrl(): string | null {
@@ -73,8 +79,6 @@ export class GameDetailViewComponent implements OnChanges {
         return this.covers.logos()[this.coverGameId] ?? this.coverUrl();
     }
 
-    hasLogo(): boolean { return !!this.covers.logos()[this.coverGameId]; }
-    hasBoxSide(): boolean { return !!this.covers.boxSides()[this.coverGameId]; }
     logoWidth(): string { return `min(100%, ${420 * this.logoRatio()}px)`; }
 
     onLogoLoad(event: Event): void {
@@ -82,29 +86,36 @@ export class GameDetailViewComponent implements OnChanges {
         if (image.naturalWidth && image.naturalHeight) this.logoRatio.set(image.naturalWidth / image.naturalHeight);
     }
 
-    editLogo(): void { this.editArtwork('logo'); }
-    editBoxSide(): void { this.editArtwork('box-side'); }
-
-    editCover(): void { this.editArtwork('cover'); }
-    editWallpaper(): void { this.editArtwork('wallpaper'); }
-
-    private editArtwork(kind: ArtworkKind): void {
-        if (!this.auth.isAdmin() || !this.coverGameId) return;
-        const imageUrl = {
-            cover: this.coverUrl(), wallpaper: this.wallpaperUrl() ?? this.coverUrl(),
-            logo: this.logoUrl(), 'box-side': this.covers.boxSides()[this.coverGameId] ?? this.wallpaperUrl() ?? this.coverUrl(),
-        }[kind];
-        this.dialog.open(CoverEditorComponent, {
-            width: '760px', maxWidth: '95vw', panelClass: 'cover-editor-dialog',
+    editGame(): void {
+        if (!this.auth.isAdmin() || (!this.coverGameId && !this.gameDefinitionId)) return;
+        this.dialog.open(GameAdminEditorComponent, {
+            width: '760px', maxWidth: '95vw', maxHeight: '90dvh',
             data: {
-                bggId: this.coverGameId, name: this.name, kind,
-                imageUrl,
+                gameId: this.definition?.id ?? this.gameDefinitionId,
+                bggId: this.coverGameId, name: this.displayName, releaseYear: this.displayYear,
+                imageUrl: (this.definition ? this.definition.image_url : this.imageUrl) ?? this.bggOverview?.imageUrl ?? null,
+                bggUrl: this.displayBggUrl,
             },
         });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['bggId'] && this.bggId) void this.loadReviews();
+        if (changes['bggId'] || changes['bggUrl'] || changes['gameDefinitionId']) void this.loadDefinition();
+    }
+
+    async loadDefinition(): Promise<void> {
+        this.definitionError.set('');
+        if (!this.auth.session()) return;
+        const gameId = this.gameDefinitionId;
+        const bggId = this.coverGameId;
+        try {
+            await this.catalog.findDefinition(gameId, bggId);
+        } catch {
+            if (gameId === this.gameDefinitionId && bggId === this.coverGameId) {
+                this.definitionError.set('Saved game details could not be loaded.');
+            }
+        }
     }
 
     renderReview(markdown: string): string {

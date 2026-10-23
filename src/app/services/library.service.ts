@@ -22,7 +22,7 @@ export class LibraryService {
   readonly currentLibraryOnly = signal(false);
   readonly library = signal<Library | null>(null);
   private readonly storedGames = signal<BoardGame[]>([]);
-  readonly games = computed(() => this.storedGames().map(game => this.covers.forGame(game)));
+  readonly games = computed(() => this.storedGames().map(game => this.covers.forGame(this.catalog.forGame(game))));
   readonly shelfGames = computed(() => this.games().filter(game => game.library_id === this.library()?.id));
   readonly allBoxes = signal<LibraryBox[]>([]);
   readonly boxes = computed(() => this.allBoxes().filter(box => box.library_id === this.library()?.id));

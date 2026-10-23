@@ -15,3 +15,6 @@ Cose richieste:
 - Store link dei giochi navigabili per comprare (?)
 - Conteggio volte gicoate (badge expert on X)
   - Sbloccaggio dei titoli
+- Problema di selezione cubo che lo rende invisibile  se tra ultimi
+  - Trovare un mdooc arino per farlo
+- White labels are a good idea but unreadable in some cases

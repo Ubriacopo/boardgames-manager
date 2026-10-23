@@ -1,0 +1,79 @@
+<h2 mat-dialog-title>Edit game</h2>
+<form #detailsForm="ngForm" (ngSubmit)="save(detailsForm)">
+  <mat-dialog-content>
+    <p class="mb-5 text-sm text-muted">These details and images are shared with all collectors.</p>
+    @if (loading()) {
+      <p class="py-6 text-muted" role="status">Loading game details…</p>
+    }
+    @if (ready()) {
+      <fieldset class="grid min-w-0 gap-4 disabled:opacity-60" [disabled]="saving()">
+        <legend class="mb-3 font-display text-2xl">Details</legend>
+        <label class="grid min-w-0 gap-2 text-sm font-bold">Name
+          <input name="name" [(ngModel)]="name" required maxlength="300" #gameName="ngModel"
+                 class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2 focus-visible:outline-brand">
+          @if (gameName.invalid && gameName.touched) {
+            <span class="text-sm text-coral">Enter the game's name.</span>
+          }
+        </label>
+        <label class="grid gap-2 text-sm font-bold">Release year
+          <input name="releaseYear" type="number" [(ngModel)]="releaseYear" required min="1800" max="2200" step="1" #year="ngModel"
+                 class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2 focus-visible:outline-brand">
+          @if (year.invalid && year.touched) {
+            <span class="text-sm text-coral">Enter a release year between 1800 and 2200.</span>
+          }
+        </label>
+        <label class="grid min-w-0 gap-2 text-sm font-bold">Fallback cover URL
+          <input name="fallbackImageUrl" type="url" [(ngModel)]="fallbackImageUrl" placeholder="https://…"
+                 aria-describedby="fallback-cover-help"
+                 class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2 focus-visible:outline-brand">
+        </label>
+        <p id="fallback-cover-help" class="-mt-2 text-xs text-muted">Used when no uploaded cover is available. Leave empty to use the BoardGameGeek image.</p>
+        <label class="grid min-w-0 gap-2 text-sm font-bold">Default box format
+          <select name="defaultSizeId" [(ngModel)]="defaultSizeId" aria-describedby="default-format-help"
+                  class="w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2 focus-visible:outline-brand">
+            <option [ngValue]="null">Use community choice</option>
+            @for (size of sizes; track size.id) {
+              <option [ngValue]="size.id">{{ size.label }}{{ size.country ? ' · ' + size.country : '' }} — {{ size.width_mm / 10 }} × {{ size.height_mm / 10 }} × {{ size.depth_mm / 10 }} cm</option>
+            }
+          </select>
+        </label>
+        <p id="default-format-help" class="-mt-2 text-xs text-muted">Applies to future additions. Existing copies keep their chosen dimensions.</p>
+      </fieldset>
+      @if (data.bggId) {
+        <section class="mt-7 border-t border-line pt-5" aria-labelledby="game-artwork-title">
+          <h3 id="game-artwork-title" class="font-display text-2xl">Artwork</h3>
+          <p class="mt-2 mb-4 text-sm text-muted">Choose an image to upload and crop. Each image is saved in its own editor.</p>
+          <div class="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2">
+            @for (item of artwork; track item.kind) {
+              <div class="flex min-w-0 flex-col gap-3 rounded-xl border border-line bg-surface p-3">
+                <div class="flex h-28 items-center justify-center overflow-hidden rounded-lg bg-mint">
+                  @if (artworkUrl(item.kind); as imageUrl) {
+                    <img [src]="imageUrl" [alt]="item.label + ' for ' + name" class="h-full w-full object-contain" loading="lazy">
+                  } @else {
+                    <mat-icon class="text-4xl! size-10! text-brand">{{ item.icon }}</mat-icon>
+                  }
+                </div>
+                <button mat-stroked-button type="button" [disabled]="saving()" (click)="editArtwork(item.kind)"
+                        [attr.aria-label]="'Edit ' + item.label.toLowerCase()">
+                  <mat-icon>{{ item.icon }}</mat-icon>{{ item.label }}
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+    @if (error()) {
+      <p class="mt-4 text-sm text-coral" role="alert">{{ error() }}</p>
+      @if (!ready() && !loading()) {
+        <button mat-stroked-button type="button" (click)="load()"><mat-icon>refresh</mat-icon>Retry</button>
+      }
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="dialogRef.close()">Close</button>
+    <button mat-flat-button type="submit" [disabled]="loading() || !ready() || saving() || detailsForm.invalid">
+      <mat-icon>save</mat-icon>{{ saving() ? 'Saving…' : 'Save details' }}
+    </button>
+  </mat-dialog-actions>
+</form>
