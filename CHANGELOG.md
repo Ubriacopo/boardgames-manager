@@ -37,6 +37,8 @@
 
 ### Fixed
 
+- Kallax spines use box depth as their visible thickness: upright boxes render depth × height, and horizontal boxes render width × depth, in personal and shared shelves.
+
 - Unassigned copies now belong to the collector's overall collection without a library. Placing a copy assigns the cube's library, and unassigning it clears membership; existing owners are preserved by migration. The unassigned tray is shared across Kallax shelves.
 - Owned games expose **Add another copy** directly on Overview, opening the edition selector for an independent, initially unassigned copy. Identical copies are supported.
 

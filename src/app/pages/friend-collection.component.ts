@@ -106,7 +106,10 @@ export class FriendCollectionComponent implements OnInit {
 
   sideImage(game: BoardGame): string | null { return this.covers.sideForGame(game); }
 
-  width(game: BoardGame, box: ContainerBox): number { return Math.min(100, game.box_width_mm / box.inner_width_mm * 100); }
+  width(game: BoardGame, box: ContainerBox): number {
+    const width = box.layout_direction === 'vertical' ? game.box_depth_mm : game.box_width_mm;
+    return Math.min(100, width / box.inner_width_mm * 100);
+  }
   height(game: BoardGame, box: ContainerBox): number {
     return Math.min(100, (box.layout_direction === 'vertical' ? game.box_height_mm : game.box_depth_mm) / box.inner_height_mm * 100);
   }

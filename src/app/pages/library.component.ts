@@ -315,7 +315,8 @@ export class LibraryComponent {
     }
 
     spineWidthPercent(game: BoardGame, box: LibraryBox): number {
-        return Math.min(100, (game.box_width_mm / box.inner_width_mm) * 100);
+        const width = this.boxDirection(box) === 'vertical' ? game.box_depth_mm : game.box_width_mm;
+        return Math.min(100, (width / box.inner_width_mm) * 100);
     }
 
     spineHeightPercent(game: BoardGame, box: LibraryBox): number {
