@@ -210,6 +210,13 @@ overrides, layered image effects, and the cube-sheet animation.
 
 ## Display settings
 
+Selecting a Kallax cube opens a focused, enlarged preview above a bottom sheet
+that covers the shelf controls and navigation. Cube contents reuse the Browse
+game rows, including display-zoom sizing, with layout, face, and dimensions on
+the second line plus rotate/unassign actions. Close the view, press Escape, or
+select the backdrop to return to the same shelf zoom and scroll position.
+Reduced-motion preferences disable the focus animation.
+
 Under **Profile → Appearance → Display zoom**, choose 100%, 110%, 125%, 150%,
 175%, or 200%. Changes apply immediately to Kallax labels, game and collection
 row text, covers and spacing, and the rest of the interface where supported.

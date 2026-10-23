@@ -1,4 +1,4 @@
-<main class="mx-auto my-0 flex h-[calc(100dvh_-_4rem)] min-h-0 max-w-none flex-col overflow-hidden p-0 max-[650px]:p-0
+<main [inert]="selectedBox !== null" class="mx-auto my-0 flex h-[calc(100dvh_-_4rem)] min-h-0 max-w-none flex-col overflow-hidden p-0 max-[650px]:p-0
        max-lg:!h-[calc(100dvh-64px)] max-lg:!overflow-hidden max-lg:!pb-[42px] min-[1024px]:h-[calc(100dvh_-_4.75rem)]">
     <nav class="m-0 flex min-h-10.5 flex-none gap-0.5 border-b border-b-line px-[clamp(12px,3vw,40px)] py-0 max-[650px]:m-0
            max-[650px]:px-1.5 max-[650px]:py-0 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-16 max-lg:z-40
@@ -121,7 +121,7 @@
                         </a>
                     </div>
                 </header>
-                <div class="grid h-0 min-h-0 flex-1 [touch-action:pan-x_pan-y] grid-cols-[minmax(0,_1fr)_minmax(220px,_280px)] items-start
+                <div class="grid h-0 min-h-0 flex-1 [touch-action:pan-x_pan-y] grid-cols-[minmax(0,_1fr)] items-start
                        gap-5 overflow-auto overscroll-contain pb-2 max-[1000px]:grid-cols-[1fr] max-[650px]:flex max-[650px]:h-0
                        max-[650px]:flex-col max-[650px]:gap-4.5 max-[650px]:overflow-auto" cdkDropListGroup>
                     @if (unassignedOpen) {
@@ -179,7 +179,8 @@
                             [style.height.%]="kallaxZoom * 100"
                     >
                         @for (box of library.boxes(); track box.id) {
-                            <button
+                            <button app-kallax-cube-face [box]="box" [games]="gamesInBox(box.id)"
+                                    [spineDraggable]="true" [labelsVisible]="display.showGameLabels()"
                                     cdkDropList
                                     [cdkDropListData]="gamesInBox(box.id)"
                                     (cdkDropListDropped)="drop(box.id, $event)"
@@ -190,131 +191,10 @@
                                     (click)="selectBox(box.id, $event)"
                                     [class.selected]="selectedBox === box.id"
                             >
-                                <span class="relative z-1 col-start-1 row-start-1 self-start text-[.68rem] font-bold text-[#cbb9a9] uppercase
-                                       max-[650px]:text-[.56rem]">{{ box.description }}</span>
-                                <div class="col-start-1 row-start-1 flex h-full w-full flex-nowrap items-end gap-0 overflow-hidden max-[650px]:gap-px
-                                       [&.horizontal]:flex-wrap [&.horizontal]:content-end"
-                                     [class.horizontal]="boxDirection(box) === 'horizontal'">
-                                    @for (game of gamesInBox(box.id); track game.id) {
-                                        <span app-game-spine
-                                              cdkDrag
-                                              [cdkDragData]="game.id"
-                                              [horizontal]="boxDirection(box) === 'horizontal'"
-                                              [style.width.%]="spineWidthPercent(game, box)"
-                                              [style.height.%]="spineHeightPercent(game, box)"
-                                              [title]="'Drag ' + game.name"
-                                              [name]="game.name"
-                                              [imageUrl]="library.sideImage(game)"
-                                              [spineDraggable]="true"
-                                              [showLabel]="display.showGameLabels()"
-                                        ></span>
-                                    }
-                                </div>
-                                <small class="relative z-1 col-start-1 row-start-1 self-end text-right text-[.68rem] font-bold text-[#cbb9a9] uppercase
-                                       max-[650px]:text-[.56rem]">{{ capacity(box.id) }}/{{ box.capacity }}</small>
                             </button>
                         }
                     </section>
-                    <aside
-                            class="max-h-[min(68vh,_760px)] overflow-y-auto rounded-[15px] border border-[rgba(255,255,255,.12)] bg-white/4 p-2
-                                   max-[650px]:fixed max-[650px]:right-0 max-[650px]:bottom-[4rem] max-[650px]:left-0 max-[650px]:z-45
-                                   max-[650px]:m-0 max-[650px]:hidden max-[650px]:max-h-[min(62vh,_560px)] max-[650px]:overflow-y-auto
-                                   max-[650px]:rounded-[20px_20px_0_0] max-[650px]:border max-[650px]:border-line max-[650px]:bg-[#111313]
-                                   max-[650px]:px-2 max-[650px]:pt-2 max-[650px]:pb-[env(safe-area-inset-bottom)]
-                                   max-[650px]:shadow-[0_-18px_50px_rgba(0,0,0,.5)] max-sm:!bottom-[106px] light:border-line light:bg-white
-                                   max-[650px]:[&.is-open]:block max-[650px]:[&.is-open]:animate-[sheet-in_.2s_ease-out]
-                                   max-[650px]:[&.is-open]:before:mx-auto max-[650px]:[&.is-open]:before:mt-0 max-[650px]:[&.is-open]:before:mb-3
-                                   max-[650px]:[&.is-open]:before:block max-[650px]:[&.is-open]:before:h-1 max-[650px]:[&.is-open]:before:w-10.5
-                                   max-[650px]:[&.is-open]:before:rounded-full max-[650px]:[&.is-open]:before:bg-line
-                                   max-[650px]:[&.is-open]:before:content-[''] max-[650px]:[&.is-open]:motion-reduce:animate-none"
-                            [class.is-open]="selectedBoxInfo"
-                            [attr.aria-hidden]="selectedBoxInfo ? null : true"
-                            (click)="$event.stopPropagation()"
-                    >
-                        @if (selectedBoxInfo; as box) {
-                            <header class="mb-1 flex items-start justify-between border-b border-b-line pb-1">
-                                <div>
-                                    <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase last:text-[#bed0c5]">
-                                        Selected cube</p>
-                                    <input class="max-w-[190px] border-0 border-b border-b-transparent bg-transparent px-0 py-px font-display text-[1.2rem]
-                                           font-bold text-ink outline-none focus:border-b-accent" type="text"
-                                           aria-label="Cube name"
-                                           [(ngModel)]="selectedBoxLabel" [ngModelOptions]="{standalone: true}"
-                                           (click)="$event.stopPropagation()" (keydown.enter)="renameSelectedCube()"
-                                           (blur)="renameSelectedCube()">
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    <span class="rounded-full bg-mint px-[9px] py-1.5 text-[.72rem] font-bold text-brand">{{ selectedGames.length }}
-                                        /{{ box.capacity }}</span>
-                                    <button type="button" class="hidden max-[650px]:inline-flex max-[650px]:cursor-pointer max-[650px]:items-center max-[650px]:border-0
-                                           max-[650px]:bg-transparent max-[650px]:p-[5px] max-[650px]:text-muted"
-                                            (click)="toggleSelectedCubeDirection()"
-                                            [attr.aria-label]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'"
-                                            [title]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'">
-                                        <mat-icon>screen_rotation</mat-icon>
-                                    </button>
-                                    <button
-                                            type="button"
-                                            class="hidden max-[650px]:inline-flex max-[650px]:cursor-pointer max-[650px]:items-center max-[650px]:border-0
-                                                   max-[650px]:bg-transparent max-[650px]:p-[5px] max-[650px]:text-muted"
-                                            (click)="selectedBox = null"
-                                            aria-label="Close cube contents"
-                                    >
-                                        <mat-icon>close</mat-icon>
-                                    </button>
-                                </div>
-                            </header>
-                            @if (!selectedGames.length) {
-                                <p class="px-2 py-8 text-center text-[.85rem] text-[#bed0c5] light:text-muted">
-                                    This cube is empty. Drag a game here to fill it.
-                                </p>
-                            }
-                            @if (selectedGames.length) {
-                                <ul class="m-0 grid list-none divide-y divide-line p-0">
-                                    @for (game of selectedGames; track game.id) {
-                                        <li class="grid grid-cols-[minmax(0,_1fr)_auto] items-center py-1">
-                                            <a class="grid grid-cols-[34px_minmax(0,_1fr)] items-center gap-[9px]"
-                                               [routerLink]="['/games', game.id]">
-                        <span class="h-10.5 w-[34px] overflow-hidden rounded-[5px] bg-mint last:grid last:min-w-0">
-                          @if (game.image_url) {
-                              <img class="h-full w-full object-cover" [src]="game.image_url" alt="">
-                          }
-                        </span>
-                                                <span class="last:grid last:min-w-0">
-                          <strong class="overflow-hidden text-[.78rem] text-ellipsis whitespace-nowrap">{{ game.name }}</strong>
-                          <small class="text-[.68rem] text-muted">{{ boxDirection(box) }}
-                              layout · {{ faceLabel(game, box) }}
-                              · {{ spineDimensions(game, box.layout_direction).width / 10 }}
-                              × {{ spineDimensions(game, box.layout_direction).height / 10 }} cm</small>
-                        </span>
-                                            </a>
-                                            <div class="flex items-center">
-                                                <button class="cursor-pointer border-0 bg-transparent p-[5px] text-muted hover:text-accent"
-                                                        type="button" (click)="rotateGame(game)"
-                                                        [attr.aria-label]="'Rotate ' + game.name + ' to ' + faceLabel(game, box, true)"
-                                                        [title]="'Rotate to ' + faceLabel(game, box, true)">
-                                                    <mat-icon>rotate_right</mat-icon>
-                                                </button>
-                                                <button class="cursor-pointer border-0 bg-transparent p-[5px] text-muted hover:text-accent"
-                                                        type="button"
-                                                        (click)="move(game.id, null)"
-                                                        [attr.aria-label]="'Move ' + game.name + ' to unassigned'"
-                                                >
-                                                    <mat-icon>remove_circle_outline</mat-icon>
-                                                </button>
-                                            </div>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                        } @else {
-                            <div class="flex min-h-[230px] flex-col items-center justify-center text-center text-muted">
-                                <mat-icon class="size-9! text-4xl! text-accent">ads_click</mat-icon>
-                                <h3 class="m-0 font-display text-[1.2rem]">Select a cube</h3>
-                                <p>Its games and capacity will appear here.</p>
-                            </div>
-                        }
-                    </aside>
+
                 </div>
             </section>
         }
@@ -365,6 +245,55 @@
         }
     }
 </main>
+
+
+
+@if (selectedBoxInfo; as box) {
+    <div class="fixed inset-0 z-[60] flex flex-col overflow-hidden overscroll-none bg-canvas/95 text-ink backdrop-blur-sm"
+         role="dialog" aria-modal="true" aria-label="Selected Kallax cube" cdkTrapFocus [cdkTrapFocusAutoCapture]="true"
+         (click)="closeSelectedBox()">
+        <div class="flex shrink-0 justify-center px-4 pt-[max(.75rem,env(safe-area-inset-top))]">
+            <div #focusedCube app-kallax-cube-face [box]="box" [games]="selectedGames" [labelsVisible]="display.showGameLabels()" class="relative grid size-[min(82vw,36dvh)] origin-top-left grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]
+                        border-8 border-[#4a3022] bg-[#29251f] p-2 shadow-xl"
+                 role="img" [attr.aria-label]="(box.description || box.label || 'Cube') + ': ' + selectedGames.length + ' games'"
+                 (click)="$event.stopPropagation()">
+            </div>
+        </div>
+        <section class="relative mx-auto flex min-h-0 w-full flex-1 flex-col rounded-t-3xl border border-line bg-surface
+                        pb-[env(safe-area-inset-bottom)] shadow-[0_-1rem_3rem_rgba(0,0,0,.35)]
+                        motion-safe:animate-[sheet-in_.2s_ease-out]"
+                 aria-label="Cube contents" (click)="$event.stopPropagation()">
+            <header class="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-3 py-2 sm:px-5">
+                <div class="min-w-0 flex-1">
+                    <p class="mb-0 text-xs font-bold tracking-widest text-brand uppercase">Selected cube</p>
+                    <input class="w-full min-w-0 border-0 border-b border-transparent bg-transparent py-1 font-display text-xl
+                                  font-bold text-ink outline-none focus:border-accent" type="text" aria-label="Cube name"
+                           [(ngModel)]="selectedBoxLabel" [ngModelOptions]="{standalone: true}"
+                           (keydown.enter)="renameSelectedCube()" (blur)="renameSelectedCube()">
+                </div>
+                <span class="text-sm text-muted">{{ capacity(box.id) }}/{{ box.capacity }}</span>
+                <button mat-icon-button type="button" (click)="toggleSelectedCubeDirection()"
+                        [attr.aria-label]="'Use ' + (boxDirection(box) === 'vertical' ? 'horizontal' : 'vertical') + ' layout'"
+                        title="Change cube layout"><mat-icon>screen_rotation</mat-icon></button>
+                <button mat-icon-button type="button" cdkFocusInitial (click)="closeSelectedBox()" aria-label="Close cube contents">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </header>
+            <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y px-2 sm:px-4">
+                <div class="mx-auto grid max-w-[1100px] divide-y divide-line">
+                    @for (game of selectedGames; track game.id) {
+                        <app-game-list-row [name]="game.name" [year]="game.release_year" [link]="['/games', game.id]"
+                            [imageUrl]="game.image_url" [favorite]="game.favorite" [secondaryText]="cubeGameInfo(game, box)"
+                            [cubeActions]="true" [rotateLabel]="faceLabel(game, box, true)"
+                            (rotate)="rotateGame(game)" (unassign)="move(game.id, null)"/>
+                    } @empty {
+                        <p class="px-3 py-6 text-base text-muted">This cube is empty. Close this view and drag a game here from Unassigned.</p>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+}
 
 @if (settingsOpen) {
     <div class="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-[rgba(15,27,21,.62)] px-5 py-[7vh]"

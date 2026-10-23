@@ -15,12 +15,15 @@
     </span>
     }
 
-    <article class="relative grid min-h-[4.375rem] grid-cols-[3.625rem_minmax(0,_1fr)_minmax(6.875rem,_11.25rem)_4.5rem_auto]
+    <article class="relative grid min-h-[4.375rem]
            items-center gap-3.5 bg-transparent py-1.5 pr-3 pl-1.5 transition-colors
-           duration-150 ease-[ease] hover:bg-mint max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]
-           max-[650px]:gap-2.5 @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:gap-2.5
+           duration-150 ease-[ease] hover:bg-mint
+           max-[650px]:gap-2.5 @max-[40rem]:gap-2.5
            [&.cdk-drag]:cursor-grab [&.cdk-drag]:touch-none [&.cdk-drag]:select-none [&.cdk-drag]:active:cursor-grabbing
            [&.cdk-drag]:active:transition-none [&.cdk-drag-preview]:shadow-[0_16px_35px_rgba(0,0,0,.45)]"
+             [class]="cubeActions
+               ? 'grid-cols-[3.625rem_minmax(0,_1fr)_auto] max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]'
+               : 'grid-cols-[3.625rem_minmax(0,_1fr)_minmax(6.875rem,_11.25rem)_4.5rem_auto] max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]'"
              [class.is-favorite]="favorite"
              [class.!cursor-pointer]="!draggable"
              cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable" [cdkDragStartDelay]="{touch: 250, mouse: 0}"
@@ -42,6 +45,9 @@
              [.is-favorite_&]:after:content-['★']">{{ name }}</strong>
       <small class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[.76rem] wrap-anywhere text-muted">
         <span>
+        @if (secondaryText) {
+            {{ secondaryText }}
+        } @else {
         {{ year ?? 'Year unknown' }}
             @if (edition) {
                 · {{ edition }}
@@ -52,12 +58,14 @@
             @if (rank) {
                 · Rank #{{ rank }}
             }
+        }
         </span>
           @if (libraryName) {
               <app-library-chip [name]="libraryName" [color]="libraryColor"/>
           }
       </small>
     </span>
+        @if (!cubeActions) {
         @if (location) {
             <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon
                     class="size-4! shrink-0 text-base!">inventory_2</mat-icon>
@@ -71,7 +79,19 @@
                     class="size-4! shrink-0 text-base! text-[#f5b942]">star</mat-icon>
                 {{ rating | number:'1.1-1' }}</span>
         }
-        @if (addActions) {
+        }
+        @if (cubeActions) {
+            <span class="relative z-10 flex items-center gap-1">
+                <button mat-icon-button type="button" class="!size-10 !p-0" (click)="rotate.emit()"
+                        [attr.aria-label]="'Rotate ' + name + ' to ' + rotateLabel" [title]="'Rotate to ' + rotateLabel">
+                    <mat-icon>rotate_right</mat-icon>
+                </button>
+                <button mat-icon-button type="button" class="!size-10 !p-0" (click)="unassign.emit()"
+                        [attr.aria-label]="'Move ' + name + ' to unassigned'" title="Move to unassigned">
+                    <mat-icon>remove_circle_outline</mat-icon>
+                </button>
+            </span>
+        } @else if (addActions) {
             <span class="relative z-10 flex items-center gap-1">
                 <button mat-icon-button type="button" [disabled]="adding" (click)="specialAdd.emit()"
                         [attr.aria-label]="'Add ' + name + ' to your collection'" title="Add to collection"><mat-icon>add</mat-icon></button>

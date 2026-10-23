@@ -34,6 +34,11 @@ export class GameListRowComponent {
     @Input() actionLabel = '';
     @Input() addActions = false;
     @Input() adding = false;
+    @Input() secondaryText = '';
+    @Input() cubeActions = false;
+    @Input() rotateLabel = '';
+    @Output() readonly rotate = new EventEmitter<void>();
+    @Output() readonly unassign = new EventEmitter<void>();
     @Output() readonly defaultAdd = new EventEmitter<void>();
     @Output() readonly specialAdd = new EventEmitter<void>();
     @Output() readonly dragMoved = new EventEmitter<CdkDragMove>();

@@ -1,7 +1,9 @@
 import {boxFace, nextBoxFace, spineDimensions} from '../../entities/GamePlacement';
-import {GameSpineComponent} from '../components/game-spine.component';
+import {KallaxCubeFaceComponent} from '../components/kallax-cube-face.component';
 import {DecimalPipe} from '@angular/common';
-import {Component, computed, HostListener, Inject, signal} from '@angular/core';
+import {afterNextRender, Component, computed, ElementRef, HostListener, Inject, inject, Injector, OnDestroy, signal, ViewChild} from '@angular/core';
+import {A11yModule} from '@angular/cdk/a11y';
+import {ScrollStrategyOptions} from '@angular/cdk/overlay';
 import {FormsModule} from '@angular/forms';
 import {
     CdkDrag,
@@ -48,7 +50,8 @@ export class ConfirmDeleteLibraryDialogComponent {
 @Component({
     standalone: true,
     imports: [
-        GameSpineComponent,
+        KallaxCubeFaceComponent,
+        A11yModule,
         DecimalPipe,
         FormsModule,
         CdkDrag,
@@ -67,12 +70,18 @@ export class ConfirmDeleteLibraryDialogComponent {
     ],
     templateUrl: './library.component.html',
 })
-export class LibraryComponent {
+export class LibraryComponent implements OnDestroy {
+    @ViewChild('focusedCube') private focusedCube?: ElementRef<HTMLElement>;
+    private readonly injector = inject(Injector);
+    private readonly focusScroll = inject(ScrollStrategyOptions).block();
+    private focusAnimation?: Animation;
+    private selectionTrigger?: HTMLElement;
     get activeTab(): 'shelf' | 'recent' | 'collection' {
         return this.library.activeTab();
     }
 
     set activeTab(tab: 'shelf' | 'recent' | 'collection') {
+        if (tab !== 'shelf') this.closeSelectedBox();
         this.library.activeTab.set(tab);
     }
 
@@ -125,7 +134,7 @@ export class LibraryComponent {
             this.creatingLibrary = true;
             return;
         }
-        this.selectedBox = null;
+        this.closeSelectedBox();
         this.layoutOpen = false;
         await this.library.selectLibrary(id);
         this.syncLayout();
@@ -134,7 +143,7 @@ export class LibraryComponent {
     async createLibrary(): Promise<void> {
         try {
             await this.library.createLibrary(this.newLibraryName, this.newLibraryColor);
-            this.selectedBox = null;
+            this.closeSelectedBox();
             this.syncLayout();
             this.creatingLibrary = false;
             this.newLibraryName = '';
@@ -197,7 +206,7 @@ export class LibraryComponent {
         if (!confirmed) return;
         try {
             await this.library.deleteLibrary(current.id);
-            this.selectedBox = null;
+            this.closeSelectedBox();
             this.syncLayout();
             this.settingsOpen = false;
         } catch (error) {
@@ -220,16 +229,47 @@ export class LibraryComponent {
         return this.selectedBox === null ? [] : this.gamesInBox(this.selectedBox);
     }
 
-    @HostListener('document:click')
+    @HostListener('document:keydown.escape')
     closeSelectedBox(): void {
+        if (this.selectedBox === null) return;
+        this.focusAnimation?.cancel();
+        this.focusScroll.disable();
         this.selectedBox = null;
+        const trigger = this.selectionTrigger;
+        afterNextRender(() => {
+            if (this.selectedBox === null && trigger?.isConnected) trigger.focus({preventScroll: true});
+        }, {injector: this.injector});
     }
 
     selectBox(boxId: number, event: MouseEvent): void {
         event.stopPropagation();
+        this.selectionTrigger = event.currentTarget as HTMLElement;
+        const origin = this.selectionTrigger.getBoundingClientRect();
+        this.focusScroll.enable();
         this.selectedBox = boxId;
         const box = this.library.boxes().find((item) => item.id === boxId);
         this.selectedBoxLabel = box?.description ?? box?.label ?? `Cube ${boxId}`;
+        afterNextRender(() => {
+            const target = this.focusedCube?.nativeElement;
+            if (!target || this.selectedBox !== boxId || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const destination = target.getBoundingClientRect();
+            if (!destination.width || !origin.width) return;
+            this.focusAnimation?.cancel();
+            this.focusAnimation = target.animate([
+                {transform: `translate(${origin.left - destination.left}px, ${origin.top - destination.top}px) scale(${origin.width / destination.width}, ${origin.height / destination.height})`},
+                {transform: 'none'},
+            ], {duration: 240, easing: 'cubic-bezier(.2,.8,.2,1)'});
+        }, {injector: this.injector});
+    }
+
+    ngOnDestroy(): void {
+        this.focusAnimation?.cancel();
+        this.focusScroll.disable();
+    }
+
+    cubeGameInfo(game: BoardGame, box: LibraryBox): string {
+        const {width, height} = spineDimensions(game, box.layout_direction);
+        return `${this.boxDirection(box)} layout · ${this.faceLabel(game, box)} · ${width / 10} × ${height / 10} cm`;
     }
 
     async applyGridLayout(): Promise<void> {
@@ -279,7 +319,7 @@ export class LibraryComponent {
         if (this.selectedBox === null) return;
         try {
             await this.library.removeBox(this.selectedBox);
-            this.selectedBox = null;
+            this.closeSelectedBox();
         } catch (error) {
             this.snackBar.open(error instanceof Error ? error.message : 'Unable to remove this cube.', 'Dismiss');
         }

@@ -62,6 +62,8 @@
 
 ### Changed
 
+- Selected cube contents reuse Browse row sizing and display zoom, with per-copy face/dimensions and rotate/unassign controls. Cube selection opens an enlarged preview and a bottom sheet covering other controls; closing restores the existing shelf zoom and position, with keyboard and reduced-motion support.
+
 - Code indentation follows the JetBrains Default scheme, documented in `AGENTS.md` and recorded in `.editorconfig`.
 
 - Browsing and collection game lists use dividers instead of filled row backgrounds. Selected cube contents have compact spacing and dividers.
