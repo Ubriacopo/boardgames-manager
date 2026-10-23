@@ -1,3 +1,4 @@
+import { boxFace, nextBoxFace, spineDimensions } from '../../entities/GamePlacement';
 import { GameSpineComponent } from '../components/game-spine.component';
 import {DecimalPipe} from '@angular/common';
 import {Component, computed, HostListener, Inject, signal} from '@angular/core';
@@ -315,13 +316,28 @@ export class LibraryComponent {
     }
 
     spineWidthPercent(game: BoardGame, box: LibraryBox): number {
-        const width = this.boxDirection(box) === 'vertical' ? game.box_depth_mm : game.box_width_mm;
+        const { width } = spineDimensions(game, box.layout_direction);
         return Math.min(100, (width / box.inner_width_mm) * 100);
     }
 
     spineHeightPercent(game: BoardGame, box: LibraryBox): number {
-        const height = this.boxDirection(box) === 'vertical' ? game.box_height_mm : game.box_depth_mm;
+        const { height } = spineDimensions(game, box.layout_direction);
         return Math.min(100, (height / box.inner_height_mm) * 100);
+    }
+
+    readonly spineDimensions = spineDimensions;
+
+    faceLabel(game: BoardGame, box: LibraryBox, next = false): string {
+        return (next ? nextBoxFace(game, box.layout_direction) : boxFace(game, box.layout_direction)).toUpperCase().replace('X', '×');
+    }
+
+    async rotateGame(game: BoardGame): Promise<void> {
+        try {
+            await this.library.rotateGame(game.id);
+        } catch (error) {
+            const message = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to rotate this game.';
+            this.snackBar.open(message, 'Dismiss');
+        }
     }
 
     async toggleSelectedCubeDirection(): Promise<void> {

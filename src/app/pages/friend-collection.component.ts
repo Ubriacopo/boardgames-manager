@@ -1,3 +1,4 @@
+import { spineDimensions } from '../../entities/GamePlacement';
 import { GameSpineComponent } from '../components/game-spine.component';
 import {GameCoverService} from '../services/game-cover.service';
 import {makeSearchScorer} from '../../utils/search';
@@ -107,11 +108,11 @@ export class FriendCollectionComponent implements OnInit {
   sideImage(game: BoardGame): string | null { return this.covers.sideForGame(game); }
 
   width(game: BoardGame, box: ContainerBox): number {
-    const width = box.layout_direction === 'vertical' ? game.box_depth_mm : game.box_width_mm;
+    const { width } = spineDimensions(game, box.layout_direction);
     return Math.min(100, width / box.inner_width_mm * 100);
   }
   height(game: BoardGame, box: ContainerBox): number {
-    return Math.min(100, (box.layout_direction === 'vertical' ? game.box_height_mm : game.box_depth_mm) / box.inner_height_mm * 100);
+    return Math.min(100, spineDimensions(game, box.layout_direction).height / box.inner_height_mm * 100);
   }
   initials(name: string): string { return name.split(/\s+/).map(word => word[0]).slice(0, 4).join(''); }
 }

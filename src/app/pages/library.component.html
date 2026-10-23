@@ -275,16 +275,24 @@
                                                 <span class="last:grid last:min-w-0">
                           <strong class="overflow-hidden text-[.78rem] text-ellipsis whitespace-nowrap">{{ game.name }}</strong>
                           <small class="text-[.68rem] text-muted">{{ boxDirection(box) }}
-                              layout · {{ game.box_width_mm / 10 }} × {{ game.box_height_mm / 10 }} cm</small>
+                              layout · {{ faceLabel(game, box) }} · {{ spineDimensions(game, box.layout_direction).width / 10 }} × {{ spineDimensions(game, box.layout_direction).height / 10 }} cm</small>
                         </span>
                                             </a>
-                                            <button class="cursor-pointer border-0 bg-transparent p-[5px] text-muted hover:text-accent"
-                                                    type="button"
-                                                    (click)="move(game.id, null)"
-                                                    [attr.aria-label]="'Move ' + game.name + ' to unassigned'"
-                                            >
-                                                <mat-icon>remove_circle_outline</mat-icon>
-                                            </button>
+                                            <div class="flex items-center">
+                                                <button class="cursor-pointer border-0 bg-transparent p-[5px] text-muted hover:text-accent"
+                                                        type="button" (click)="rotateGame(game)"
+                                                        [attr.aria-label]="'Rotate ' + game.name + ' to ' + faceLabel(game, box, true)"
+                                                        [title]="'Rotate to ' + faceLabel(game, box, true)">
+                                                    <mat-icon>rotate_right</mat-icon>
+                                                </button>
+                                                <button class="cursor-pointer border-0 bg-transparent p-[5px] text-muted hover:text-accent"
+                                                        type="button"
+                                                        (click)="move(game.id, null)"
+                                                        [attr.aria-label]="'Move ' + game.name + ' to unassigned'"
+                                                >
+                                                    <mat-icon>remove_circle_outline</mat-icon>
+                                                </button>
+                                            </div>
                                         </li>
                                     }
                                 </ul>

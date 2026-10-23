@@ -112,6 +112,6 @@ export class GameCatalogService {
     return { id: game.id, game_id: game.game_id, user_id: game.user_id, library_id: game.library_id,
       container_box_id: game.container_box_id, game_box_size_id: game.game_box_size_id,
       custom_width_mm: game.custom_width_mm, custom_height_mm: game.custom_height_mm, custom_depth_mm: game.custom_depth_mm,
-      capacity_units: game.capacity_units, favorite: game.favorite, sort_order: game.sort_order, created_at: game.created_at };
+      box_face: game.box_face, capacity_units: game.capacity_units, favorite: game.favorite, sort_order: game.sort_order, created_at: game.created_at };
   }
 }

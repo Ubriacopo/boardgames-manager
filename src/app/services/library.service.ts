@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import type { BoardGame, NewBoardGame, BoxSizeSelection } from '../../entities/BoardGame';
 import type { ContainerBox } from '../../entities/ContainerBox';
 import type { Tables } from '../../types/database.types';
-import { placementForGame, type GamePlacement } from '../../entities/GamePlacement';
+import { nextBoxFace, placementForGame, type GamePlacement } from '../../entities/GamePlacement';
 import { GameCatalogService, selectionColumns } from './game-catalog.service';
 import { getBggGameId, getBggMetadataByIds, type BggGameMetadata } from '../../utils/bggData';
 import { GameCoverService } from './game-cover.service';
@@ -180,6 +180,26 @@ export class LibraryService {
       p_copy_id: gameId, p_container_box_id: box, p_index: insertionIndex,
     });
     if (error) { this.storedGames.set(previous); throw error; }
+  }
+
+  private readonly rotatingGames = new Set<string>();
+
+  async rotateGame(gameId: string): Promise<void> {
+    if (this.rotatingGames.has(gameId)) return;
+    const game = this.game(gameId);
+    const box = this.allBoxes().find(box => box.id === game?.container_box_id);
+    if (!game || !box) throw new Error('Place this game in a cube before rotating it.');
+    const face = nextBoxFace(game, box.layout_direction);
+    this.rotatingGames.add(gameId);
+    this.storedGames.update(games => games.map(item => item.id === gameId ? { ...item, box_face: face } : item));
+    try {
+      const { error } = await supabase.from('board_games_box_association')
+        .update({ box_face: face }).eq('id', gameId).select('id').single();
+      if (error) throw error;
+    } catch (error) {
+      this.storedGames.update(games => games.map(item => item.id === gameId ? { ...item, box_face: game.box_face } : item));
+      throw error;
+    } finally { this.rotatingGames.delete(gameId); }
   }
 
   async setBoxLayoutDirection(boxId: number, layoutDirection: BoxLayoutDirection): Promise<void> {

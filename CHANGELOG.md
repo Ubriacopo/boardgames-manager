@@ -4,6 +4,8 @@
 
 ### Added
 
+- Per-copy cube rotation beside the unassign button, cycling W×D, H×D, and W×H. Defaults follow cube layout (W×D horizontal, H×D vertical); saved faces appear on shared shelves.
+
 - Quick add uses the default box format; a separate **+ special** opens edition/custom dimensions. Admins can pin a default, otherwise one vote per collector/game determines the format. Existing copies retain their chosen sizes; games without a chosen default use explicitly reported estimated shelf dimensions.
 
 - Saved library colors, editable beside the Library dropdown and during creation. Collection and New use colored library chips beside game metadata, with contrasting text.
@@ -86,7 +88,6 @@
 
 - Render each Kallax cube as a filled shelf using game-box spine artwork when it is available, with a generated visual fallback when it is not.
 - Add a game-image catalog that records trusted cover and spine image sources, attribution, and user overrides.
-- Extend the existing physical box-size variants and placements with per-copy orientation; vertical or horizontal layout currently belongs to each cube.
 - Track reviews as part of the owned-game record and show review state from the collection.
 - Record play history, including play date, player count, participants when desired, and preferred player counts for each game.
 

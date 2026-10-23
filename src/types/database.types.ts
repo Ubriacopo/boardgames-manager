@@ -46,6 +46,7 @@ export type Database = {
           game_id: string
           id: string
           library_id: string | null
+          box_face: "wxd" | "hxd" | "wxh" | null
           sort_order: number
           updated_at: string
         }
@@ -62,6 +63,7 @@ export type Database = {
           game_id: string
           id?: string
           library_id?: string | null
+          box_face?: "wxd" | "hxd" | "wxh" | null
           sort_order?: number
           updated_at?: string
         }
@@ -78,6 +80,7 @@ export type Database = {
           game_id?: string
           id?: string
           library_id?: string | null
+          box_face?: "wxd" | "hxd" | "wxh" | null
           sort_order?: number
           updated_at?: string
         }

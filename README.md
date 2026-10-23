@@ -291,3 +291,10 @@ Each game box shows its name in readable 0.85rem uppercase text on a centered, r
 with a border in the active theme’s brand color, following the box's vertical or horizontal orientation.
 `20261022122733_game_logos_and_box_sides.sql` adds the logo and box-side tables
 with the same admin-only write policies as existing artwork.
+
+In the selected cube's game list, press **Rotate** beside **Remove from cube**
+to cycle W×D → H×D → W×H → W×D. The default is W×D for horizontal cubes
+and H×D for vertical cubes. The cube layout determines the display direction;
+vertical layouts show the face upright. Each copy saves its selected face, including
+when moved to another cube, and shared shelves display that selection.
+Apply `supabase/migrations/20261023084659_copy_box_rotation.sql` before using rotation.
