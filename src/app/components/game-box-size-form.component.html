@@ -23,6 +23,7 @@
             @for (size of sizes(); track size.id) {
               <li class="flex flex-wrap items-center gap-2 py-2 text-sm">
                 <span class="min-w-0 flex-1 wrap-anywhere">{{ size.label }} {{ size.country }}
+                  <span class="text-muted">{{ size.width_mm / 10 }} × {{ size.height_mm / 10 }} × {{ size.depth_mm / 10 }} cm · </span>
                   <small class="text-muted">{{ format()?.votes?.[size.id] ?? 0 }} votes</small>
                   @if (format()?.defaultId === size.id) { <strong class="ml-2 text-brand">Default{{ format()?.adminId ? ' (admin)' : '' }}</strong> }
                 </span>

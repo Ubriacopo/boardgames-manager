@@ -121,13 +121,27 @@ erDiagram
     container_box |o--o{ board_games_box_association : "places on shelf"
 ```
 
-**Adding a game** opens an edition/size selector before creating the owned copy.
-Choose an existing variant or enter custom measurements in centimetres (0.1 cm increments). Measurements are stored in millimetres for shelf calculations. You can
+**+** adds an unassigned copy immediately with the game's default box format.
+Use **+ special** to open the edition/size selector instead. Choose an existing
+variant or enter custom measurements in centimetres (0.1 cm increments). Measurements are stored in millimetres for shelf calculations. You can
 publish a named variant with an optional country for other collectors to use.
 Published variants are immutable; corrections use a new variant, while personal
 adjustments stay on your own copy. No measured variants are fabricated when a
 game has none: the custom-size form explicitly identifies its initial values as
 estimates.
+
+Under **Default format & voting** in the size editor, collectors can vote for
+one format per game, change their vote, or remove it. Admins can set an explicit
+default or return to community voting. An admin default takes priority;
+otherwise the most-voted format wins, with ties resolved by oldest publication
+date and then ID. Defaults apply to future copies only. When no admin choice or
+votes exist, quick add leaves the format unset and reports that shelf dimensions
+are estimates; it does not publish or save invented measurements.
+
+Apply `supabase/migrations/20261022163000_default_box_formats.sql` with this
+frontend. The database validates format/game associations and enforces admin
+authority and one vote per user/game through RLS. Run the rollback-only checks
+with `npx supabase db query --linked --file supabase/tests/default_box_formats.sql`.
 
 Under an owned game's **Box Dims.** tab, change the variant or customize its
 width, height, and depth. Turning off customization restores the selected
@@ -163,8 +177,9 @@ selected while navigating within the app. New copies start in the shared
 any owned Kallax to assign its library; moving it back to Unassigned clears that
 membership. Shared collections offer a library dropdown as well.
 
-Use **Add another copy** on an owned game's Overview to add another edition or
-an identical copy. Each copy has independent dimensions, favorites, and placement.
+Use **Add another copy** on an owned game's Overview to add with the default
+format, or **+ special** to choose another edition or custom measurements.
+Each copy has independent dimensions, favorites, and placement.
 The new copy starts unassigned. Apply
 `supabase/migrations/20261022162000_collection_copy_ownership.sql` alongside this
 frontend: it preserves existing owners, clears library membership for unplaced

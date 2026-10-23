@@ -5,7 +5,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
 import {LibraryService} from '../services/library.service';
 import {GameDetailViewComponent} from '../components/game-detail-view.component';
-import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {MatDialogModule} from '@angular/material/dialog';
 import {CollectionAddService} from '../services/collection-add.service';
 
 @Component({

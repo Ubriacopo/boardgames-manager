@@ -4,6 +4,8 @@
 
 ### Added
 
+- Quick add uses the default box format; a separate **+ special** opens edition/custom dimensions. Admins can pin a default, otherwise one vote per collector/game determines the format. Existing copies retain their chosen sizes; games without a chosen default use explicitly reported estimated shelf dimensions.
+
 - Saved library colors, editable beside the Library dropdown and during creation. Collection and New use colored library chips beside game metadata, with contrasting text.
 
 - Multiple named Kallax libraries, selected or created from the Library dropdown. Each has its own cubes and layout; shared collections also offer library selection. Collection and New show all owned games with library chips, and Collection offers an optional current-library filter.

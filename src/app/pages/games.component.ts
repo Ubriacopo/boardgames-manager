@@ -83,12 +83,4 @@ export class GamesComponent implements OnInit, OnDestroy {
             }).slice(0, 100).map(result => result.game);
     });
 
-    owned(bggId: number): boolean {
-        return this.library.games().some((game) => game.bgg_id === bggId);
-    }
-
-    gameLink(game: BggGameMetadata): unknown[] {
-        const owned = this.library.games().find((item) => item.bgg_id === game.bggId);
-        return owned ? ['/games', owned.id] : ['/games/discover', game.bggId];
-    }
 }
