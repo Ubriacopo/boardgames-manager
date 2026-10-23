@@ -110,7 +110,7 @@ The database separates shared game information from physical copies:
 | --- | --- |
 | `games` | One shared definition per BGG game: name, release year, BGG link, and fallback cover. |
 | `game_box_sizes` | Reusable box dimensions for an edition and optional country/market. One game can have many variants, such as Retail or Kickstarter deluxe. |
-| `board_games_box_association` | One owned copy, linked to a library and optionally a Kallax cube. Stores the selected size variant, private custom dimensions, favorite flag, capacity units, and shelf order. |
+| `board_games_box_association` | One copy owned by `user_id`, with an optional cube and its derived library. Stores the selected size variant, private custom dimensions, favorite flag, capacity units, and shelf order. |
 
 ```mermaid
 erDiagram
@@ -152,6 +152,39 @@ backfills now update `games`. Rebuild/deploy the updated frontend with this
 migration: older builds still refer to the removed public table names.
 
 ## UI styling
+
+Use the **Library** dropdown to switch between named Kallax libraries, or choose
+**+ Create library...** to create one. Switching libraries changes the Kallax
+cubes and shelf layout. Collection and New show owned games across all your
+libraries, with a chip identifying each copy's library. Enable **Only current
+library** in Collection to limit the list to the selected Kallax; the filter stays
+selected while navigating within the app. New copies start in the shared
+**Unassigned** tray and have no library until placed in a cube. Drag a copy into
+any owned Kallax to assign its library; moving it back to Unassigned clears that
+membership. Shared collections offer a library dropdown as well.
+
+Use **Add another copy** on an owned game's Overview to add another edition or
+an identical copy. Each copy has independent dimensions, favorites, and placement.
+The new copy starts unassigned. Apply
+`supabase/migrations/20261022162000_collection_copy_ownership.sql` alongside this
+frontend: it preserves existing owners, clears library membership for unplaced
+copies, and protects collection access through owner-based RLS. Legacy copies
+without a known owner stay inaccessible. Database regression checks run with
+`npx supabase db query --linked --file supabase/tests/collection_copy_ownership.sql`;
+fixtures and changes roll back after the checks.
+
+Choose **Color** beside the Library dropdown to save a color for that library,
+or select one while creating a library. Its chips appear beside game metadata
+in Collection and New, with contrasting text for readability. Apply
+`supabase/migrations/20261022161000_library_colors.sql` for saved colors.
+
+Apply `supabase/migrations/20261022160000_allow_multiple_libraries.sql` before
+creating additional libraries. It removes the one-library-per-user restriction
+and retains an indexed ownership lookup and the existing access policies.
+
+Library navigation remembers the last Kallax, New, or Collection tab during the
+current app session. On touch screens, hold a collection row briefly before
+dragging it sideways to favorite or remove it; ordinary swipes scroll the list.
 
 Use Tailwind utilities in Angular templates for layout, typography, spacing,
 responsive behavior, theme colors, and interaction states, as required by

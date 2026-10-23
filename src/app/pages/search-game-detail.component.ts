@@ -1,8 +1,7 @@
-import { firstValueFrom } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { GameCatalogService } from '../services/game-catalog.service';
-import { AddGameDialogComponent } from '../components/add-game-dialog.component';
-import {Component, OnInit} from '@angular/core';
+import {CollectionAddService} from '../services/collection-add.service';
+import {Component, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {getBggMetadataByIds, getBggOverview, type BggGameMetadata} from '../../utils/bggData';
 import {LibraryService} from '../services/library.service';
@@ -15,11 +14,11 @@ import {GameDetailViewComponent} from '../components/game-detail-view.component'
 })
 export class SearchGameDetailComponent implements OnInit {
     game?: BggGameMetadata;
-    loading = true;
+    readonly loading = signal(true);
     error = '';
-    adding = false;
+    readonly adding = signal(false);
 
-    constructor(readonly library: LibraryService, private readonly route: ActivatedRoute, private readonly router: Router, private readonly catalog: GameCatalogService, private readonly dialog: MatDialog,) {
+    constructor(readonly library: LibraryService, private readonly route: ActivatedRoute, private readonly router: Router, private readonly catalog: GameCatalogService, private readonly collectionAdd: CollectionAddService) {
     }
 
     async ngOnInit(): Promise<void> {
@@ -30,7 +29,7 @@ export class SearchGameDetailComponent implements OnInit {
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Unable to load game details.';
         } finally {
-            this.loading = false;
+            this.loading.set(false);
         }
     }
 
@@ -42,10 +41,10 @@ export class SearchGameDetailComponent implements OnInit {
         void this.router.navigate(['/games']);
     }
 
-    async add(): Promise<void> {
-        if (!this.game || this.adding) return;
+    async add(special = false): Promise<void> {
+        if (!this.game || this.adding()) return;
         this.error = '';
-        this.adding = true;
+        this.adding.set(true);
         try {
             let imageUrl: string | null = null;
             try {
@@ -60,14 +59,12 @@ export class SearchGameDetailComponent implements OnInit {
                 release_year: this.game.yearPublished ?? new Date().getFullYear(),
                 image_url: imageUrl,
             });
-            const copy = await firstValueFrom(this.dialog.open(AddGameDialogComponent, {
-                data: definition, width: '640px', maxWidth: '95vw',
-            }).afterClosed());
+            const copy = await this.collectionAdd.add(definition, special);
             if (copy) await this.router.navigate(['/games', copy.id]);
         } catch (error) {
             this.error = error instanceof Error ? error.message : 'Unable to add this game.';
         } finally {
-            this.adding = false;
+            this.adding.set(false);
         }
     }
 }

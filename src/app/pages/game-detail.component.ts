@@ -1,25 +1,33 @@
 import type { BoardGame, BoxDimensions, BoxSizeSelection } from '../../entities/BoardGame';
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ActivatedRoute, Router} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
 import {LibraryService} from '../services/library.service';
 import {GameDetailViewComponent} from '../components/game-detail-view.component';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {CollectionAddService} from '../services/collection-add.service';
 
 @Component({
     standalone: true,
-    imports: [GameDetailViewComponent, MatIconModule],
+    imports: [GameDetailViewComponent, MatIconModule, MatDialogModule],
     templateUrl: './game-detail.component.html',
 })
 export class GameDetailComponent implements OnInit {
     gameId = '';
     readonly savingDimensions = signal(false);
     readonly dimensionsError = signal('');
+    readonly addingCopy = signal(false);
+    readonly addError = signal('');
+    private readonly destroyRef = inject(DestroyRef);
 
-    constructor(readonly library: LibraryService, private readonly route: ActivatedRoute, private readonly router: Router,) {
+    constructor(readonly library: LibraryService, private readonly route: ActivatedRoute, private readonly router: Router, private readonly collectionAdd: CollectionAddService) {
     }
 
     ngOnInit(): void {
-        this.gameId = this.route.snapshot.paramMap.get('id') ?? '';
+        this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+            this.gameId = params.get('id') ?? '';
+        });
     }
 
     private dimensionsKey = '';
@@ -35,11 +43,27 @@ export class GameDetailComponent implements OnInit {
     }
 
     location(boxId: number | null): string {
-        return this.library.boxes().find((box) => box.id === boxId)?.description ?? 'Unassigned';
+        return this.library.location(boxId);
     }
 
     back(): void {
-        void this.router.navigate(['/library'], {queryParams: {tab: 'collection'}});
+        void this.router.navigate(['/library']);
+    }
+
+    async addCopy(special = false): Promise<void> {
+        const game = this.library.game(this.gameId);
+        if (!game || this.addingCopy()) return;
+        this.addingCopy.set(true);
+        this.addError.set('');
+        try {
+            const copy = await this.collectionAdd.add({id: game.game_id, name: game.name}, special);
+            if (copy) {
+                await this.router.navigate(['/games', copy.id]);
+                this.gameId = copy.id;
+            }
+        } catch (error) {
+            this.addError.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to add this copy.');
+        } finally { this.addingCopy.set(false); }
     }
 
     async saveBoxSize(selection: BoxSizeSelection): Promise<void> {

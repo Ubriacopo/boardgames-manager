@@ -47,6 +47,7 @@ export class GameDetailViewComponent implements OnChanges {
     @Input() dimensionsError = '';
     @Output() readonly back = new EventEmitter<void>();
     @Output() readonly primaryAction = new EventEmitter<void>();
+    @Output() readonly specialAction = new EventEmitter<void>();
     @Output() readonly boxSizeSave = new EventEmitter<BoxSizeSelection>();
 
     localSummary: LocalReviewSummary = {average: null, count: 0, rank: null, reviews: []};

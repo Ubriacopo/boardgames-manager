@@ -28,6 +28,7 @@ export class CollectionListComponent {
         const metadata = this.library.metadata();
         const score = makeSearchScorer(query);
         return this.library.games().filter((game) => {
+            if (this.library.currentLibraryOnly() && game.library_id !== this.library.library()?.id) return false;
             const meta = metadata[game.id];
             return !query || score([game.name, game.release_year, ...(meta?.themes ?? [])].join(' ')) > 0;
         }).sort((a, b) => {
@@ -38,7 +39,7 @@ export class CollectionListComponent {
     }
 
     location(boxId: number | null): string {
-        return this.library.boxes().find((box) => box.id === boxId)?.description ?? 'Unassigned';
+        return this.library.location(boxId);
     }
 
     async favorite(game: BoardGame): Promise<void> {

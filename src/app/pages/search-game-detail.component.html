@@ -1,4 +1,4 @@
-@if (loading) {
+@if (loading()) {
     <p class="py-20 text-center text-muted">Loading game details…</p>
 } @else if (game; as item) {
     <app-game-detail-view
@@ -9,11 +9,12 @@
             [owned]="false"
             [bggUrl]="'https://boardgamegeek.com/boardgame/' + item.bggId"
             [backLabel]="'Back to discovery'"
-            [actionLabel]="adding ? 'Adding…' : owned() ? 'Add another copy' : 'Add to library'"
-            [actionDisabled]="adding"
+            [actionLabel]="adding() ? 'Adding…' : owned() ? 'Add another copy' : 'Add to collection'"
+            [actionDisabled]="adding()"
             [error]="error"
             (back)="back()"
             (primaryAction)="add()"
+            (specialAction)="add(true)"
     />
 } @else {
     <main class="flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center px-5 text-center">

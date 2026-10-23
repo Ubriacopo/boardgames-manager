@@ -15,6 +15,30 @@
           }
         </select>
       </label>
+      @if (sizes().length) {
+        <details class="rounded-xl border border-line p-3">
+          <summary class="cursor-pointer font-semibold text-brand">Default format &amp; voting</summary>
+          <p class="mt-3 text-sm text-muted">An admin choice takes priority; otherwise the format with the most votes is used. Ties use the oldest format. Changes apply to future additions.</p>
+          <ul class="m-0 list-none divide-y divide-line p-0">
+            @for (size of sizes(); track size.id) {
+              <li class="flex flex-wrap items-center gap-2 py-2 text-sm">
+                <span class="min-w-0 flex-1 wrap-anywhere">{{ size.label }} {{ size.country }}
+                  <small class="text-muted">{{ format()?.votes?.[size.id] ?? 0 }} votes</small>
+                  @if (format()?.defaultId === size.id) { <strong class="ml-2 text-brand">Default{{ format()?.adminId ? ' (admin)' : '' }}</strong> }
+                </span>
+                <button mat-stroked-button type="button" [disabled]="choosingDefault()" [attr.aria-pressed]="format()?.ownVote === size.id"
+                        (click)="chooseDefault(format()?.ownVote === size.id ? null : size.id)">{{ format()?.ownVote === size.id ? 'Remove vote' : 'Vote' }}</button>
+                @if (auth.isAdmin()) {
+                  <button mat-button type="button" [disabled]="choosingDefault()" (click)="chooseDefault(size.id, true)">Set default</button>
+                }
+              </li>
+            }
+          </ul>
+          @if (auth.isAdmin() && format()?.adminId) {
+            <button mat-button type="button" [disabled]="choosingDefault()" (click)="chooseDefault(null, true)">Use community votes</button>
+          }
+        </details>
+      }
       @if (!sizes().length) {
         <p class="m-0 text-sm text-muted">No edition sizes have been defined yet. Enter your measurements below. The initial values are estimates.</p>
       }

@@ -102,15 +102,25 @@ export class FriendsService {
     if (error) throw error;
   }
 
-  async collection(userId: string): Promise<FriendCollection> {
-    const library = await supabase.from('libraries').select('id, shelf_columns, shelf_rows').eq('user_id', userId).maybeSingle();
+  async libraries(userId: string): Promise<Tables<'libraries'>[]> {
+    const { data, error } = await supabase.from('libraries').select('*').eq('user_id', userId).order('created_at').order('id');
+    if (error) throw error;
+    return data;
+  }
+
+  async collection(userId: string, libraryId?: string): Promise<FriendCollection> {
+    let query = supabase.from('libraries').select('id, shelf_columns, shelf_rows').eq('user_id', userId);
+    if (libraryId) query = query.eq('id', libraryId);
+    const library = await query.order('created_at').order('id').limit(1).maybeSingle();
     if (library.error) throw library.error;
     if (!library.data) throw new Error('This collection is unavailable. You may need an approved friendship or to follow this collector.');
     const [games, boxes] = await Promise.all([
-      this.catalog.collection(library.data.id),
+      this.catalog.collection(userId),
       supabase.from('container_box').select('*').eq('library_id', library.data.id).order('id'),
     ]);
     if (boxes.error) throw boxes.error;
-    return { games: games.map(game => this.covers.forGame(game)), boxes: boxes.data, placements: games.map(placementForGame), columns: library.data.shelf_columns, rows: library.data.shelf_rows };
+    const selectedLibrary = library.data;
+    const visible = games.filter(game => game.library_id === selectedLibrary.id || game.library_id === null);
+    return { games: visible.map(game => this.covers.forGame(game)), boxes: boxes.data, placements: visible.map(placementForGame), columns: library.data.shelf_columns, rows: library.data.shelf_rows };
   }
 }

@@ -11,6 +11,7 @@ import { GameBoxSizeFormComponent } from './game-box-size-form.component';
   template: `
     <h2 mat-dialog-title>Add {{ game.name }}</h2>
     <mat-dialog-content>
+      <p class="text-sm text-muted">New copies start unassigned. Place them in any Kallax from the Unassigned tray.</p>
       <p class="mb-5 text-sm text-muted">Choose the edition you own, or enter your box dimensions.</p>
       <app-game-box-size-form [gameId]="game.id" [saving]="saving()" [error]="error()"
           submitLabel="Add to my collection" (selectionSave)="add($event)" />
@@ -23,8 +24,8 @@ import { GameBoxSizeFormComponent } from './game-box-size-form.component';
 export class AddGameDialogComponent {
   readonly saving = signal(false);
   readonly error = signal('');
-  constructor(@Inject(MAT_DIALOG_DATA) readonly game: GameDefinition,
-    readonly dialog: MatDialogRef<AddGameDialogComponent, BoardGame>, private readonly library: LibraryService) {}
+  constructor(@Inject(MAT_DIALOG_DATA) readonly game: Pick<GameDefinition, 'id' | 'name'>,
+    readonly dialog: MatDialogRef<AddGameDialogComponent, BoardGame>, readonly library: LibraryService) {}
 
   async add(selection: BoxSizeSelection): Promise<void> {
     if (this.saving()) return;

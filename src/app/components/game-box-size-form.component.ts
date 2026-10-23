@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import type { BoxDimensions, BoxSizeSelection, GameBoxSize } from '../../entities/BoardGame';
 import { estimatedDimensions, GameCatalogService, validateDimensions } from '../services/game-catalog.service';
+import {AuthService} from '../services/auth.service';
 
 @Component({
   selector: 'app-game-box-size-form',
@@ -23,6 +24,8 @@ export class GameBoxSizeFormComponent implements OnChanges {
   readonly publishing = signal(false);
   readonly feedback = signal('');
   readonly loadError = signal('');
+  readonly format = signal<Awaited<ReturnType<GameCatalogService['formatStatus']>> | null>(null);
+  readonly choosingDefault = signal(false);
   sizeId: string | null = null;
   customize = true;
   dimensions = this.toCentimetres(estimatedDimensions);
@@ -30,7 +33,7 @@ export class GameBoxSizeFormComponent implements OnChanges {
   country = '';
   private loadVersion = 0;
 
-  constructor(private readonly catalog: GameCatalogService) {}
+  constructor(private readonly catalog: GameCatalogService, readonly auth: AuthService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['gameId']) void this.load();
@@ -41,9 +44,10 @@ export class GameBoxSizeFormComponent implements OnChanges {
     const version = ++this.loadVersion;
     this.loading.set(true); this.loadError.set(''); this.feedback.set('');
     try {
-      const sizes = await this.catalog.sizes(this.gameId);
+      const [sizes, format] = await Promise.all([this.catalog.sizes(this.gameId), this.catalog.formatStatus(this.gameId)]);
       if (version !== this.loadVersion) return;
       this.sizes.set(sizes);
+      this.format.set(format);
       this.resetSelection();
     } catch (error) {
       if (version === this.loadVersion) this.loadError.set(this.message(error));
@@ -71,6 +75,19 @@ export class GameBoxSizeFormComponent implements OnChanges {
   private variantDimensions(): BoxDimensions {
     const size = this.sizes().find(size => size.id === this.sizeId);
     return size ? { width: size.width_mm, height: size.height_mm, depth: size.depth_mm } : estimatedDimensions;
+  }
+
+  async chooseDefault(sizeId: string | null, admin = false): Promise<void> {
+    if (this.choosingDefault()) return;
+    this.choosingDefault.set(true); this.feedback.set('');
+    const gameId = this.gameId;
+    try {
+      if (admin) await this.catalog.setDefaultFormat(gameId, sizeId);
+      else await this.catalog.voteFormat(gameId, sizeId);
+      const format = await this.catalog.formatStatus(gameId);
+      if (gameId === this.gameId) this.format.set(format);
+    } catch (error) { this.feedback.set(this.message(error)); }
+    finally { this.choosingDefault.set(false); }
   }
 
   private toCentimetres(dimensions: BoxDimensions): BoxDimensions {

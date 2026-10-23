@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { BoardGame } from '../../entities/BoardGame';
 import { ContainerBox } from '../../entities/ContainerBox';
+import type { Library } from '../services/library.service';
 import { FriendCollection, FriendsService, SocialProfile } from '../services/friends.service';
 
 @Component({
@@ -17,6 +18,8 @@ import { FriendCollection, FriendsService, SocialProfile } from '../services/fri
   templateUrl: './friend-collection.component.html',
 })
 export class FriendCollectionComponent implements OnInit {
+  libraries: Library[] = [];
+  selectedLibraryId = '';
   profile: SocialProfile | null = null;
   collection: FriendCollection = { games: [], boxes: [], placements: [], columns: null, rows: null };
   view: 'shelf' | 'list' = 'shelf';
@@ -38,13 +41,32 @@ export class FriendCollectionComponent implements OnInit {
     const version = ++this.version;
     this.loading.set(true); this.error.set(''); this.profile = null; this.selectedBox = null; this.query = '';
     this.collection = { games: [], boxes: [], placements: [], columns: null, rows: null };
+    this.libraries = [];
+    this.selectedLibraryId = '';
     try {
       if (!/^[0-9a-f-]{36}$/i.test(userId)) throw new Error('Collector not found.');
-      const [profile, collection] = await Promise.all([this.friends.profile(userId), this.friends.collection(userId)]);
-      if (version === this.version) { this.profile = profile; this.collection = collection; }
+      const [profile, libraries] = await Promise.all([this.friends.profile(userId), this.friends.libraries(userId)]);
+      const collection = await this.friends.collection(userId, libraries[0]?.id);
+      if (version === this.version) {
+        this.profile = profile; this.collection = collection; this.libraries = libraries;
+        this.selectedLibraryId = libraries[0]?.id ?? '';
+      }
     } catch (error) {
       if (version === this.version) this.error.set(error && typeof error === 'object' && 'message' in error
         ? String(error.message) : 'Unable to load this collection.');
+    } finally { if (version === this.version) this.loading.set(false); }
+  }
+
+  async selectLibrary(id: string): Promise<void> {
+    const version = ++this.version;
+    this.loading.set(true); this.error.set('');
+    try {
+      const collection = await this.friends.collection(this.profile!.id, id);
+      if (version === this.version) {
+        this.collection = collection; this.selectedLibraryId = id; this.selectedBox = null;
+      }
+    } catch (error) {
+      if (version === this.version) this.error.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to load this library.');
     } finally { if (version === this.version) this.loading.set(false); }
   }
 

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -17,9 +17,9 @@ export class ReviewComposerComponent implements OnInit {
     gameName = 'Game';
     rating = 8;
     body = '';
-    loading = true;
-    saving = false;
-    error = '';
+    readonly loading = signal(true);
+    readonly saving = signal(false);
+    readonly error = signal('');
     readonly editorModules = {
         toolbar: [['bold', 'italic', 'underline'], [{list: 'ordered'}, {list: 'bullet'}], ['blockquote', 'link'], ['clean']],
     };
@@ -41,9 +41,9 @@ export class ReviewComposerComponent implements OnInit {
                 this.body = review.body;
             }
         } catch (error) {
-            this.error = error instanceof Error ? error.message : 'Unable to open the review editor.';
+            this.error.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to open the review editor.');
         } finally {
-            this.loading = false;
+            this.loading.set(false);
         }
     }
 
@@ -52,19 +52,20 @@ export class ReviewComposerComponent implements OnInit {
     }
 
     async save(): Promise<void> {
+        if (this.loading() || this.saving()) return;
         if (!this.body.replace(/<[^>]*>/g, '').trim()) {
-            this.error = 'Write a short review first.';
+            this.error.set('Write a short review first.');
             return;
         }
-        this.saving = true;
-        this.error = '';
+        this.saving.set(true);
+        this.error.set('');
         try {
-            await this.reviews.save(this.bggId, this.rating, this.body);
+            await this.reviews.save(this.bggId, Number(this.rating), this.body);
             await this.router.navigate(['/reviews', this.bggId]);
         } catch (error) {
-            this.error = error instanceof Error ? error.message : 'Unable to publish your review.';
+            this.error.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to publish your review.');
         } finally {
-            this.saving = false;
+            this.saving.set(false);
         }
     }
 }

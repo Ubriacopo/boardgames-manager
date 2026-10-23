@@ -70,6 +70,7 @@ export class ReviewService {
       .select('*')
       .eq('bgg_id', bggId)
       .eq('user_id', userId)
+      .abortSignal(AbortSignal.timeout(15000))
       .maybeSingle();
     if (error) throw error;
     return data;

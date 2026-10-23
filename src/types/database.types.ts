@@ -34,6 +34,7 @@ export type Database = {
       }
       board_games_box_association: {
         Row: {
+          user_id: string | null
           capacity_units: number
           container_box_id: number | null
           created_at: string
@@ -50,6 +51,7 @@ export type Database = {
         }
         Insert: {
           capacity_units?: number
+          user_id?: string | null
           container_box_id?: number | null
           created_at?: string
           custom_depth_mm?: number | null
@@ -65,6 +67,7 @@ export type Database = {
         }
         Update: {
           capacity_units?: number
+          user_id?: string | null
           container_box_id?: number | null
           created_at?: string
           custom_depth_mm?: number | null
@@ -310,8 +313,18 @@ export type Database = {
         }
         Relationships: []
       }
+      game_box_size_votes: {
+        Row: { game_id: string; user_id: string; size_id: string }
+        Insert: { game_id: string; user_id?: string; size_id: string }
+        Update: { game_id?: string; user_id?: string; size_id?: string }
+        Relationships: [
+          { foreignKeyName: "game_box_size_votes_game_id_fkey"; columns: ["game_id"]; isOneToOne: false; referencedRelation: "games"; referencedColumns: ["id"] },
+          { foreignKeyName: "game_box_size_votes_size_id_game_id_fkey"; columns: ["size_id", "game_id"]; isOneToOne: false; referencedRelation: "game_box_sizes"; referencedColumns: ["id", "game_id"] }
+        ]
+      }
       games: {
         Row: {
+          default_box_size_id: string | null
           bgg_id: number | null
           bgg_url: string
           created_at: string
@@ -322,6 +335,7 @@ export type Database = {
           release_year: number
         }
         Insert: {
+          default_box_size_id?: string | null
           bgg_id?: number | null
           bgg_url: string
           created_at?: string
@@ -332,6 +346,7 @@ export type Database = {
           release_year: number
         }
         Update: {
+          default_box_size_id?: string | null
           bgg_id?: number | null
           bgg_url?: string
           created_at?: string
@@ -341,10 +356,11 @@ export type Database = {
           name?: string
           release_year?: number
         }
-        Relationships: []
+        Relationships: [{ foreignKeyName: "games_default_box_size_fkey"; columns: ["default_box_size_id", "id"]; isOneToOne: false; referencedRelation: "game_box_sizes"; referencedColumns: ["id", "game_id"] }]
       }
       libraries: {
         Row: {
+          color: string
           created_at: string
           id: string
           name: string
@@ -353,6 +369,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          color?: string
           created_at?: string
           id?: string
           name?: string
@@ -361,6 +378,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          color?: string
           created_at?: string
           id?: string
           name?: string
@@ -372,7 +390,7 @@ export type Database = {
           {
             foreignKeyName: "libraries_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
@@ -575,6 +593,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      default_game_box_size: { Args: { p_game_id: string }; Returns: string | null }
+      add_default_collection_copy: { Args: { p_game_id: string }; Returns: string }
       move_collection_game: {
         Args: {
           p_container_box_id: number | null

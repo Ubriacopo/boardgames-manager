@@ -7,10 +7,14 @@ import {makeSearchScorer} from '../../utils/search';
 import {GameCoverService} from '../services/game-cover.service';
 import {LibraryService} from '../services/library.service';
 import {GameListRowComponent} from '../components/game-list-row.component';
+import {CollectionAddService} from '../services/collection-add.service';
+import {GameCatalogService} from '../services/game-catalog.service';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 
 @Component({
     standalone: true,
-    imports: [FormsModule, GameListRowComponent, MatButtonModule, MatIconModule],
+    imports: [FormsModule, GameListRowComponent, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule],
     templateUrl: './games.component.html',
 })
 export class GamesComponent implements OnInit, OnDestroy {
@@ -23,8 +27,23 @@ export class GamesComponent implements OnInit, OnDestroy {
     readonly sort = signal<'rank' | 'rating' | 'popular' | 'newest'>('rank');
     readonly loading = signal(true);
     readonly error = signal('');
+    readonly adding = signal<Record<number, boolean>>({});
 
-    constructor(readonly library: LibraryService, readonly covers: GameCoverService) {
+    constructor(readonly library: LibraryService, readonly covers: GameCoverService, private readonly gameCatalog: GameCatalogService,
+                private readonly collectionAdd: CollectionAddService, private readonly snackBar: MatSnackBar) {
+    }
+
+    async add(game: BggGameMetadata, special = false): Promise<void> {
+        if (this.adding()[game.bggId]) return;
+        this.adding.update(state => ({...state, [game.bggId]: true}));
+        try {
+            const definition = await this.gameCatalog.ensureGame({bgg_id: game.bggId,
+                bgg_url: `https://boardgamegeek.com/boardgame/${game.bggId}`, name: game.name,
+                release_year: game.yearPublished ?? new Date().getFullYear(), image_url: this.covers.urls()[game.bggId] ?? null});
+            await this.collectionAdd.add(definition, special);
+        } catch (error) {
+            this.snackBar.open(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to add this game.', 'Dismiss');
+        } finally { this.adding.update(state => ({...state, [game.bggId]: false})); }
     }
 
     async ngOnInit(): Promise<void> {

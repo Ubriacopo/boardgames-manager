@@ -27,6 +27,37 @@
         </button>
     </nav>
 
+    <div class="flex flex-none flex-wrap items-center gap-2 border-b border-line px-3 py-2">
+        <label for="library-picker" class="text-sm font-bold text-muted">Library</label>
+        <select id="library-picker" class="min-w-0 max-w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink"
+                [ngModel]="creatingLibrary ? '__create__' : library.library()?.id" (ngModelChange)="selectLibrary($event)"
+                [disabled]="library.loading() || changingCubes">
+            @for (item of library.libraries(); track item.id) { <option [value]="item.id">{{ item.name }}</option> }
+            <option value="__create__">+ Create library...</option>
+        </select>
+        @if (!creatingLibrary && library.library(); as currentLibrary) {
+            <label class="flex items-center gap-2 text-sm text-muted">
+                Color
+                <input #libraryColorInput type="color" class="h-9 w-10 cursor-pointer rounded border border-line bg-transparent p-0.5"
+                       aria-label="Current library color" [value]="currentLibrary.color || '#287f82'"
+                       (change)="saveLibraryColor(currentLibrary.id, libraryColorInput)"
+                       [disabled]="savingColor() || library.loading()">
+            </label>
+            @if (savingColor()) { <span class="text-xs text-muted" role="status">Saving color...</span> }
+        }
+        @if (creatingLibrary) {
+            <form class="flex min-w-0 flex-wrap items-center gap-2" (ngSubmit)="createLibrary()">
+                <input class="min-w-0 rounded-lg border border-line bg-surface px-3 py-2 text-ink" name="libraryName"
+                       aria-label="New library name" placeholder="Library name" [(ngModel)]="newLibraryName" required maxlength="100" [disabled]="library.loading()">
+                <label class="flex items-center gap-2 text-sm text-muted">Color
+                    <input type="color" class="h-9 w-10 cursor-pointer rounded border border-line bg-transparent p-0.5"
+                           name="libraryColor" aria-label="New library color" [(ngModel)]="newLibraryColor" [disabled]="library.loading()">
+                </label>
+                <button mat-flat-button type="submit" [disabled]="!newLibraryName.trim() || library.loading()">Create</button>
+                <button mat-button type="button" (click)="creatingLibrary = false" [disabled]="library.loading()">Cancel</button>
+            </form>
+        }
+    </div>
     @if (library.error()) {
         <p class="text-[#a53525]">{{ library.error() }}</p>
     }
@@ -193,11 +224,11 @@
                         }
                     </section>
                     <aside
-                            class="max-h-[min(68vh,_760px)] overflow-y-auto rounded-[15px] border border-[rgba(255,255,255,.12)] bg-white/4 p-4
+                            class="max-h-[min(68vh,_760px)] overflow-y-auto rounded-[15px] border border-[rgba(255,255,255,.12)] bg-white/4 p-2
                                    max-[650px]:fixed max-[650px]:right-0 max-[650px]:bottom-[4rem] max-[650px]:left-0 max-[650px]:z-45
                                    max-[650px]:m-0 max-[650px]:hidden max-[650px]:max-h-[min(62vh,_560px)] max-[650px]:overflow-y-auto
                                    max-[650px]:rounded-[20px_20px_0_0] max-[650px]:border max-[650px]:border-line max-[650px]:bg-[#111313]
-                                   max-[650px]:px-4 max-[650px]:pt-3 max-[650px]:pb-[calc(16px+env(safe-area-inset-bottom))]
+                                   max-[650px]:px-2 max-[650px]:pt-2 max-[650px]:pb-[env(safe-area-inset-bottom)]
                                    max-[650px]:shadow-[0_-18px_50px_rgba(0,0,0,.5)] max-sm:!bottom-[106px] light:border-line light:bg-white
                                    max-[650px]:[&.is-open]:block max-[650px]:[&.is-open]:animate-[sheet-in_.2s_ease-out]
                                    max-[650px]:[&.is-open]:before:mx-auto max-[650px]:[&.is-open]:before:mt-0 max-[650px]:[&.is-open]:before:mb-3
@@ -209,7 +240,7 @@
                             (click)="$event.stopPropagation()"
                     >
                         @if (selectedBoxInfo; as box) {
-                            <header class="mb-3 flex items-start justify-between border-b border-b-line pb-3">
+                            <header class="mb-1 flex items-start justify-between border-b border-b-line pb-1">
                                 <div>
                                     <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase last:text-[#bed0c5]">Selected cube</p>
                                     <input class="max-w-[190px] border-0 border-b border-b-transparent bg-transparent px-0 py-px font-display text-[1.2rem]
@@ -248,13 +279,11 @@
                                 </p>
                             }
                             @if (selectedGames.length) {
-                                <ul class="m-0 grid list-none gap-[7px] p-0">
+                                <ul class="m-0 grid list-none divide-y divide-line p-0">
                                     @for (game of selectedGames; track game.id) {
-                                        <li class="grid grid-cols-[minmax(0,_1fr)_auto] items-center rounded-[9px] border border-line bg-surface p-[7px]
-                                               max-[650px]:p-2.5">
+                                        <li class="grid grid-cols-[minmax(0,_1fr)_auto] items-center py-1">
                                             <a class="grid grid-cols-[34px_minmax(0,_1fr)] items-center gap-[9px]" [routerLink]="['/games', game.id]">
-                        <span class="h-10.5 w-[34px] overflow-hidden rounded-[5px] bg-mint last:grid last:min-w-0 max-[650px]:h-12
-                               max-[650px]:w-[39px]">
+                        <span class="h-10.5 w-[34px] overflow-hidden rounded-[5px] bg-mint last:grid last:min-w-0">
                           @if (game.image_url) {
                               <img class="h-full w-full object-cover" [src]="game.image_url" alt="">
                           }
@@ -294,7 +323,7 @@
                         <h2>Recently added</h2>
                     </div>
                 </header>
-                <div class="mx-auto my-0 grid max-w-[1100px] gap-0">
+                <div class="mx-auto my-0 grid max-w-[1100px] gap-0 divide-y divide-line">
                     @for (game of recentlyAdded(); track game.id) {
                         <app-game-list-row
                                 [name]="game.name"
@@ -304,6 +333,8 @@
                                 [imageUrl]="game.image_url"
                                 [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
                                 [location]="location(game.box)"
+                                [libraryName]="library.libraryName(game.library_id)"
+                                [libraryColor]="library.libraryColor(game.library_id)"
                                 [rating]="library.metadata()[game.id]?.avgRating ?? null"
                                 [favorite]="game.favorite"
                                 [draggable]="true"
@@ -318,11 +349,11 @@
         @if (activeTab === 'collection') {
             <app-collection-list class="contents"/>
         }
-        @if (!library.games().length) {
+        @if (activeTab === 'shelf' && !library.shelfGames().length || activeTab !== 'shelf' && !library.games().length) {
             <section>
                 <mat-icon>extension</mat-icon>
-                <h2>Your shelf is waiting</h2>
-                <p>Add your first game to start building the collection.</p>
+                <h2>{{ library.games().length ? 'This Kallax is waiting' : 'Your shelf is waiting' }}</h2>
+                <p>{{ library.games().length ? 'Open Unassigned and drag a copy into a cube.' : 'Add your first game to start building the collection.' }}</p>
                 <a mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" routerLink="/games">Discover games</a>
             </section>
         }

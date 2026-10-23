@@ -1,6 +1,6 @@
 import { GameSpineComponent } from '../components/game-spine.component';
 import {DecimalPipe} from '@angular/common';
-import {Component, computed, HostListener} from '@angular/core';
+import {Component, computed, HostListener, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {
     CdkDrag,
@@ -44,7 +44,12 @@ import {GameListRowComponent} from '../components/game-list-row.component';
     templateUrl: './library.component.html',
 })
 export class LibraryComponent {
-    activeTab: 'shelf' | 'recent' | 'collection' = 'shelf';
+    get activeTab(): 'shelf' | 'recent' | 'collection' { return this.library.activeTab(); }
+    set activeTab(tab: 'shelf' | 'recent' | 'collection') { this.library.activeTab.set(tab); }
+    creatingLibrary = false;
+    newLibraryName = '';
+    newLibraryColor = '#287f82';
+    readonly savingColor = signal(false);
     selectedBox: number | null = null;
     selectedBoxLabel = '';
     unassignedOpen = false;
@@ -56,7 +61,7 @@ export class LibraryComponent {
     draftRows = 4;
     layoutOpen = false;
     changingCubes = false;
-    readonly assignedCount = computed(() => this.library.games().length - this.library.unassigned().length);
+    readonly assignedCount = computed(() => this.library.shelfGames().length);
 
     constructor(
         readonly library: LibraryService,
@@ -64,7 +69,12 @@ export class LibraryComponent {
         private readonly snackBar: MatSnackBar,
     ) {
         const requestedTab = route.snapshot.queryParamMap.get('tab');
-        if (requestedTab === 'recent' || requestedTab === 'collection') this.activeTab = requestedTab;
+        if (requestedTab === 'shelf' || requestedTab === 'recent' || requestedTab === 'collection') this.activeTab = requestedTab;
+        this.syncLayout();
+    }
+
+    private syncLayout(): void {
+        const library = this.library;
         const boxCount = Math.max(1, library.boxes().length);
         const saved = library.library();
         const savedFits = saved?.shelf_columns && saved?.shelf_rows && saved.shelf_columns * saved.shelf_rows >= boxCount;
@@ -72,6 +82,39 @@ export class LibraryComponent {
         this.gridRows = savedFits ? saved.shelf_rows! : Math.ceil(boxCount / this.gridColumns);
         this.draftColumns = this.gridColumns;
         this.draftRows = this.gridRows;
+    }
+
+    async selectLibrary(id: string): Promise<void> {
+        if (id === '__create__') { this.creatingLibrary = true; return; }
+        this.selectedBox = null;
+        this.layoutOpen = false;
+        await this.library.selectLibrary(id);
+        this.syncLayout();
+    }
+
+    async createLibrary(): Promise<void> {
+        try {
+            await this.library.createLibrary(this.newLibraryName, this.newLibraryColor);
+            this.selectedBox = null;
+            this.syncLayout();
+            this.creatingLibrary = false;
+            this.newLibraryName = '';
+        } catch (error) {
+            this.snackBar.open(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to create a library.', 'Dismiss');
+        }
+    }
+
+    async saveLibraryColor(id: string, input: HTMLInputElement): Promise<void> {
+        if (this.savingColor()) return;
+        this.savingColor.set(true);
+        try {
+            await this.library.setLibraryColor(id, input.value);
+        } catch (error) {
+            this.snackBar.open(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to save library color.', 'Dismiss');
+        } finally {
+            input.value = this.library.library()?.color ?? '#287f82';
+            this.savingColor.set(false);
+        }
     }
 
     get gridLayoutValid(): boolean {
@@ -210,7 +253,7 @@ export class LibraryComponent {
     }
 
     gamesInBox(id: number): BoardGame[] {
-        return this.library.games()
+        return this.library.shelfGames()
             .filter((game) => (this.library.placement(game.id)?.container_box_id ?? game.box) === id)
             .sort((left, right) => (this.library.placement(left.id)?.sort_order ?? 0) -
                 (this.library.placement(right.id)?.sort_order ?? 0));
@@ -262,7 +305,7 @@ export class LibraryComponent {
     }
 
     location(id: number | null): string {
-        return this.library.boxes().find((box) => box.id === id)?.description ?? 'Unassigned';
+        return this.library.location(id);
     }
 
     initials(name: string): string {

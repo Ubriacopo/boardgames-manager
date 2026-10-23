@@ -3,7 +3,7 @@
         <p class="mb-2 text-xs font-bold tracking-[.14em] text-accent uppercase">Meeple House review</p>
         <h1 class="font-display text-4xl font-bold lg:text-6xl">{{ gameName }}</h1>
     </header>
-    @if (loading) {
+    @if (loading()) {
         <p class="py-20 text-center text-muted">Opening editor…</p>
     } @else {
         <form class="grid gap-5 rounded-xl border border-line bg-surface p-5" (ngSubmit)="save()">
@@ -11,23 +11,23 @@
                 Your rating
                 <select class="w-32 rounded-lg border border-line bg-mint px-3 py-2" name="rating" [(ngModel)]="rating">
                     @for (value of [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; track value) {
-                        <option [value]="value">{{ value }}/10</option>
+                        <option [ngValue]="value">{{ value }}/10</option>
                     }
                 </select>
             </label>
             <label class="grid gap-2 text-sm font-bold">
                 Your review
-                <quill-editor name="review" [(ngModel)]="body" format="html" [modules]="editorModules"
+                <quill-editor class="block [&_.ql-editor]:min-h-64 [&_.ql-editor]:text-base [&_.ql-toolbar]:!border-line [&_.ql-container]:!border-line" theme="snow" name="review" [(ngModel)]="body" format="html" [modules]="editorModules"
                               [sanitize]="true" placeholder="What did you think?"></quill-editor>
             </label>
-            @if (error) {
-                <p class="m-0 text-[#a53525]">{{ error }}</p>
+            @if (error()) {
+                <p class="m-0 text-[#a53525]">{{ error() }}</p>
             }
             <div class="flex flex-wrap gap-3">
                 <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
-                <button mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" type="submit" [disabled]="saving">
+                <button mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" type="submit" [disabled]="saving()">
                     <mat-icon>publish</mat-icon>
-                    {{ saving ? 'Publishing…' : 'Publish review' }}
+                    {{ saving() ? 'Publishing…' : 'Publish review' }}
                 </button>
             </div>
         </form>

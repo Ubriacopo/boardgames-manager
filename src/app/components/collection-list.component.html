@@ -7,7 +7,7 @@
         <span class="rounded-full bg-mint px-4 py-2 text-sm text-brand">{{ filtered().length }} games</span>
     </header>
 
-    <div class="mb-5 flex flex-col gap-3 sm:flex-row">
+    <div class="mb-3 flex flex-col gap-3 sm:flex-row">
         <label class="flex flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4">
             <mat-icon>search</mat-icon>
             <input class="w-full bg-transparent py-3 outline-none" type="search" [(ngModel)]="query"
@@ -20,7 +20,13 @@
         </select>
     </div>
 
-    <div class="mx-auto my-0 grid max-w-[1100px] gap-0">
+    <label class="mb-4 flex cursor-pointer items-center gap-2 text-sm text-muted">
+        <input type="checkbox" class="size-4 shrink-0 accent-accent"
+               [ngModel]="library.currentLibraryOnly()" (ngModelChange)="library.currentLibraryOnly.set($event)">
+        Only current library: {{ library.library()?.name }}
+    </label>
+
+    <div class="mx-auto my-0 grid max-w-[1100px] gap-0 divide-y divide-line">
         @for (game of filtered(); track game.id) {
             <app-game-list-row
                     [name]="game.name"
@@ -29,6 +35,8 @@
                     [imageUrl]="game.image_url"
                     [category]="library.metadata()[game.id]?.themes?.[0] ?? ''"
                     [location]="location(game.box)"
+                    [libraryName]="library.libraryName(game.library_id)"
+                    [libraryColor]="library.libraryColor(game.library_id)"
                     [rating]="library.metadata()[game.id]?.avgRating ?? null"
                     [favorite]="game.favorite"
                     [link]="['/games', game.id]"

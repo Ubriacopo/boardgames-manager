@@ -14,6 +14,11 @@
             [location]="location(game.box)"
             [bggUrl]="game.bgg_url"
             backLabel="My collection"
+            actionLabel="Add another copy"
+            [actionDisabled]="addingCopy()"
+            (primaryAction)="addCopy()"
+            (specialAction)="addCopy(true)"
+            [error]="addError()"
             (back)="back()"
             (boxSizeSave)="saveBoxSize($event)"
     />

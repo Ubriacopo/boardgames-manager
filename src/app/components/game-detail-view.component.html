@@ -37,7 +37,7 @@
                 <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
             </a>
         }
-        @if (!owned) {
+        @if (!owned || gameDefinitionId) {
             <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
                     (click)="primaryAction.emit()" [disabled]="actionDisabled"
                     [attr.aria-label]="actionLabel + ': ' + name"
@@ -152,10 +152,15 @@
                         <mat-icon>rate_review</mat-icon>
                         Leave a review
                     </a>
+                    <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
+                        <mat-icon>library_add</mat-icon>Add another copy
+                    </button>
+                    <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="specialAction.emit()">+ special</button>
                 } @else {
                     <button mat-flat-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
                         <mat-icon>library_add</mat-icon>{{ actionLabel }}
                     </button>
+                    <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="specialAction.emit()">+ special</button>
                 }
             </div>
             } @else if (detailTab === 'ratings') {
@@ -226,8 +231,8 @@
                     <app-game-box-size-form [gameId]="gameDefinitionId" [selectedSizeId]="selectedSizeId"
                         [customDimensions]="customDimensions" [saving]="savingDimensions" [error]="dimensionsError"
                         (selectionSave)="boxSizeSave.emit($event)" />
-                    @if (bggId) {
-                        <a mat-stroked-button class="mt-5" [routerLink]="['/games/discover', bggId]">Add another edition or copy</a>
+                    @if (gameDefinitionId) {
+                        <button mat-stroked-button type="button" class="mt-5" [disabled]="actionDisabled" (click)="specialAction.emit()">+ special edition or custom format</button>
                     }
                 </section>
             }

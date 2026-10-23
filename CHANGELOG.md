@@ -4,6 +4,10 @@
 
 ### Added
 
+- Saved library colors, editable beside the Library dropdown and during creation. Collection and New use colored library chips beside game metadata, with contrasting text.
+
+- Multiple named Kallax libraries, selected or created from the Library dropdown. Each has its own cubes and layout; shared collections also offer library selection. Collection and New show all owned games with library chips, and Collection offers an optional current-library filter.
+
 - Shared WebStorm **Kallboard LAN** launch configuration, `npm run dev:lan`, and a Windows firewall setup script limited to TCP 4200 from local subnets.
 
 - Shared game definitions, reusable edition/country box-size variants, and owned-copy associations with private size overrides. Adding a game now includes a size choice, and owned games can switch variants or add another copy.
@@ -31,12 +35,20 @@
 
 ### Fixed
 
+- Unassigned copies now belong to the collector's overall collection without a library. Placing a copy assigns the cube's library, and unassigning it clears membership; existing owners are preserved by migration. The unassigned tray is shared across Kallax shelves.
+- Owned games expose **Add another copy** directly on Overview, opening the edition selector for an independent, initially unassigned copy. Identical copies are supported.
+
+- Returning from a game preserves the last selected library tab. Touch dragging waits for a short hold so collection rows allow normal mobile scrolling.
+- Review editor loading, errors, and publishing now update reactively; review loading times out after 15 seconds and the editor has a visible writing area.
+
 - Added the tracked Tailwind PostCSS configuration so fresh checkouts generate utility styles instead of shipping unprocessed Tailwind directives.
 
 - Profile and friends pages now use reactive loading, error, and action state so completed Supabase requests update the screen immediately.
 - Public profile requests have a 15-second network timeout.
 
 ### Changed
+
+- Browsing and collection game lists use dividers instead of filled row backgrounds. Selected cube contents have compact spacing and dividers.
 
 - Box-size inputs, edition options, and shelf dimension labels now use centimetres with 0.1 cm increments. Existing millimetre storage and physical shelf calculations are preserved.
 

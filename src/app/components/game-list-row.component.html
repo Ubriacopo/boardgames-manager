@@ -1,4 +1,4 @@
-<div class="@container relative mt-0.5 mb-0.5 overflow-hidden rounded-[10px] bg-surface transition-[background]
+<div class="@container relative overflow-hidden transition-[background]
        duration-120 ease-[ease] [&.reveal-delete]:bg-[#8f2639] [&.reveal-favorite]:bg-[#287f82]"
      [class.reveal-delete]="swipeDirection === 'delete'"
      [class.reveal-favorite]="swipeDirection === 'favorite'">
@@ -15,14 +15,14 @@
     </span>
     }
 
-    <article class="relative grid min-h-[4.375rem] grid-cols-[3.625rem_minmax(0,_1fr)_minmax(6.875rem,_11.25rem)_4.5rem_1.5rem]
-           items-center gap-3.5 rounded-[10px] border border-transparent bg-surface py-1.5 pr-3 pl-1.5 transition-colors
-           duration-150 ease-[ease] hover:border-line hover:bg-mint max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_1.5rem]
-           max-[650px]:gap-2.5 @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_1.5rem] @max-[40rem]:gap-2.5
+    <article class="relative grid min-h-[4.375rem] grid-cols-[3.625rem_minmax(0,_1fr)_minmax(6.875rem,_11.25rem)_4.5rem_auto]
+           items-center gap-3.5 bg-transparent py-1.5 pr-3 pl-1.5 transition-colors
+           duration-150 ease-[ease] hover:bg-mint max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]
+           max-[650px]:gap-2.5 @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:gap-2.5
            [&.cdk-drag]:cursor-grab [&.cdk-drag]:touch-pan-y [&.cdk-drag]:select-none [&.cdk-drag]:active:cursor-grabbing
            [&.cdk-drag]:active:transition-none [&.cdk-drag-preview]:shadow-[0_16px_35px_rgba(0,0,0,.45)]" [class.is-favorite]="favorite"
              [class.!cursor-pointer]="!draggable"
-             cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable"
+             cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable" [cdkDragStartDelay]="{touch: 250, mouse: 0}"
              (cdkDragMoved)="dragMoved.emit($event)" (cdkDragEnded)="dragEnded.emit($event)">
         <a class="absolute inset-0 z-0 rounded-xl focus:outline-2 focus:outline-accent"
            [routerLink]="link" [attr.aria-label]="'View details for ' + name">
@@ -39,7 +39,8 @@
         <span class="grid min-w-0">
       <strong class="wrap-anywhere [.is-favorite_&]:after:ml-2 [.is-favorite_&]:after:text-[#4a9da0]
              [.is-favorite_&]:after:content-['★']">{{ name }}</strong>
-      <small class="text-[.76rem] wrap-anywhere text-muted">
+      <small class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[.76rem] wrap-anywhere text-muted">
+        <span>
         {{ year ?? 'Year unknown' }}
           @if (edition) { · {{ edition }} }
           @if (category) {
@@ -48,6 +49,12 @@
           @if (rank) {
               · Rank #{{ rank }}
           }
+        </span>
+      @if (libraryName) {
+          <span class="max-w-full rounded-full bg-[var(--library-color)] px-2 py-0.5 text-[.7rem] font-semibold wrap-anywhere text-[var(--library-ink)]"
+                [style.--library-color]="libraryColor" [style.--library-ink]="libraryInk"
+                [attr.aria-label]="'Library: ' + libraryName">{{ libraryName }}</span>
+      }
       </small>
     </span>
         @if (location) {
@@ -60,7 +67,14 @@
             <span class="flex items-center justify-end gap-[5px] text-[.78rem] font-bold max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base! text-[#f5b942]">star</mat-icon>
                 {{ rating | number:'1.1-1' }}</span>
         }
-        @if (actionLink) {
+        @if (addActions) {
+            <span class="relative z-10 flex items-center gap-1">
+                <button mat-icon-button type="button" [disabled]="adding" (click)="defaultAdd.emit()"
+                        [attr.aria-label]="'Add ' + name + ' with default format'" title="Add with default format"><mat-icon>add</mat-icon></button>
+                <button mat-button type="button" class="!min-w-0 !px-2 !text-xs" [disabled]="adding" (click)="specialAdd.emit()"
+                        [attr.aria-label]="'Add ' + name + ' with special format'">+ special</button>
+            </span>
+        } @else if (actionLink) {
             <a mat-icon-button class="relative z-10 !inline-flex !items-center !justify-center !p-0"
                [routerLink]="actionLink" [attr.aria-label]="actionLabel">
                 <mat-icon>{{ actionIcon }}</mat-icon>
