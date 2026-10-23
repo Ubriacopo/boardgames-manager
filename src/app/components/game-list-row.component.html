@@ -19,7 +19,7 @@
            items-center gap-3.5 bg-transparent py-1.5 pr-3 pl-1.5 transition-colors
            duration-150 ease-[ease] hover:bg-mint max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]
            max-[650px]:gap-2.5 @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:gap-2.5
-           [&.cdk-drag]:cursor-grab [&.cdk-drag]:touch-pan-y [&.cdk-drag]:select-none [&.cdk-drag]:active:cursor-grabbing
+           [&.cdk-drag]:cursor-grab [&.cdk-drag]:touch-none [&.cdk-drag]:select-none [&.cdk-drag]:active:cursor-grabbing
            [&.cdk-drag]:active:transition-none [&.cdk-drag-preview]:shadow-[0_16px_35px_rgba(0,0,0,.45)]" [class.is-favorite]="favorite"
              [class.!cursor-pointer]="!draggable"
              cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable" [cdkDragStartDelay]="{touch: 250, mouse: 0}"
@@ -69,10 +69,8 @@
         }
         @if (addActions) {
             <span class="relative z-10 flex items-center gap-1">
-                <button mat-icon-button type="button" [disabled]="adding" (click)="defaultAdd.emit()"
-                        [attr.aria-label]="'Add ' + name + ' with default format'" title="Add with default format"><mat-icon>add</mat-icon></button>
-                <button mat-button type="button" class="!min-w-0 !px-2 !text-xs" [disabled]="adding" (click)="specialAdd.emit()"
-                        [attr.aria-label]="'Add ' + name + ' with special format'">+ special</button>
+                <button mat-icon-button type="button" [disabled]="adding" (click)="specialAdd.emit()"
+                        [attr.aria-label]="'Add ' + name + ' to your collection'" title="Add to collection"><mat-icon>add</mat-icon></button>
             </span>
         } @else if (actionLink) {
             <a mat-icon-button class="relative z-10 !inline-flex !items-center !justify-center !p-0"

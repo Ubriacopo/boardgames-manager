@@ -106,6 +106,30 @@ export class LibraryService {
     if (this.library()?.id === id) this.library.set(data);
   }
 
+  async renameLibrary(id: string, name: string): Promise<void> {
+    const normalized = name.trim();
+    if (!normalized) throw new Error('A library needs a name.');
+    const { data, error } = await supabase.from('libraries').update({ name: normalized }).eq('id', id).select('*').single();
+    if (error) throw error;
+    this.libraries.update(items => items.map(item => item.id === id ? data : item));
+    if (this.library()?.id === id) this.library.set(data);
+  }
+
+  async deleteLibrary(id: string): Promise<void> {
+    if (this.libraries().length <= 1) throw new Error('Your account needs at least one library.');
+    // Clear placement first because the current library foreign key cascades to owned copies.
+    const { error: copiesError } = await supabase.from('board_games_box_association')
+      .update({ library_id: null, container_box_id: null }).eq('library_id', id);
+    if (copiesError) throw copiesError;
+    const { error } = await supabase.from('libraries').delete().eq('id', id);
+    if (error) throw error;
+    const remaining = this.libraries().filter(item => item.id !== id);
+    this.libraries.set(remaining);
+    this.allBoxes.update(boxes => boxes.filter(box => box.library_id !== id));
+    this.storedGames.update(games => games.map(game => game.library_id === id ? { ...game, library_id: null, box: null, container_box_id: null } : game));
+    if (this.library()?.id === id) this.library.set(remaining[0]);
+  }
+
   location(boxId: number | null): string {
     const box = this.allBoxes().find(box => box.id === boxId);
     return box?.description ?? box?.label ?? 'Unassigned';

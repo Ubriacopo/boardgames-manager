@@ -49,7 +49,6 @@
                         [link]="['/games/discover', game.bggId]"
                         [addActions]="true"
                         [adding]="adding()[game.bggId]"
-                        (defaultAdd)="add(game)"
                         (specialAdd)="add(game, true)"
                 />
             } @empty {

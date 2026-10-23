@@ -17,6 +17,8 @@ export class GameBoxSizeFormComponent implements OnChanges {
   @Input() customDimensions: BoxDimensions | null = null;
   @Input() saving = false;
   @Input() submitLabel = 'Save box size';
+  @Input() preferDefault = false;
+  @Input() externalSubmit = false;
   @Input() error = '';
   @Output() readonly selectionSave = new EventEmitter<BoxSizeSelection>();
   readonly sizes = signal<GameBoxSize[]>([]);
@@ -55,7 +57,7 @@ export class GameBoxSizeFormComponent implements OnChanges {
   }
 
   private resetSelection(): void {
-    this.sizeId = this.selectedSizeId;
+    this.sizeId = this.selectedSizeId ?? (this.preferDefault ? this.format()?.defaultId ?? null : null);
     this.customize = !!this.customDimensions || !this.sizeId;
     this.dimensions = this.toCentimetres(this.customDimensions ?? this.variantDimensions());
   }

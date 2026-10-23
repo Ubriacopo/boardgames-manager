@@ -4,7 +4,7 @@
   <p role="alert" class="text-red-600">{{ loadError() }}</p>
   <button mat-stroked-button type="button" (click)="load()">Try again</button>
 } @else {
-  <form #sizeForm="ngForm" (ngSubmit)="submit()" class="grid gap-5">
+  <form id="game-box-size-form" #sizeForm="ngForm" (ngSubmit)="submit()" class="grid gap-5">
     <fieldset [disabled]="saving || publishing()" class="grid min-w-0 gap-5 disabled:opacity-60">
       <label class="grid gap-2 text-sm font-bold">Edition / box size
         <select name="size" [ngModel]="sizeId" (ngModelChange)="chooseSize($event)"
@@ -84,9 +84,11 @@
           </button>
         </div>
       </details>
+      @if (!externalSubmit) {
       <button mat-flat-button type="submit" [disabled]="sizeForm.invalid" class="justify-self-start">
         {{ saving ? 'Saving…' : submitLabel }}
       </button>
+      }
     </fieldset>
     @if (feedback()) { <p role="status" class="m-0 text-sm text-brand">{{ feedback() }}</p> }
     @if (error) { <p role="alert" class="m-0 text-red-600">{{ error }}</p> }

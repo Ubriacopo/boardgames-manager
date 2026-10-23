@@ -155,12 +155,10 @@
                     <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
                         <mat-icon>library_add</mat-icon>Add another copy
                     </button>
-                    <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="specialAction.emit()">+ special</button>
                 } @else {
                     <button mat-flat-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
                         <mat-icon>library_add</mat-icon>{{ actionLabel }}
                     </button>
-                    <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="specialAction.emit()">+ special</button>
                 }
             </div>
             } @else if (detailTab === 'ratings') {

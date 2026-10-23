@@ -12,12 +12,15 @@ import { GameBoxSizeFormComponent } from './game-box-size-form.component';
     <h2 mat-dialog-title>Add {{ game.name }}</h2>
     <mat-dialog-content>
       <p class="text-sm text-muted">New copies start unassigned. Place them in any Kallax from the Unassigned tray.</p>
-      <p class="mb-5 text-sm text-muted">Choose the edition you own, or enter your box dimensions.</p>
+      <p class="mb-5 text-sm text-muted">The default edition and sizing are selected when available. You can choose a different edition or enter your own dimensions.</p>
       <app-game-box-size-form [gameId]="game.id" [saving]="saving()" [error]="error()"
-          submitLabel="Add to my collection" (selectionSave)="add($event)" />
+          [preferDefault]="true" [externalSubmit]="true" (selectionSave)="add($event)" />
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" [disabled]="saving()" (click)="dialog.close()">Cancel</button>
+      <button mat-flat-button type="submit" form="game-box-size-form" [disabled]="saving()">
+        {{ saving() ? 'Adding…' : 'Add to collection' }}
+      </button>
     </mat-dialog-actions>
   `,
 })

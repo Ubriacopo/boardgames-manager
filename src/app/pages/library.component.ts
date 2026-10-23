@@ -1,6 +1,6 @@
 import { GameSpineComponent } from '../components/game-spine.component';
 import {DecimalPipe} from '@angular/common';
-import {Component, computed, HostListener, signal} from '@angular/core';
+import {Component, computed, HostListener, Inject, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {
     CdkDrag,
@@ -16,11 +16,27 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDividerModule} from '@angular/material/divider';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {firstValueFrom} from 'rxjs';
 import type {BoardGame} from '../../entities/BoardGame';
 import {LibraryService, type BoxLayoutDirection, type LibraryBox} from '../services/library.service';
 import {CollectionListComponent} from '../components/collection-list.component';
 import {GameListRowComponent} from '../components/game-list-row.component';
+
+@Component({
+    standalone: true,
+    imports: [MatButtonModule, MatDialogModule],
+    template: `<h2 mat-dialog-title>Delete library?</h2>
+        <mat-dialog-content>Delete “{{ data.name }}”? Its owned games will become unassigned.</mat-dialog-content>
+        <mat-dialog-actions align="end">
+            <button mat-button type="button" (click)="dialog.close(false)">Cancel</button>
+            <button mat-flat-button type="button" color="warn" (click)="dialog.close(true)">Delete</button>
+        </mat-dialog-actions>`,
+})
+export class ConfirmDeleteLibraryDialogComponent {
+    constructor(@Inject(MAT_DIALOG_DATA) readonly data: {name: string}, readonly dialog: MatDialogRef<ConfirmDeleteLibraryDialogComponent, boolean>) {}
+}
 
 @Component({
     standalone: true,
@@ -37,6 +53,7 @@ import {GameListRowComponent} from '../components/game-list-row.component';
         MatIconModule,
         MatProgressSpinnerModule,
         MatDividerModule,
+        MatDialogModule,
         MatSnackBarModule,
         CollectionListComponent,
         GameListRowComponent
@@ -50,6 +67,10 @@ export class LibraryComponent {
     newLibraryName = '';
     newLibraryColor = '#287f82';
     readonly savingColor = signal(false);
+    settingsOpen = false;
+    draftLibraryName = '';
+    draftLibraryColor = '#287f82';
+    draftCubeCount = 0;
     selectedBox: number | null = null;
     selectedBoxLabel = '';
     unassignedOpen = false;
@@ -67,6 +88,7 @@ export class LibraryComponent {
         readonly library: LibraryService,
         route: ActivatedRoute,
         private readonly snackBar: MatSnackBar,
+        private readonly dialog: MatDialog,
     ) {
         const requestedTab = route.snapshot.queryParamMap.get('tab');
         if (requestedTab === 'shelf' || requestedTab === 'recent' || requestedTab === 'collection') this.activeTab = requestedTab;
@@ -117,11 +139,58 @@ export class LibraryComponent {
         }
     }
 
+    openLibrarySettings(): void {
+        const current = this.library.library();
+        if (!current) return;
+        this.draftLibraryName = current.name;
+        this.draftLibraryColor = current.color || '#287f82';
+        this.draftCubeCount = this.library.boxes().length;
+        this.openLayoutSettings();
+        this.settingsOpen = true;
+    }
+
+    async saveLibrarySettings(): Promise<void> {
+        const current = this.library.library();
+        if (!current || this.changingCubes) return;
+        this.changingCubes = true;
+        try {
+            await this.library.renameLibrary(current.id, this.draftLibraryName);
+            await this.library.setLibraryColor(current.id, this.draftLibraryColor);
+            while (this.library.boxes().length < this.draftCubeCount) await this.library.addBox();
+            while (this.library.boxes().length > this.draftCubeCount) await this.library.removeLastBox();
+            await this.library.saveShelfLayout(this.draftColumns, this.draftRows);
+            this.gridColumns = this.draftColumns;
+            this.gridRows = this.draftRows;
+            this.settingsOpen = false;
+        } catch (error) {
+            this.syncLayout();
+            this.snackBar.open(error instanceof Error ? error.message : 'Unable to save library settings.', 'Dismiss');
+        } finally { this.changingCubes = false; }
+    }
+
+    async deleteCurrentLibrary(): Promise<void> {
+        const current = this.library.library();
+        if (!current || this.library.libraries().length <= 1) return;
+        const confirmed = await firstValueFrom(this.dialog.open(ConfirmDeleteLibraryDialogComponent, {
+            data: {name: current.name},
+            width: 'min(92vw, 420px)',
+        }).afterClosed());
+        if (!confirmed) return;
+        try {
+            await this.library.deleteLibrary(current.id);
+            this.selectedBox = null;
+            this.syncLayout();
+            this.settingsOpen = false;
+        } catch (error) {
+            this.snackBar.open(error instanceof Error ? error.message : 'Unable to delete this library.', 'Dismiss');
+        }
+    }
+
     get gridLayoutValid(): boolean {
         return Number.isInteger(this.draftColumns) && Number.isInteger(this.draftRows) &&
             this.draftColumns > 0 && this.draftRows > 0 &&
             this.draftColumns <= 12 && this.draftRows <= 12 &&
-            this.draftColumns * this.draftRows >= this.library.boxes().length;
+            this.draftColumns * this.draftRows >= (this.settingsOpen ? this.draftCubeCount : this.library.boxes().length);
     }
 
     get selectedBoxInfo() {
@@ -174,33 +243,15 @@ export class LibraryComponent {
     }
 
     async addCube(): Promise<void> {
-        this.changingCubes = true;
-        try {
-            await this.library.addBox();
-            if (this.gridColumns * this.gridRows < this.library.boxes().length) {
-                if (this.gridColumns <= this.gridRows) this.gridColumns += 1;
-                else this.gridRows += 1;
-            }
-            await this.library.saveShelfLayout(this.gridColumns, this.gridRows);
-        } catch (error) {
-            this.snackBar.open(error instanceof Error ? error.message : 'Unable to add a cube.', 'Dismiss');
-        } finally {
-            this.changingCubes = false;
+        this.draftCubeCount += 1;
+        if (this.draftColumns * this.draftRows < this.draftCubeCount) {
+            if (this.draftColumns <= this.draftRows) this.draftColumns += 1;
+            else this.draftRows += 1;
         }
     }
 
     async removeCube(): Promise<void> {
-        this.changingCubes = true;
-        try {
-            await this.library.removeLastBox();
-            if (this.selectedBox && !this.library.boxes().some((box) => box.id === this.selectedBox)) {
-                this.selectedBox = null;
-            }
-        } catch (error) {
-            this.snackBar.open(error instanceof Error ? error.message : 'Unable to remove a cube.', 'Dismiss');
-        } finally {
-            this.changingCubes = false;
-        }
+        this.draftCubeCount = Math.max(1, this.draftCubeCount - 1);
     }
 
     async removeSelectedCube(): Promise<void> {
