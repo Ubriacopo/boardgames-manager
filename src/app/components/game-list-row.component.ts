@@ -26,10 +26,11 @@ export class GameListRowComponent {
     get libraryInk(): string {
         const hex = /^#[0-9a-fA-F]{6}$/.test(this.libraryColor) ? this.libraryColor : '#287f82';
         const channels = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255)
-            .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+                .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
         const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
         return luminance > 0.179 ? '#000000' : '#ffffff';
     }
+
     @Input() rank: number | null = null;
     @Input() rating: number | null = null;
     @Input() favorite = false;

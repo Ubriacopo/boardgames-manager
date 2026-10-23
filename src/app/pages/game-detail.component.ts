@@ -1,4 +1,4 @@
-import type { BoardGame, BoxDimensions, BoxSizeSelection } from '../../entities/BoardGame';
+import type {BoardGame, BoxDimensions, BoxSizeSelection} from '../../entities/BoardGame';
 import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -32,12 +32,13 @@ export class GameDetailComponent implements OnInit {
 
     private dimensionsKey = '';
     private dimensionsValue: BoxDimensions | null = null;
+
     customDimensions(game: BoardGame): BoxDimensions | null {
         const key = `${game.id}:${game.custom_width_mm}:${game.custom_height_mm}:${game.custom_depth_mm}`;
         if (key !== this.dimensionsKey) {
             this.dimensionsKey = key;
             this.dimensionsValue = game.custom_width_mm !== null && game.custom_height_mm !== null && game.custom_depth_mm !== null
-                ? { width: game.custom_width_mm, height: game.custom_height_mm, depth: game.custom_depth_mm } : null;
+                    ? {width: game.custom_width_mm, height: game.custom_height_mm, depth: game.custom_depth_mm} : null;
         }
         return this.dimensionsValue;
     }
@@ -63,7 +64,9 @@ export class GameDetailComponent implements OnInit {
             }
         } catch (error) {
             this.addError.set(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to add this copy.');
-        } finally { this.addingCopy.set(false); }
+        } finally {
+            this.addingCopy.set(false);
+        }
     }
 
     async saveBoxSize(selection: BoxSizeSelection): Promise<void> {

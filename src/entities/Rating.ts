@@ -1,4 +1,4 @@
-import type { Database } from '../types/database.types';
+import type {Database} from '../types/database.types';
 
 export type Rating = Database['public']['Tables']['rating']['Row'];
 export type NewRating = Database['public']['Tables']['rating']['Insert'];

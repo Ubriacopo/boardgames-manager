@@ -71,8 +71,8 @@ are currently ignored. Do not change dependency or lockfile policy incidentally.
 
 ## Implementation conventions
 
-- Follow the surrounding component and template style. Keep TypeScript and
-  Angular template strictness enabled.
+- Follow the JetBrains code style and `.editorconfig` rules below. Keep
+  TypeScript and Angular template strictness enabled.
 - Extend existing services for shared state and persistence; reuse entity and
   database types rather than duplicating row definitions.
 - Preserve loading and error feedback. When changing optimistic updates, keep
@@ -84,6 +84,26 @@ are currently ignored. Do not change dependency or lockfile policy incidentally.
 - Preserve the existing Markdown sanitization path when changing review display.
 - Keep changes focused. Update documentation when behavior or setup changes, and
   distinguish planned features from completed changes in the changelog.
+
+## Code formatting and indentation
+
+- Respect the user's IDEA/WebStorm code style. The current project uses the
+  JetBrains **Default** scheme, with no project-specific overrides. `.editorconfig`
+  records its indentation so CLI edits and the IDE agree.
+- Use spaces: **4 spaces** per level for TypeScript, JavaScript/MJS, Angular HTML
+  templates (including inline templates), CSS, SQL, XML, and PowerShell. Use
+  **2 spaces** for JSON and YAML. Continuation indentation is **8 spaces** unless
+  the IDE aligns a continuation with an existing element.
+- Do not copy inconsistent indentation from older files or introduce a formatter
+  with different defaults. Prefer the JetBrains **Reformat Code** action or its
+  command-line `format.sh` with the user's code-style XML settings.
+- Format changed source files before finishing. Repository-wide formatting must
+  exclude dependencies, build output, generated environment modules, bundled
+  catalog data, and archived database exports under `docs/database-export/`.
+- Use PostgreSQL-aware formatting for SQL. Preserve literal content and SQL
+  behavior; formatting alone must not execute or replay migrations.
+- If the user changes their IDEA settings, update `.editorconfig` and these rules
+  to match before applying further formatting changes.
 
 ## Styling: Tailwind first
 

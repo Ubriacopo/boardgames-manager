@@ -1,7 +1,16 @@
-import type { BoxDimensions, BoxSizeSelection } from '../../entities/BoardGame';
-import { GameBoxSizeFormComponent } from './game-box-size-form.component';
+import type {BoxDimensions, BoxSizeSelection} from '../../entities/BoardGame';
+import {GameBoxSizeFormComponent} from './game-box-size-form.component';
 import {DatePipe, DecimalPipe} from '@angular/common';
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal} from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    signal
+} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
@@ -60,15 +69,29 @@ export class GameDetailViewComponent implements OnChanges {
     constructor(private readonly reviews: ReviewService, readonly auth: AuthService, private readonly covers: GameCoverService, private readonly catalog: GameCatalogService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
     }
 
-    get coverGameId(): number { return this.bggId || getBggGameId(this.bggUrl) || 0; }
-    get definition() { return this.catalog.definitionFor(this.gameDefinitionId, this.coverGameId); }
-    get displayName(): string { return this.definition?.name ?? this.name; }
-    get displayYear(): number | null { return this.definition?.release_year ?? this.releaseYear; }
-    get displayBggUrl(): string { return this.definition?.bgg_url ?? this.bggUrl; }
+    get coverGameId(): number {
+        return this.bggId || getBggGameId(this.bggUrl) || 0;
+    }
+
+    get definition() {
+        return this.catalog.definitionFor(this.gameDefinitionId, this.coverGameId);
+    }
+
+    get displayName(): string {
+        return this.definition?.name ?? this.name;
+    }
+
+    get displayYear(): number | null {
+        return this.definition?.release_year ?? this.releaseYear;
+    }
+
+    get displayBggUrl(): string {
+        return this.definition?.bgg_url ?? this.bggUrl;
+    }
 
     coverUrl(): string | null {
         return this.covers.urls()[this.coverGameId]
-            ?? (this.definition ? this.definition.image_url : this.imageUrl) ?? this.bggOverview?.imageUrl ?? null;
+                ?? (this.definition ? this.definition.image_url : this.imageUrl) ?? this.bggOverview?.imageUrl ?? null;
     }
 
     wallpaperUrl(): string | null {
@@ -79,7 +102,9 @@ export class GameDetailViewComponent implements OnChanges {
         return this.covers.logos()[this.coverGameId] ?? this.coverUrl();
     }
 
-    logoWidth(): string { return `min(100%, ${420 * this.logoRatio()}px)`; }
+    logoWidth(): string {
+        return `min(100%, ${420 * this.logoRatio()}px)`;
+    }
 
     onLogoLoad(event: Event): void {
         const image = event.target as HTMLImageElement;

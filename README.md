@@ -296,6 +296,8 @@ cover. Shelves use box-side artwork, fall back to wallpaper, then to the cover
 when neither is available. The same rules apply to friends' shelves.
 Each game box shows its name in uppercase text that scales with spine thickness on a centered, rounded white label,
 with a border in the active theme’s brand color, following the box's vertical or horizontal orientation.
+Use the label icon beside the Kallax zoom controls to hide or show these labels
+and view the artwork. This browser remembers the setting for personal and shared shelves.
 `20261022122733_game_logos_and_box_sides.sql` adds the logo and box-side tables
 with the same admin-only write policies as existing artwork.
 

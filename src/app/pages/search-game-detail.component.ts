@@ -1,5 +1,5 @@
-import { MatDialogModule } from '@angular/material/dialog';
-import { GameCatalogService } from '../services/game-catalog.service';
+import {MatDialogModule} from '@angular/material/dialog';
+import {GameCatalogService} from '../services/game-catalog.service';
 import {CollectionAddService} from '../services/collection-add.service';
 import {Component, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';

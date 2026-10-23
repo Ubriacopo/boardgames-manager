@@ -1,231 +1,252 @@
 <div class="relative isolate bg-canvas">
     <div class="game-detail-wallpaper pointer-events-none absolute inset-[0_0_auto] h-[min(760px,_85dvh)] min-h-[480px]
            overflow-hidden bg-[radial-gradient(ellipse_at_70%_10%,_var(--mint),_transparent_75%)] after:absolute
-           after:inset-0 after:content-[''] max-[600px]:h-[560px] max-[600px]:min-h-0" [class.is-fallback]="!wallpaperUrl()" aria-hidden="true">
+           after:inset-0 after:content-[''] max-[600px]:h-[560px] max-[600px]:min-h-0"
+         [class.is-fallback]="!wallpaperUrl()" aria-hidden="true">
         @if (wallpaperUrl() || coverUrl(); as wallpaper) {
             <img class="h-full w-full object-cover object-center opacity-80 [.is-fallback_&]:scale-105 [.is-fallback_&]:opacity-50
                    [.is-fallback_&]:[filter:blur(12px)_saturate(.8)]" [src]="wallpaper" alt="" fetchpriority="high">
         }
     </div>
-<main class="relative z-1 mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)]
-       lg:px-16 lg:py-14">
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <button mat-button type="button" (click)="back.emit()">
-            <mat-icon>arrow_back</mat-icon>
-            {{ backLabel }}
-        </button>
-    </div>
-    @if (definitionError()) {
-        <div class="mb-5 flex flex-wrap items-center gap-2 text-sm text-muted" role="status">
-            <span>{{ definitionError() }}</span>
-            <button mat-button type="button" (click)="loadDefinition()"><mat-icon>refresh</mat-icon>Retry</button>
+    <main class="relative z-1 mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <button mat-button type="button" (click)="back.emit()">
+                <mat-icon>arrow_back</mat-icon>
+                {{ backLabel }}
+            </button>
         </div>
-    }
-    <div class="fixed top-4 right-4 z-30 flex gap-2 lg:top-6 lg:right-6">
-        @if (auth.isAdmin() && (coverGameId || gameDefinitionId)) {
-            <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
-                    (click)="editGame()" aria-label="Edit game" title="Edit game">
-                <mat-icon>edit</mat-icon>
-            </button>
-        }
-        @if (displayBggUrl) {
-            <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="displayBggUrl"
-               target="_blank" rel="noreferrer" aria-label="Open on BoardGameGeek" title="Open on BoardGameGeek">
-                <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
-            </a>
-        }
-        @if (!owned || gameDefinitionId) {
-            <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
-                    (click)="primaryAction.emit()" [disabled]="actionDisabled"
-                    [attr.aria-label]="actionLabel + ': ' + displayName"
-                    [title]="actionLabel">
-                <mat-icon>library_add</mat-icon>
-            </button>
-        }
-    </div>
-    <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
-        <div class="flex w-full max-w-[380px] justify-center self-start justify-self-center">
-            <div class="relative max-w-full overflow-hidden rounded-3xl bg-transparent" [style.width]="logoWidth()">
-                @if (logoUrl(); as logo) {
-                    <img class="block h-auto w-full rounded-3xl bg-transparent" [src]="logo" [alt]="displayName + ' logo'" (load)="onLogoLoad($event)">
-                } @else {
-                    <span class="flex aspect-square w-full items-center justify-center bg-mint font-display text-8xl">{{ displayName.slice(0, 1) }}</span>
-                }
+        @if (definitionError()) {
+            <div class="mb-5 flex flex-wrap items-center gap-2 text-sm text-muted" role="status">
+                <span>{{ definitionError() }}</span>
+                <button mat-button type="button" (click)="loadDefinition()">
+                    <mat-icon>refresh</mat-icon>
+                    Retry
+                </button>
             </div>
+        }
+        <div class="fixed top-4 right-4 z-30 flex gap-2 lg:top-6 lg:right-6">
+            @if (auth.isAdmin() && (coverGameId || gameDefinitionId)) {
+                <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
+                        (click)="editGame()" aria-label="Edit game" title="Edit game">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            }
+            @if (displayBggUrl) {
+                <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="displayBggUrl"
+                   target="_blank" rel="noreferrer" aria-label="Open on BoardGameGeek" title="Open on BoardGameGeek">
+                    <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
+                </a>
+            }
+            @if (!owned || gameDefinitionId) {
+                <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
+                        (click)="primaryAction.emit()" [disabled]="actionDisabled"
+                        [attr.aria-label]="actionLabel + ': ' + displayName"
+                        [title]="actionLabel">
+                    <mat-icon>library_add</mat-icon>
+                </button>
+            }
         </div>
-
-        <div class="relative self-center">
-            <p class="mb-3 pr-14 text-xs font-bold tracking-[.14em] text-accent uppercase">
-                {{ displayYear ?? 'Year unknown' }} ·
-                {{ owned ? 'In your collection' : 'Meeple House preview' }}
-            </p>
-            <h1 class="mb-6 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ displayName }}</h1>
-
-            <nav class="mb-6 flex gap-2" aria-label="Game detail section">
-                <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'overview'"
-                        [class.!text-white]="detailTab === 'overview'" (click)="detailTab = 'overview'">
-                    Overview
-                </button>
-                <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'ratings'"
-                        [class.!text-white]="detailTab === 'ratings'" (click)="detailTab = 'ratings'">
-                    Reviews
-                    @if (localSummary.count) {
-                        <span>{{ localSummary.count }}</span>
+        <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
+            <div class="flex w-full max-w-[380px] justify-center self-start justify-self-center">
+                <div class="relative max-w-full overflow-hidden rounded-3xl bg-transparent" [style.width]="logoWidth()">
+                    @if (logoUrl(); as logo) {
+                        <img class="block h-auto w-full rounded-3xl bg-transparent" [src]="logo"
+                             [alt]="displayName + ' logo'" (load)="onLogoLoad($event)">
+                    } @else {
+                        <span class="flex aspect-square w-full items-center justify-center bg-mint font-display text-8xl">{{ displayName.slice(0, 1) }}</span>
                     }
-                </button>
-                @if (owned) {
-                    <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'dimensions'"
-                            [class.!text-white]="detailTab === 'dimensions'" (click)="detailTab = 'dimensions'">
-                        Box Dims.
-                    </button>
-                }
-            </nav>
+                </div>
+            </div>
 
-            @if (detailTab === 'overview') {
-                <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5 text-center">
+            <div class="relative self-center">
+                <p class="mb-3 pr-14 text-xs font-bold tracking-[.14em] text-accent uppercase">
+                    {{ displayYear ?? 'Year unknown' }} ·
+                    {{ owned ? 'In your collection' : 'Meeple House preview' }}
+                </p>
+                <h1 class="mb-6 font-display text-5xl font-bold tracking-tight lg:text-7xl">{{ displayName }}</h1>
+
+                <nav class="mb-6 flex gap-2" aria-label="Game detail section">
+                    <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'overview'"
+                            [class.!text-white]="detailTab === 'overview'" (click)="detailTab = 'overview'">
+                        Overview
+                    </button>
+                    <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'ratings'"
+                            [class.!text-white]="detailTab === 'ratings'" (click)="detailTab = 'ratings'">
+                        Reviews
+                        @if (localSummary.count) {
+                            <span>{{ localSummary.count }}</span>
+                        }
+                    </button>
+                    @if (owned) {
+                        <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'dimensions'"
+                                [class.!text-white]="detailTab === 'dimensions'" (click)="detailTab = 'dimensions'">
+                            Box Dims.
+                        </button>
+                    }
+                </nav>
+
+                @if (detailTab === 'overview') {
+                    <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5 text-center">
           <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
             <mat-icon class="text-accent">star</mat-icon>
             <strong class="font-display text-xl text-ink">
               {{ localSummary.average === null ? '—' : (localSummary.average | number:'1.1-1') }}
             </strong>
             Rating
-            @if (metadata; as meta) {
-                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
+              @if (metadata; as meta) {
+                  <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
                     BGG {{ meta.avgRating === null ? '—' : (meta.avgRating | number:'1.1-1') }}
                 </small>
-            }
+              }
           </span>
-                    <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
+                        <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
             <mat-icon class="text-accent">leaderboard</mat-icon>
             <strong class="font-display text-xl text-ink">#{{ localSummary.rank ?? '—' }}</strong>
             Rank
-            @if (metadata; as meta) {
-                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">BGG #{{ meta.rank ?? '—' }}</small>
-            }
+                            @if (metadata; as meta) {
+                                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">BGG #{{ meta.rank ?? '—' }}</small>
+                            }
           </span>
-                    <button type="button" (click)="detailTab = 'ratings'"
-                            class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2
+                        <button type="button" (click)="detailTab = 'ratings'"
+                                class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2
                                    focus:outline-accent"
-                            aria-label="View ratings and reviews">
-                        <mat-icon class="text-accent">reviews</mat-icon>
-                        <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
-                        Ratings
-                        @if (metadata; as meta) {
-                            <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
-                                BGG {{ meta.usersRated === null ? '—' : (meta.usersRated | number) }}
-                            </small>
-                        }
-                    </button>
-                </div>
+                                aria-label="View ratings and reviews">
+                            <mat-icon class="text-accent">reviews</mat-icon>
+                            <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
+                            Ratings
+                            @if (metadata; as meta) {
+                                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
+                                    BGG {{ meta.usersRated === null ? '—' : (meta.usersRated | number) }}
+                                </small>
+                            }
+                        </button>
+                    </div>
 
-            @if (metadata; as meta) {
-                <div class="my-5 flex flex-wrap gap-2">
-                    @for (theme of meta.themes; track theme) {
-                        <span class="rounded-full bg-mint px-3 py-2 text-xs font-bold text-brand">{{ theme }}</span>
-                    }
-                </div>
-            }
-
-            @if (owned && location) {
-                <p class="my-7 flex items-center gap-2">
-                    <mat-icon>inventory_2</mat-icon>
-                    Stored in <strong>{{ location }}</strong>
-                </p>
-            }
-
-            @if (error) {
-                <p class="my-5 text-[#a53525]">{{ error }}</p>
-            }
-
-            <div class="flex flex-wrap gap-3">
-                @if (owned) {
-                    <a mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" [routerLink]="['/reviews', bggId, 'write']">
-                        <mat-icon>rate_review</mat-icon>
-                        Leave a review
-                    </a>
-                    <button mat-stroked-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
-                        <mat-icon>library_add</mat-icon>Add another copy
-                    </button>
-                } @else {
-                    <button mat-flat-button type="button" [disabled]="actionDisabled" (click)="primaryAction.emit()">
-                        <mat-icon>library_add</mat-icon>{{ actionLabel }}
-                    </button>
-                }
-            </div>
-            } @else if (detailTab === 'ratings') {
-                <section aria-label="BoardGameGeek comments">
-                    <header class="mb-5 border-b border-line pb-4">
-                        <div>
-                            <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">BoardGameGeek</p>
-                            <h2 class="font-display text-3xl">Community comments</h2>
+                    @if (metadata; as meta) {
+                        <div class="my-5 flex flex-wrap gap-2">
+                            @for (theme of meta.themes; track theme) {
+                                <span class="rounded-full bg-mint px-3 py-2 text-xs font-bold text-brand">{{ theme }}</span>
+                            }
                         </div>
-                    </header>
-                    <div class="grid gap-3">
-                        @for (review of bggReviews; track review.username + review.comment) {
-                            <article class="rounded-xl border border-line bg-surface p-4">
-                                <div class="mb-2 flex items-center justify-between gap-3">
-                                    <strong>{{ review.username }}</strong>
-                                    @if (review.rating !== null) {
-                                        <span class="text-accent">★ {{ review.rating }}/10</span>
-                                    }
-                                </div>
-                                <p class="leading-6 text-muted">{{ review.comment }}</p>
-                            </article>
-                        } @empty {
-                            <p class="rounded-xl bg-mint p-4 text-muted">No BoardGameGeek comments are available right now.</p>
+                    }
+
+                    @if (owned && location) {
+                        <p class="my-7 flex items-center gap-2">
+                            <mat-icon>inventory_2</mat-icon>
+                            Stored in <strong>{{ location }}</strong>
+                        </p>
+                    }
+
+                    @if (error) {
+                        <p class="my-5 text-[#a53525]">{{ error }}</p>
+                    }
+
+                    <div class="flex flex-wrap gap-3">
+                        @if (owned) {
+                            <a mat-flat-button
+                               class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]"
+                               [routerLink]="['/reviews', bggId, 'write']">
+                                <mat-icon>rate_review</mat-icon>
+                                Leave a review
+                            </a>
+                            <button mat-stroked-button type="button" [disabled]="actionDisabled"
+                                    (click)="primaryAction.emit()">
+                                <mat-icon>library_add</mat-icon>
+                                Add another copy
+                            </button>
+                        } @else {
+                            <button mat-flat-button type="button" [disabled]="actionDisabled"
+                                    (click)="primaryAction.emit()">
+                                <mat-icon>library_add</mat-icon>
+                                {{ actionLabel }}
+                            </button>
                         }
                     </div>
-                </section>
-
-                <section class="mt-10" aria-label="Meeple House reviews">
-                    <header class="mb-5 border-b border-line pb-4">
-                        <div>
-                            <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Meeple House</p>
-                            <h2 class="font-display text-3xl">Reviews</h2>
+                } @else if (detailTab === 'ratings') {
+                    <section aria-label="BoardGameGeek comments">
+                        <header class="mb-5 border-b border-line pb-4">
+                            <div>
+                                <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">
+                                    BoardGameGeek</p>
+                                <h2 class="font-display text-3xl">Community comments</h2>
+                            </div>
+                        </header>
+                        <div class="grid gap-3">
+                            @for (review of bggReviews; track review.username + review.comment) {
+                                <article class="rounded-xl border border-line bg-surface p-4">
+                                    <div class="mb-2 flex items-center justify-between gap-3">
+                                        <strong>{{ review.username }}</strong>
+                                        @if (review.rating !== null) {
+                                            <span class="text-accent">★ {{ review.rating }}/10</span>
+                                        }
+                                    </div>
+                                    <p class="leading-6 text-muted">{{ review.comment }}</p>
+                                </article>
+                            } @empty {
+                                <p class="rounded-xl bg-mint p-4 text-muted">No BoardGameGeek comments are available
+                                    right now.</p>
+                            }
                         </div>
-                    </header>
-                    <div class="grid gap-3">
-                        @for (review of localSummary.reviews; track review.id) {
-                            <article class="rounded-xl border border-line bg-surface p-4">
-                                <div class="mb-2 flex items-center justify-between gap-3">
-                                    <strong>Meeple House member</strong>
-                                    <span class="text-accent">★ {{ review.rating }}/10</span>
-                                </div>
-                                <div class="mb-3 leading-6 text-muted [&_>_:first-child]:mt-0 [&_>_:last-child]:mb-0 [&_a]:text-accent [&_a]:underline
+                    </section>
+
+                    <section class="mt-10" aria-label="Meeple House reviews">
+                        <header class="mb-5 border-b border-line pb-4">
+                            <div>
+                                <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Meeple
+                                    House</p>
+                                <h2 class="font-display text-3xl">Reviews</h2>
+                            </div>
+                        </header>
+                        <div class="grid gap-3">
+                            @for (review of localSummary.reviews; track review.id) {
+                                <article class="rounded-xl border border-line bg-surface p-4">
+                                    <div class="mb-2 flex items-center justify-between gap-3">
+                                        <strong>Meeple House member</strong>
+                                        <span class="text-accent">★ {{ review.rating }}/10</span>
+                                    </div>
+                                    <div class="mb-3 leading-6 text-muted [&_>_:first-child]:mt-0 [&_>_:last-child]:mb-0 [&_a]:text-accent [&_a]:underline
                                        [&_blockquote]:ml-0 [&_blockquote]:border-l-3 [&_blockquote]:border-l-accent [&_blockquote]:pl-3
                                        [&_code]:rounded [&_code]:bg-mint [&_code]:px-1 [&_code]:py-px [&_pre]:overflow-x-auto [&_pre]:rounded-lg
-                                       [&_pre]:bg-mint [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0" [innerHTML]="renderReview(review.body)"></div>
-                                <time class="text-xs text-muted" [attr.datetime]="review.updated_at">
-                                    Updated {{ review.updated_at | date:'mediumDate' }}
-                                </time>
-                            </article>
-                        } @empty {
-                            <p class="rounded-xl bg-mint p-4 text-muted">No reviews yet. Be the first to review it.</p>
+                                       [&_pre]:bg-mint [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0"
+                                         [innerHTML]="renderReview(review.body)"></div>
+                                    <time class="text-xs text-muted" [attr.datetime]="review.updated_at">
+                                        Updated {{ review.updated_at | date:'mediumDate' }}
+                                    </time>
+                                </article>
+                            } @empty {
+                                <p class="rounded-xl bg-mint p-4 text-muted">No reviews yet. Be the first to review
+                                    it.</p>
+                            }
+                        </div>
+                        @if (owned) {
+                            <a mat-flat-button
+                               class="mt-5 [--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]"
+                               [routerLink]="['/reviews', bggId, 'write']">
+                                <mat-icon>rate_review</mat-icon>
+                                Leave a review
+                            </a>
                         }
-                    </div>
-                    @if (owned) {
-                        <a mat-flat-button class="mt-5 [--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" [routerLink]="['/reviews', bggId, 'write']">
-                            <mat-icon>rate_review</mat-icon>
-                            Leave a review
-                        </a>
-                    }
-                </section>
-            } @else {
-                <section aria-label="Box dimensions">
-                    <header class="mb-5 border-b border-line pb-4">
-                        <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Physical copy</p>
-                        <h2 class="font-display text-3xl">Box dimensions</h2>
-                        <p class="text-sm text-muted">Used to size this game in your Kallax. Values are in centimetres.</p>
-                    </header>
-                    <app-game-box-size-form [gameId]="gameDefinitionId" [selectedSizeId]="selectedSizeId"
-                        [customDimensions]="customDimensions" [saving]="savingDimensions" [error]="dimensionsError"
-                        (selectionSave)="boxSizeSave.emit($event)" />
-                    @if (gameDefinitionId) {
-                        <button mat-stroked-button type="button" class="mt-5" [disabled]="actionDisabled" (click)="specialAction.emit()">+ special edition or custom format</button>
-                    }
-                </section>
-            }
-        </div>
-    </section>
-</main>
+                    </section>
+                } @else {
+                    <section aria-label="Box dimensions">
+                        <header class="mb-5 border-b border-line pb-4">
+                            <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Physical copy</p>
+                            <h2 class="font-display text-3xl">Box dimensions</h2>
+                            <p class="text-sm text-muted">Used to size this game in your Kallax. Values are in
+                                centimetres.</p>
+                        </header>
+                        <app-game-box-size-form [gameId]="gameDefinitionId" [selectedSizeId]="selectedSizeId"
+                                                [customDimensions]="customDimensions" [saving]="savingDimensions"
+                                                [error]="dimensionsError"
+                                                (selectionSave)="boxSizeSave.emit($event)"/>
+                        @if (gameDefinitionId) {
+                            <button mat-stroked-button type="button" class="mt-5" [disabled]="actionDisabled"
+                                    (click)="specialAction.emit()">+ special edition or custom format
+                            </button>
+                        }
+                    </section>
+                }
+            </div>
+        </section>
+    </main>
 </div>

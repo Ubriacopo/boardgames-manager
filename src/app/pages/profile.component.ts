@@ -37,30 +37,47 @@ export class ProfileComponent implements OnInit {
             this.displayName = profile.display_name;
             this.connectionMode = profile.connection_mode;
             this.socialReady.set(true);
-        } catch (error) { this.socialError.set(this.message(error)); }
-        finally { this.socialLoading.set(false); }
+        } catch (error) {
+            this.socialError.set(this.message(error));
+        } finally {
+            this.socialLoading.set(false);
+        }
     }
 
     async saveSocialProfile(): Promise<void> {
-        this.saving.set(true); this.socialError.set(''); this.socialNotice.set('');
+        this.saving.set(true);
+        this.socialError.set('');
+        this.socialNotice.set('');
         try {
             await this.friends.saveProfile(this.auth.session()!.user.id, this.handle, this.handle.trim().toLowerCase(), this.connectionMode);
             this.handle = this.handle.trim().toLowerCase();
             this.displayName = this.handle;
-            this.publicProfile.update(profile => profile ? { ...profile, handle: this.handle, display_name: this.handle } : null);
+            this.publicProfile.update(profile => profile ? {
+                ...profile,
+                handle: this.handle,
+                display_name: this.handle
+            } : null);
             this.socialNotice.set('Your handle has been saved.');
-        } catch (error) { this.socialError.set(this.message(error)); }
-        finally { this.saving.set(false); }
+        } catch (error) {
+            this.socialError.set(this.message(error));
+        } finally {
+            this.saving.set(false);
+        }
     }
 
     async changeConnectionMode(mode: SocialProfile['connection_mode']): Promise<void> {
-        this.saving.set(true); this.socialError.set(''); this.socialNotice.set('');
+        this.saving.set(true);
+        this.socialError.set('');
+        this.socialNotice.set('');
         try {
             await this.friends.saveConnectionMode(this.auth.session()!.user.id, mode);
             this.connectionMode = mode;
             this.socialNotice.set('Connection preference saved.');
-        } catch (error) { this.socialError.set(this.message(error)); }
-        finally { this.saving.set(false); }
+        } catch (error) {
+            this.socialError.set(this.message(error));
+        } finally {
+            this.saving.set(false);
+        }
     }
 
     async uploadAvatar(event: Event): Promise<void> {
@@ -68,13 +85,18 @@ export class ProfileComponent implements OnInit {
         const file = input.files?.[0];
         input.value = '';
         if (!file || this.avatarUploading()) return;
-        this.avatarUploading.set(true); this.socialError.set(''); this.socialNotice.set('');
+        this.avatarUploading.set(true);
+        this.socialError.set('');
+        this.socialNotice.set('');
         try {
             const profile = await this.friends.saveAvatar(this.auth.session()!.user.id, file);
             this.publicProfile.set(profile);
             this.socialNotice.set('Your profile picture has been updated.');
-        } catch (error) { this.socialError.set(this.message(error)); }
-        finally { this.avatarUploading.set(false); }
+        } catch (error) {
+            this.socialError.set(this.message(error));
+        } finally {
+            this.avatarUploading.set(false);
+        }
     }
 
     private message(error: unknown): string {

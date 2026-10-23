@@ -21,11 +21,12 @@ export class GameReviewsComponent implements OnInit {
     error = '';
 
     constructor(
-        private readonly route: ActivatedRoute,
-        readonly router: Router,
-        private readonly library: LibraryService,
-        private readonly reviewService: ReviewService,
-    ) {}
+            private readonly route: ActivatedRoute,
+            readonly router: Router,
+            private readonly library: LibraryService,
+            private readonly reviewService: ReviewService,
+    ) {
+    }
 
     async ngOnInit(): Promise<void> {
         this.bggId = Number(this.route.snapshot.paramMap.get('bggId'));

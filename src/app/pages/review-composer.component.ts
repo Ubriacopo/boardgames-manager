@@ -25,11 +25,12 @@ export class ReviewComposerComponent implements OnInit {
     };
 
     constructor(
-        private readonly route: ActivatedRoute,
-        private readonly router: Router,
-        private readonly library: LibraryService,
-        private readonly reviews: ReviewService,
-    ) {}
+            private readonly route: ActivatedRoute,
+            private readonly router: Router,
+            private readonly library: LibraryService,
+            private readonly reviews: ReviewService,
+    ) {
+    }
 
     async ngOnInit(): Promise<void> {
         this.bggId = Number(this.route.snapshot.paramMap.get('bggId'));

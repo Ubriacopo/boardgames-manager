@@ -106,6 +106,14 @@
                                 <mat-icon>add</mat-icon>
                             </button>
                         </div>
+                        <button mat-icon-button type="button"
+                                class="!inline-flex !items-center !justify-center !p-0 light:text-brand"
+                                (click)="display.setGameLabels(!display.showGameLabels())"
+                                [attr.aria-pressed]="display.showGameLabels()"
+                                [attr.aria-label]="display.showGameLabels() ? 'Hide game labels' : 'Show game labels'"
+                                [title]="display.showGameLabels() ? 'Hide game labels' : 'Show game labels'">
+                            <mat-icon>{{ display.showGameLabels() ? 'label' : 'label_off' }}</mat-icon>
+                        </button>
                         <a mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]
                                max-[1000px]:hidden!" routerLink="/games">
                             <mat-icon>add</mat-icon>
@@ -198,6 +206,7 @@
                                               [name]="game.name"
                                               [imageUrl]="library.sideImage(game)"
                                               [spineDraggable]="true"
+                                              [showLabel]="display.showGameLabels()"
                                         ></span>
                                     }
                                 </div>
@@ -274,7 +283,9 @@
                                                 <span class="last:grid last:min-w-0">
                           <strong class="overflow-hidden text-[.78rem] text-ellipsis whitespace-nowrap">{{ game.name }}</strong>
                           <small class="text-[.68rem] text-muted">{{ boxDirection(box) }}
-                              layout · {{ faceLabel(game, box) }} · {{ spineDimensions(game, box.layout_direction).width / 10 }} × {{ spineDimensions(game, box.layout_direction).height / 10 }} cm</small>
+                              layout · {{ faceLabel(game, box) }}
+                              · {{ spineDimensions(game, box.layout_direction).width / 10 }}
+                              × {{ spineDimensions(game, box.layout_direction).height / 10 }} cm</small>
                         </span>
                                             </a>
                                             <div class="flex items-center">

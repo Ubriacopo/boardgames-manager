@@ -1,0 +1,18 @@
+root = true
+
+# Match the project's JetBrains Default code style.
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+tab_width = 4
+insert_final_newline = true
+ij_continuation_indent_size = 8
+
+[*.{json,jsonc,yml,yaml}]
+indent_size = 2
+tab_width = 2
+
+[*.md]
+trim_trailing_whitespace = false

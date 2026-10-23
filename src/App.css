@@ -2,23 +2,53 @@
 
 /* Angular Material creates these elements inside overlays or expansion panels.
    These scoped overrides target library internals unavailable in our templates. */
-.login-loading-dialog .mat-mdc-dialog-surface { background: var(--paper); border: 1px solid var(--line); border-radius: 24px; color: var(--ink); }
+.login-loading-dialog .mat-mdc-dialog-surface {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    color: var(--ink);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .login-loading-dialog .mdc-circular-progress__indeterminate-container,
-  .login-loading-dialog .mdc-circular-progress__spinner-layer,
-  .login-loading-dialog .mdc-circular-progress__indeterminate-circle-graphic { animation: none !important; }
+    .login-loading-dialog .mdc-circular-progress__indeterminate-container,
+    .login-loading-dialog .mdc-circular-progress__spinner-layer,
+    .login-loading-dialog .mdc-circular-progress__indeterminate-circle-graphic {
+        animation: none !important;
+    }
 }
 
 /* Layered image effects stay in CSS to keep the template utilities readable. */
-.cover-crop-guides { background: linear-gradient(to right, transparent calc(33.333% - .5px), #ffffff60 33.333%, transparent calc(33.333% + .5px), transparent calc(66.666% - .5px), #ffffff60 66.666%, transparent calc(66.666% + .5px)), linear-gradient(to bottom, transparent calc(33.333% - .5px), #ffffff60 33.333%, transparent calc(33.333% + .5px), transparent calc(66.666% - .5px), #ffffff60 66.666%, transparent calc(66.666% + .5px)); }
-.cover-crop-panel .mat-expansion-indicator svg { fill: var(--forest); }
-.cover-crop-panel .mat-expansion-panel-body { padding: 0 16px 18px; }
+.cover-crop-guides {
+    background: linear-gradient(to right, transparent calc(33.333% - .5px), #ffffff60 33.333%, transparent calc(33.333% + .5px), transparent calc(66.666% - .5px), #ffffff60 66.666%, transparent calc(66.666% + .5px)), linear-gradient(to bottom, transparent calc(33.333% - .5px), #ffffff60 33.333%, transparent calc(33.333% + .5px), transparent calc(66.666% - .5px), #ffffff60 66.666%, transparent calc(66.666% + .5px));
+}
+
+.cover-crop-panel .mat-expansion-indicator svg {
+    fill: var(--forest);
+}
+
+.cover-crop-panel .mat-expansion-panel-body {
+    padding: 0 16px 18px;
+}
+
 @media (max-width: 600px) {
-  .cover-crop-panel .mat-expansion-panel-body { padding-inline: 0; }
+    .cover-crop-panel .mat-expansion-panel-body {
+        padding-inline: 0;
+    }
 }
 
 /* Layered image effects stay in CSS to keep the template utilities readable. */
-.game-detail-wallpaper::after { background: linear-gradient(90deg, color-mix(in srgb, var(--cream) 50%, transparent), transparent 65%), linear-gradient(180deg, color-mix(in srgb, var(--cream) 30%, transparent), color-mix(in srgb, var(--cream) 78%, transparent) 65%, var(--cream)); }
+.game-detail-wallpaper::after {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--cream) 50%, transparent), transparent 65%), linear-gradient(180deg, color-mix(in srgb, var(--cream) 30%, transparent), color-mix(in srgb, var(--cream) 78%, transparent) 65%, var(--cream));
+}
 
 /* Mobile cube-sheet animation; layout and motion preference use Tailwind variants. */
-@keyframes sheet-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sheet-in {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

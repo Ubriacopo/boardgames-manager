@@ -4,6 +4,8 @@
 
 ### Added
 
+- A label toggle beside Kallax zoom controls reveals spine artwork. The preference is saved in this browser and also applies to shared shelves.
+
 - Separate admin game editor opened from an edit icon on game pages, with shared name, year, fallback cover, and default format fields plus cover, wallpaper, logo, and box-side artwork controls. Saved details update discovery and collections.
 
 - Per-copy cube rotation beside the unassign button, cycling W×D, H×D, and W×H. Defaults follow cube layout (W×D horizontal, H×D vertical); saved faces appear on shared shelves.
@@ -57,6 +59,8 @@
 - Public profile requests have a 15-second network timeout.
 
 ### Changed
+
+- Code indentation follows the JetBrains Default scheme, documented in `AGENTS.md` and recorded in `.editorconfig`.
 
 - Browsing and collection game lists use dividers instead of filled row backgrounds. Selected cube contents have compact spacing and dividers.
 

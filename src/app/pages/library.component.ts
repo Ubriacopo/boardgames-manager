@@ -1,5 +1,5 @@
-import { boxFace, nextBoxFace, spineDimensions } from '../../entities/GamePlacement';
-import { GameSpineComponent } from '../components/game-spine.component';
+import {boxFace, nextBoxFace, spineDimensions} from '../../entities/GamePlacement';
+import {GameSpineComponent} from '../components/game-spine.component';
 import {DecimalPipe} from '@angular/common';
 import {Component, computed, HostListener, Inject, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -24,19 +24,25 @@ import type {BoardGame} from '../../entities/BoardGame';
 import {LibraryService, type BoxLayoutDirection, type LibraryBox} from '../services/library.service';
 import {CollectionListComponent} from '../components/collection-list.component';
 import {GameListRowComponent} from '../components/game-list-row.component';
+import {DisplaySettingsService} from '../services/display-settings.service';
 
 @Component({
     standalone: true,
     imports: [MatButtonModule, MatDialogModule],
-    template: `<h2 mat-dialog-title>Delete library?</h2>
+    template: `
+        <h2 mat-dialog-title>Delete library?</h2>
         <mat-dialog-content>Delete “{{ data.name }}”? Its owned games will become unassigned.</mat-dialog-content>
         <mat-dialog-actions align="end">
             <button mat-button type="button" (click)="dialog.close(false)">Cancel</button>
             <button mat-flat-button type="button" color="warn" (click)="dialog.close(true)">Delete</button>
-        </mat-dialog-actions>`,
+        </mat-dialog-actions>
+    `,
 })
 export class ConfirmDeleteLibraryDialogComponent {
-    constructor(@Inject(MAT_DIALOG_DATA) readonly data: {name: string}, readonly dialog: MatDialogRef<ConfirmDeleteLibraryDialogComponent, boolean>) {}
+    constructor(@Inject(MAT_DIALOG_DATA) readonly data: {
+        name: string
+    }, readonly dialog: MatDialogRef<ConfirmDeleteLibraryDialogComponent, boolean>) {
+    }
 }
 
 @Component({
@@ -62,8 +68,14 @@ export class ConfirmDeleteLibraryDialogComponent {
     templateUrl: './library.component.html',
 })
 export class LibraryComponent {
-    get activeTab(): 'shelf' | 'recent' | 'collection' { return this.library.activeTab(); }
-    set activeTab(tab: 'shelf' | 'recent' | 'collection') { this.library.activeTab.set(tab); }
+    get activeTab(): 'shelf' | 'recent' | 'collection' {
+        return this.library.activeTab();
+    }
+
+    set activeTab(tab: 'shelf' | 'recent' | 'collection') {
+        this.library.activeTab.set(tab);
+    }
+
     creatingLibrary = false;
     newLibraryName = '';
     newLibraryColor = '#287f82';
@@ -86,10 +98,11 @@ export class LibraryComponent {
     readonly assignedCount = computed(() => this.library.shelfGames().length);
 
     constructor(
-        readonly library: LibraryService,
-        route: ActivatedRoute,
-        private readonly snackBar: MatSnackBar,
-        private readonly dialog: MatDialog,
+            readonly library: LibraryService,
+            readonly display: DisplaySettingsService,
+            route: ActivatedRoute,
+            private readonly snackBar: MatSnackBar,
+            private readonly dialog: MatDialog,
     ) {
         const requestedTab = route.snapshot.queryParamMap.get('tab');
         if (requestedTab === 'shelf' || requestedTab === 'recent' || requestedTab === 'collection') this.activeTab = requestedTab;
@@ -108,7 +121,10 @@ export class LibraryComponent {
     }
 
     async selectLibrary(id: string): Promise<void> {
-        if (id === '__create__') { this.creatingLibrary = true; return; }
+        if (id === '__create__') {
+            this.creatingLibrary = true;
+            return;
+        }
         this.selectedBox = null;
         this.layoutOpen = false;
         await this.library.selectLibrary(id);
@@ -166,7 +182,9 @@ export class LibraryComponent {
         } catch (error) {
             this.syncLayout();
             this.snackBar.open(error instanceof Error ? error.message : 'Unable to save library settings.', 'Dismiss');
-        } finally { this.changingCubes = false; }
+        } finally {
+            this.changingCubes = false;
+        }
     }
 
     async deleteCurrentLibrary(): Promise<void> {
@@ -189,9 +207,9 @@ export class LibraryComponent {
 
     get gridLayoutValid(): boolean {
         return Number.isInteger(this.draftColumns) && Number.isInteger(this.draftRows) &&
-            this.draftColumns > 0 && this.draftRows > 0 &&
-            this.draftColumns <= 12 && this.draftRows <= 12 &&
-            this.draftColumns * this.draftRows >= (this.settingsOpen ? this.draftCubeCount : this.library.boxes().length);
+                this.draftColumns > 0 && this.draftRows > 0 &&
+                this.draftColumns <= 12 && this.draftRows <= 12 &&
+                this.draftColumns * this.draftRows >= (this.settingsOpen ? this.draftCubeCount : this.library.boxes().length);
     }
 
     get selectedBoxInfo() {
@@ -226,7 +244,9 @@ export class LibraryComponent {
             this.layoutOpen = false;
         } catch (error) {
             this.snackBar.open(error instanceof Error ? error.message : 'Unable to save shelf layout.', 'Dismiss');
-        } finally { this.changingCubes = false; }
+        } finally {
+            this.changingCubes = false;
+        }
     }
 
     openLayoutSettings(): void {
@@ -294,21 +314,21 @@ export class LibraryComponent {
 
     trackSwipe(gameId: string, event: CdkDragMove): void {
         this.swipeDirection[gameId] =
-            event.distance.x <= -48 ? 'favorite' :
-                event.distance.x >= 48 ? 'delete' : null;
+                event.distance.x <= -48 ? 'favorite' :
+                        event.distance.x >= 48 ? 'delete' : null;
     }
 
     recentlyAdded(): BoardGame[] {
         return [...this.library.games()]
-            .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
-            .slice(0, 8);
+                .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+                .slice(0, 8);
     }
 
     gamesInBox(id: number): BoardGame[] {
         return this.library.shelfGames()
-            .filter((game) => (this.library.placement(game.id)?.container_box_id ?? game.box) === id)
-            .sort((left, right) => (this.library.placement(left.id)?.sort_order ?? 0) -
-                (this.library.placement(right.id)?.sort_order ?? 0));
+                .filter((game) => (this.library.placement(game.id)?.container_box_id ?? game.box) === id)
+                .sort((left, right) => (this.library.placement(left.id)?.sort_order ?? 0) -
+                        (this.library.placement(right.id)?.sort_order ?? 0));
     }
 
     boxDirection(box: LibraryBox): BoxLayoutDirection {
@@ -316,12 +336,12 @@ export class LibraryComponent {
     }
 
     spineWidthPercent(game: BoardGame, box: LibraryBox): number {
-        const { width } = spineDimensions(game, box.layout_direction);
+        const {width} = spineDimensions(game, box.layout_direction);
         return Math.min(100, (width / box.inner_width_mm) * 100);
     }
 
     spineHeightPercent(game: BoardGame, box: LibraryBox): number {
-        const { height } = spineDimensions(game, box.layout_direction);
+        const {height} = spineDimensions(game, box.layout_direction);
         return Math.min(100, (height / box.inner_height_mm) * 100);
     }
 

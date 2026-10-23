@@ -20,7 +20,8 @@
            duration-150 ease-[ease] hover:bg-mint max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]
            max-[650px]:gap-2.5 @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:gap-2.5
            [&.cdk-drag]:cursor-grab [&.cdk-drag]:touch-none [&.cdk-drag]:select-none [&.cdk-drag]:active:cursor-grabbing
-           [&.cdk-drag]:active:transition-none [&.cdk-drag-preview]:shadow-[0_16px_35px_rgba(0,0,0,.45)]" [class.is-favorite]="favorite"
+           [&.cdk-drag]:active:transition-none [&.cdk-drag-preview]:shadow-[0_16px_35px_rgba(0,0,0,.45)]"
+             [class.is-favorite]="favorite"
              [class.!cursor-pointer]="!draggable"
              cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable" [cdkDragStartDelay]="{touch: 250, mouse: 0}"
              (cdkDragMoved)="dragMoved.emit($event)" (cdkDragEnded)="dragEnded.emit($event)">
@@ -42,29 +43,34 @@
       <small class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[.76rem] wrap-anywhere text-muted">
         <span>
         {{ year ?? 'Year unknown' }}
-          @if (edition) { · {{ edition }} }
-          @if (category) {
-              · {{ category }}
-          }
-          @if (rank) {
-              · Rank #{{ rank }}
-          }
+            @if (edition) {
+                · {{ edition }}
+            }
+            @if (category) {
+                · {{ category }}
+            }
+            @if (rank) {
+                · Rank #{{ rank }}
+            }
         </span>
-      @if (libraryName) {
-          <span class="max-w-full rounded-full bg-[var(--library-color)] px-2 py-0.5 text-[.7rem] font-semibold wrap-anywhere text-[var(--library-ink)]"
-                [style.--library-color]="libraryColor" [style.--library-ink]="libraryInk"
-                [attr.aria-label]="'Library: ' + libraryName">{{ libraryName }}</span>
-      }
+          @if (libraryName) {
+              <span class="max-w-full rounded-full bg-[var(--library-color)] px-2 py-0.5 text-[.7rem] font-semibold wrap-anywhere text-[var(--library-ink)]"
+                    [style.--library-color]="libraryColor" [style.--library-ink]="libraryInk"
+                    [attr.aria-label]="'Library: ' + libraryName">{{ libraryName }}</span>
+          }
       </small>
     </span>
         @if (location) {
-            <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base!">inventory_2</mat-icon>
+            <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon
+                    class="size-4! shrink-0 text-base!">inventory_2</mat-icon>
                 {{ location }}</span>
         } @else {
-            <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base!">leaderboard</mat-icon>#{{ rank ?? '—' }}</span>
+            <span class="flex items-center gap-[5px] text-[.76rem] wrap-anywhere text-muted max-[650px]:hidden @max-[40rem]:hidden"><mat-icon
+                    class="size-4! shrink-0 text-base!">leaderboard</mat-icon>#{{ rank ?? '—' }}</span>
         }
         @if (rating) {
-            <span class="flex items-center justify-end gap-[5px] text-[.78rem] font-bold max-[650px]:hidden @max-[40rem]:hidden"><mat-icon class="size-4! shrink-0 text-base! text-[#f5b942]">star</mat-icon>
+            <span class="flex items-center justify-end gap-[5px] text-[.78rem] font-bold max-[650px]:hidden @max-[40rem]:hidden"><mat-icon
+                    class="size-4! shrink-0 text-base! text-[#f5b942]">star</mat-icon>
                 {{ rating | number:'1.1-1' }}</span>
         }
         @if (addActions) {

@@ -17,15 +17,19 @@
             </label>
             <label class="grid gap-2 text-sm font-bold">
                 Your review
-                <quill-editor class="block [&_.ql-editor]:min-h-64 [&_.ql-editor]:text-base [&_.ql-toolbar]:!border-line [&_.ql-container]:!border-line" theme="snow" name="review" [(ngModel)]="body" format="html" [modules]="editorModules"
-                              [sanitize]="true" placeholder="What did you think?"></quill-editor>
+                <quill-editor
+                        class="block [&_.ql-editor]:min-h-64 [&_.ql-editor]:text-base [&_.ql-toolbar]:!border-line [&_.ql-container]:!border-line"
+                        theme="snow" name="review" [(ngModel)]="body" format="html" [modules]="editorModules"
+                        [sanitize]="true" placeholder="What did you think?"></quill-editor>
             </label>
             @if (error()) {
                 <p class="m-0 text-[#a53525]">{{ error() }}</p>
             }
             <div class="flex flex-wrap gap-3">
                 <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
-                <button mat-flat-button class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]" type="submit" [disabled]="saving()">
+                <button mat-flat-button
+                        class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]"
+                        type="submit" [disabled]="saving()">
                     <mat-icon>publish</mat-icon>
                     {{ saving() ? 'Publishing…' : 'Publish review' }}
                 </button>

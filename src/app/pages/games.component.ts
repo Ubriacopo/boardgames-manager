@@ -37,13 +37,19 @@ export class GamesComponent implements OnInit, OnDestroy {
         if (this.adding()[game.bggId]) return;
         this.adding.update(state => ({...state, [game.bggId]: true}));
         try {
-            const definition = await this.gameCatalog.ensureGame({bgg_id: game.bggId,
-                bgg_url: `https://boardgamegeek.com/boardgame/${game.bggId}`, name: game.name,
-                release_year: game.yearPublished ?? new Date().getFullYear(), image_url: this.covers.urls()[game.bggId] ?? null});
+            const definition = await this.gameCatalog.ensureGame({
+                bgg_id: game.bggId,
+                bgg_url: `https://boardgamegeek.com/boardgame/${game.bggId}`,
+                name: game.name,
+                release_year: game.yearPublished ?? new Date().getFullYear(),
+                image_url: this.covers.urls()[game.bggId] ?? null
+            });
             await this.collectionAdd.add(definition, special);
         } catch (error) {
             this.snackBar.open(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to add this game.', 'Dismiss');
-        } finally { this.adding.update(state => ({...state, [game.bggId]: false})); }
+        } finally {
+            this.adding.update(state => ({...state, [game.bggId]: false}));
+        }
     }
 
     async ngOnInit(): Promise<void> {
@@ -67,7 +73,9 @@ export class GamesComponent implements OnInit, OnDestroy {
         this.queryTimer = setTimeout(() => this.searchQuery.set(value), 180);
     }
 
-    ngOnDestroy(): void { clearTimeout(this.queryTimer); }
+    ngOnDestroy(): void {
+        clearTimeout(this.queryTimer);
+    }
 
     coverUrl(game: BggGameMetadata): string | null {
         return this.covers.urls()[game.bggId] ?? this.gameCatalog.definitionFor('', game.bggId)?.image_url ?? null;
@@ -79,18 +87,18 @@ export class GamesComponent implements OnInit, OnDestroy {
         const category = this.category();
         const sort = this.sort();
         return this.catalog()
-            .map(game => this.gameCatalog.metadataFor(game))
-            .filter(game => !game.isExpansion && (category === 'All' || game.themes.includes(category)))
-            .map(game => ({ game, score: query ? Math.max(score(game.name) * 1.1, score(game.searchText)) : 1 }))
-            .filter(result => result.score > 0)
-            .sort((left, right) => {
-                if (query && left.score !== right.score) return right.score - left.score;
-                const a = left.game, b = right.game;
-                if (sort === 'rating') return (b.avgRating ?? 0) - (a.avgRating ?? 0);
-                if (sort === 'popular') return (b.usersRated ?? 0) - (a.usersRated ?? 0);
-                if (sort === 'newest') return (b.yearPublished ?? 0) - (a.yearPublished ?? 0);
-                return (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
-            }).slice(0, 100).map(result => result.game);
+                .map(game => this.gameCatalog.metadataFor(game))
+                .filter(game => !game.isExpansion && (category === 'All' || game.themes.includes(category)))
+                .map(game => ({game, score: query ? Math.max(score(game.name) * 1.1, score(game.searchText)) : 1}))
+                .filter(result => result.score > 0)
+                .sort((left, right) => {
+                    if (query && left.score !== right.score) return right.score - left.score;
+                    const a = left.game, b = right.game;
+                    if (sort === 'rating') return (b.avgRating ?? 0) - (a.avgRating ?? 0);
+                    if (sort === 'popular') return (b.usersRated ?? 0) - (a.usersRated ?? 0);
+                    if (sort === 'newest') return (b.yearPublished ?? 0) - (a.yearPublished ?? 0);
+                    return (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
+                }).slice(0, 100).map(result => result.game);
     });
 
 }

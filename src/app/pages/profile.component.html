@@ -25,12 +25,14 @@
 
     <section class="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
         <div class="flex items-center gap-4 border-b border-line p-6 sm:p-8">
-            <app-profile-avatar [profile]="publicProfile()" />
+            <app-profile-avatar [profile]="publicProfile()"/>
             <div class="min-w-0">
                 <p class="text-sm text-muted">Signed in as</p>
                 <strong class="block truncate text-lg">{{ auth.session()?.user?.email ?? 'Board game collector' }}</strong>
-                <input #avatarFile type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="uploadAvatar($event)" [disabled]="avatarUploading() || !socialReady()">
-                <button mat-button type="button" [disabled]="avatarUploading() || !socialReady()" (click)="avatarFile.click()">
+                <input #avatarFile type="file" hidden accept="image/jpeg,image/png,image/webp"
+                       (change)="uploadAvatar($event)" [disabled]="avatarUploading() || !socialReady()">
+                <button mat-button type="button" [disabled]="avatarUploading() || !socialReady()"
+                        (click)="avatarFile.click()">
                     {{ avatarUploading() ? 'Uploading picture…' : 'Change profile picture' }}
                 </button>
             </div>
@@ -52,29 +54,43 @@
     <section class="mt-6 mb-6 rounded-3xl border border-line bg-surface p-[clamp(20px,_4vw,_32px)]">
         <h2 class="font-display text-2xl">Public profile &amp; friends</h2>
         <p class="mt-2 text-sm text-muted">Collectors can find you by your handle. Your email stays private.</p>
-        @if (socialError()) { <p role="alert" class="mt-4">{{ socialError() }}</p> }
-        @if (socialNotice()) { <p role="status" class="mt-4 text-brand">{{ socialNotice() }}</p> }
-        @if (socialLoading()) { <p role="status" class="mt-4">Loading profile…</p> }
-        @else if (socialReady()) {
+        @if (socialError()) {
+            <p role="alert" class="mt-4">{{ socialError() }}</p>
+        }
+        @if (socialNotice()) {
+            <p role="status" class="mt-4 text-brand">{{ socialNotice() }}</p>
+        }
+        @if (socialLoading()) {
+            <p role="status" class="mt-4">Loading profile…</p>
+        } @else if (socialReady()) {
             <form #handleForm="ngForm" (ngSubmit)="saveSocialProfile()" class="mt-5 flex flex-wrap items-end gap-3">
                 <label class="min-w-0 flex-1">Your handle
                     <input class="mt-2 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
-                           focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
-                           autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="40" pattern="[a-z0-9.]{3,40}" aria-describedby="handle-hint">
+                           focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid"
+                           name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3"
+                           maxlength="40" pattern="[a-z0-9.]{3,40}" aria-describedby="handle-hint">
                 </label>
-                <button mat-flat-button type="submit" [disabled]="saving() || handleForm.invalid">{{ saving() ? 'Saving…' : 'Save handle' }}</button>
-                <p id="handle-hint" class="w-full text-sm text-muted">3–40 letters, numbers, or dots. Your handle is unique.</p>
+                <button mat-flat-button type="submit"
+                        [disabled]="saving() || handleForm.invalid">{{ saving() ? 'Saving…' : 'Save handle' }}
+                </button>
+                <p id="handle-hint" class="w-full text-sm text-muted">3–40 letters, numbers, or dots. Your handle is
+                    unique.</p>
             </form>
             <label class="mt-5 block">How people connect with you
                 <select class="mt-2 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
-                       focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" name="connectionMode" [ngModel]="connectionMode"
+                       focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid"
+                        name="connectionMode" [ngModel]="connectionMode"
                         (ngModelChange)="changeConnectionMode($event)" [disabled]="saving()">
                     <option value="approval">Friend requests — I approve first</option>
                     <option value="follow">Followers — no approval needed</option>
                 </select>
             </label>
-            <p class="mt-3 text-sm text-muted">Approved friends share collections in both directions. Followers can see yours while you allow following.</p>
-        } @else { <button mat-stroked-button type="button" (click)="ngOnInit()">Try again</button> }
+            <p class="mt-3 text-sm text-muted">Approved friends share collections in both directions. Followers can see
+                yours while you allow following.</p>
+        } @else {
+            <button mat-stroked-button type="button" (click)="ngOnInit()">Try again</button>
+        }
     </section>
 
     <section class="mt-6 rounded-3xl border border-line bg-surface p-6 sm:p-8">
@@ -101,14 +117,18 @@
             <h2 class="font-display text-2xl">Display zoom</h2>
             <label class="mt-4 block" for="display-zoom">Text and interface size</label>
             <select id="display-zoom" class="mt-2 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
-                   focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid" [ngModel]="display.zoom()"
+                   focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid"
+                    [ngModel]="display.zoom()"
                     (ngModelChange)="display.setZoom($event)" aria-describedby="display-zoom-hint">
                 @for (level of display.zoomLevels; track level) {
                     <option [ngValue]="level">{{ level }}%{{ level === 100 ? ' (default)' : '' }}</option>
                 }
             </select>
-            <p id="display-zoom-hint" class="mt-3 text-sm text-muted">Enlarges Kallax labels, game and collection rows, and text and controls throughout the app. Changes apply immediately and are saved in this browser.</p>
-            <button mat-stroked-button type="button" class="mt-3" [disabled]="display.zoom() === 100" (click)="display.setZoom(100)">Reset to 100%</button>
+            <p id="display-zoom-hint" class="mt-3 text-sm text-muted">Enlarges Kallax labels, game and collection rows,
+                and text and controls throughout the app. Changes apply immediately and are saved in this browser.</p>
+            <button mat-stroked-button type="button" class="mt-3" [disabled]="display.zoom() === 100"
+                    (click)="display.setZoom(100)">Reset to 100%
+            </button>
         </div>
     </section>
 </main>
