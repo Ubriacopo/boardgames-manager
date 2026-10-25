@@ -26,7 +26,10 @@
                : 'grid-cols-[3.625rem_minmax(0,_1fr)_minmax(6.875rem,_11.25rem)_4.5rem_auto] max-[650px]:grid-cols-[3.25rem_minmax(0,_1fr)_auto] @max-[40rem]:grid-cols-[3.25rem_minmax(0,_1fr)_auto]'"
              [class.is-favorite]="favorite"
              [class.!cursor-pointer]="!draggable"
-             cdkDrag cdkDragLockAxis="x" [cdkDragDisabled]="!draggable" [cdkDragStartDelay]="{touch: 250, mouse: 0}"
+             [class.!touch-pan-y]="reorderable"
+             cdkDrag [cdkDragLockAxis]="reorderable ? 'y' : 'x'"
+             [cdkDragRootElement]="reorderable ? 'app-game-list-row' : ''" [cdkDragData]="dragData"
+             [cdkDragDisabled]="(!draggable && !reorderable) || cubeBusy" [cdkDragStartDelay]="{touch: 250, mouse: 0}"
              (cdkDragMoved)="dragMoved.emit($event)" (cdkDragEnded)="dragEnded.emit($event)">
         <a class="absolute inset-0 z-0 rounded-xl focus:outline-2 focus:outline-accent"
            [routerLink]="link" [attr.aria-label]="'View details for ' + name">
@@ -81,12 +84,21 @@
         }
         }
         @if (cubeActions) {
-            <span class="relative z-10 flex items-center gap-1">
-                <button mat-icon-button type="button" class="!size-10 !p-0" (click)="rotate.emit()"
+            <span class="relative z-10 flex items-center gap-1 @max-[18rem]:flex-col">
+                @if (reorderable) {
+                    <button mat-icon-button cdkDragHandle type="button" class="!size-10 !cursor-grab !touch-none !p-0 active:!cursor-grabbing"
+                            [disabled]="cubeBusy" [attr.aria-label]="'Reorder ' + name + ': drag or use Arrow Up and Arrow Down'"
+                            title="Drag to reorder; Arrow Up/Down also moves this game"
+                            (keydown.arrowup)="$event.preventDefault(); reorderStep.emit(-1)"
+                            (keydown.arrowdown)="$event.preventDefault(); reorderStep.emit(1)">
+                        <mat-icon>drag_indicator</mat-icon>
+                    </button>
+                }
+                <button mat-icon-button type="button" class="!size-10 !p-0" [disabled]="cubeBusy" (click)="rotate.emit()"
                         [attr.aria-label]="'Rotate ' + name + ' to ' + rotateLabel" [title]="'Rotate to ' + rotateLabel">
                     <mat-icon>rotate_right</mat-icon>
                 </button>
-                <button mat-icon-button type="button" class="!size-10 !p-0" (click)="unassign.emit()"
+                <button mat-icon-button type="button" class="!size-10 !p-0" [disabled]="cubeBusy" (click)="unassign.emit()"
                         [attr.aria-label]="'Move ' + name + ' to unassigned'" title="Move to unassigned">
                     <mat-icon>remove_circle_outline</mat-icon>
                 </button>

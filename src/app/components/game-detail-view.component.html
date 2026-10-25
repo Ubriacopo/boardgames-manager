@@ -8,15 +8,37 @@
                    [.is-fallback_&]:[filter:blur(12px)_saturate(.8)]" [src]="wallpaper" alt="" fetchpriority="high">
         }
     </div>
-    <main class="relative z-1 mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 py-10 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:py-14">
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <main class="relative z-1 mx-auto min-h-[calc(100dvh-64px)] max-w-[1680px] px-5 pt-3 pb-28 lg:min-h-[calc(100dvh-76px)] lg:px-16 lg:pt-3">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <button mat-button type="button" (click)="back.emit()">
                 <mat-icon>arrow_back</mat-icon>
                 {{ backLabel }}
             </button>
+            <div class="ml-auto flex shrink-0 items-center gap-1">
+                @if (auth.isAdmin() && (coverGameId || gameDefinitionId)) {
+                    <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
+                            (click)="editGame()" aria-label="Edit game" title="Edit game">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                }
+                @if (displayBggUrl) {
+                    <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="displayBggUrl"
+                       target="_blank" rel="noreferrer" aria-label="Open on BoardGameGeek" title="Open on BoardGameGeek">
+                        <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
+                    </a>
+                }
+                @if (!owned || gameDefinitionId) {
+                    <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
+                            (click)="primaryAction.emit()" [disabled]="actionDisabled"
+                            [attr.aria-label]="actionLabel + ': ' + displayName"
+                            [title]="actionLabel">
+                        <mat-icon>library_add</mat-icon>
+                    </button>
+                }
+            </div>
         </div>
         @if (definitionError()) {
-            <div class="mb-5 flex flex-wrap items-center gap-2 text-sm text-muted" role="status">
+            <div class="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted" role="status">
                 <span>{{ definitionError() }}</span>
                 <button mat-button type="button" (click)="loadDefinition()">
                     <mat-icon>refresh</mat-icon>
@@ -24,28 +46,6 @@
                 </button>
             </div>
         }
-        <div class="fixed top-4 right-4 z-30 flex gap-2 lg:top-6 lg:right-6">
-            @if (auth.isAdmin() && (coverGameId || gameDefinitionId)) {
-                <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
-                        (click)="editGame()" aria-label="Edit game" title="Edit game">
-                    <mat-icon>edit</mat-icon>
-                </button>
-            }
-            @if (displayBggUrl) {
-                <a mat-icon-button class="!inline-flex !items-center !justify-center !p-0" [href]="displayBggUrl"
-                   target="_blank" rel="noreferrer" aria-label="Open on BoardGameGeek" title="Open on BoardGameGeek">
-                    <img class="size-5" src="https://boardgamegeek.com/favicon.ico" alt="">
-                </a>
-            }
-            @if (!owned || gameDefinitionId) {
-                <button mat-icon-button type="button" class="!inline-flex !items-center !justify-center !p-0"
-                        (click)="primaryAction.emit()" [disabled]="actionDisabled"
-                        [attr.aria-label]="actionLabel + ': ' + displayName"
-                        [title]="actionLabel">
-                    <mat-icon>library_add</mat-icon>
-                </button>
-            }
-        </div>
         <section class="grid gap-8 lg:grid-cols-[minmax(220px,380px)_1fr] lg:gap-[clamp(32px,6vw,72px)]">
             <div class="flex w-full max-w-[380px] justify-center self-start justify-self-center">
                 <div class="relative max-w-full overflow-hidden rounded-3xl bg-transparent" [style.width]="logoWidth()">
@@ -59,7 +59,7 @@
             </div>
 
             <div class="relative self-center">
-                <p class="mb-3 pr-14 text-xs font-bold tracking-[.14em] text-accent uppercase">
+                <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">
                     {{ displayYear ?? 'Year unknown' }} ·
                     {{ owned ? 'In your collection' : 'Meeple House preview' }}
                 </p>

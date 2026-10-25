@@ -4,6 +4,7 @@ import {DecimalPipe} from '@angular/common';
 import {afterNextRender, Component, computed, ElementRef, HostListener, Inject, inject, Injector, OnDestroy, signal, ViewChild} from '@angular/core';
 import {A11yModule} from '@angular/cdk/a11y';
 import {ScrollStrategyOptions} from '@angular/cdk/overlay';
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {FormsModule} from '@angular/forms';
 import {
     CdkDrag,
@@ -52,6 +53,7 @@ export class ConfirmDeleteLibraryDialogComponent {
     imports: [
         KallaxCubeFaceComponent,
         A11yModule,
+        CdkScrollable,
         DecimalPipe,
         FormsModule,
         CdkDrag,
@@ -95,6 +97,8 @@ export class LibraryComponent implements OnDestroy {
     draftCubeCount = 0;
     selectedBox: number | null = null;
     selectedBoxLabel = '';
+    readonly savingCubeOrder = signal(false);
+    readonly cubeOrderStatus = signal('');
     unassignedOpen = false;
     swipeDirection: Record<string, 'favorite' | 'delete' | null> = {};
     gridColumns = 4;
@@ -243,6 +247,7 @@ export class LibraryComponent implements OnDestroy {
 
     selectBox(boxId: number, event: MouseEvent): void {
         event.stopPropagation();
+        this.cubeOrderStatus.set('');
         this.selectionTrigger = event.currentTarget as HTMLElement;
         const origin = this.selectionTrigger.getBoundingClientRect();
         this.focusScroll.enable();
@@ -368,7 +373,7 @@ export class LibraryComponent implements OnDestroy {
         return this.library.shelfGames()
                 .filter((game) => (this.library.placement(game.id)?.container_box_id ?? game.box) === id)
                 .sort((left, right) => (this.library.placement(left.id)?.sort_order ?? 0) -
-                        (this.library.placement(right.id)?.sort_order ?? 0));
+                        (this.library.placement(right.id)?.sort_order ?? 0) || left.name.localeCompare(right.name) || left.id.localeCompare(right.id));
     }
 
     boxDirection(box: LibraryBox): BoxLayoutDirection {
@@ -442,6 +447,30 @@ export class LibraryComponent implements OnDestroy {
 
     drop(box: number, event: CdkDragDrop<BoardGame[]>): void {
         void this.move(event.item.data as string, box, event.currentIndex);
+    }
+
+    dropSelectedCube(event: CdkDragDrop<BoardGame[]>): void {
+        if (event.previousIndex === event.currentIndex) return;
+        void this.reorderCube(event.item.data as string, event.currentIndex);
+    }
+
+    async reorderCube(gameId: string, requestedIndex: number): Promise<void> {
+        const box = this.selectedBox;
+        if (box === null || this.savingCubeOrder()) return;
+        const games = this.selectedGames;
+        const previousIndex = games.findIndex(game => game.id === gameId);
+        const index = Math.max(0, Math.min(requestedIndex, games.length - 1));
+        if (previousIndex < 0 || previousIndex === index) return;
+        this.savingCubeOrder.set(true);
+        this.cubeOrderStatus.set('Saving order...');
+        try {
+            await this.library.moveGame(gameId, box, index);
+            if (this.selectedBox === box) this.cubeOrderStatus.set(`${games[previousIndex].name} moved to position ${index + 1}.`);
+        } catch (error) {
+            const message = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unable to save cube order.';
+            this.cubeOrderStatus.set(message);
+            this.snackBar.open(message, 'Dismiss');
+        } finally { this.savingCubeOrder.set(false); }
     }
 
     unassign(event: CdkDragDrop<BoardGame[]>): void {

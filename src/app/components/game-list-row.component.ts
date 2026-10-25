@@ -1,6 +1,6 @@
 import {DecimalPipe} from '@angular/common';
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {CdkDrag, CdkDragEnd, CdkDragMove} from '@angular/cdk/drag-drop';
+import {CdkDrag, CdkDragEnd, CdkDragHandle, CdkDragMove} from '@angular/cdk/drag-drop';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {RouterLink} from '@angular/router';
@@ -10,7 +10,7 @@ import {LibraryChipComponent} from './library-chip.component';
     selector: 'app-game-list-row',
     standalone: true,
     host: {class: 'block'},
-    imports: [CdkDrag, DecimalPipe, MatButtonModule, MatIconModule, RouterLink, LibraryChipComponent],
+    imports: [CdkDrag, CdkDragHandle, DecimalPipe, MatButtonModule, MatIconModule, RouterLink, LibraryChipComponent],
     templateUrl: './game-list-row.component.html',
 })
 export class GameListRowComponent {
@@ -37,6 +37,10 @@ export class GameListRowComponent {
     @Input() secondaryText = '';
     @Input() cubeActions = false;
     @Input() rotateLabel = '';
+    @Input() reorderable = false;
+    @Input() cubeBusy = false;
+    @Input() dragData = '';
+    @Output() readonly reorderStep = new EventEmitter<number>();
     @Output() readonly rotate = new EventEmitter<void>();
     @Output() readonly unassign = new EventEmitter<void>();
     @Output() readonly defaultAdd = new EventEmitter<void>();

@@ -217,6 +217,11 @@ the second line plus rotate/unassign actions. Close the view, press Escape, or
 select the backdrop to return to the same shelf zoom and scroll position.
 Reduced-motion preferences disable the focus animation.
 
+Drag a cube row's grip up or down to reorder games. Rows away from the grip
+still scroll normally on touch screens. With the grip focused, Arrow Up and
+Arrow Down move the game one position. Order saves immediately and updates
+the cube preview; failed saves restore the previous order.
+
 Under **Profile → Appearance → Display zoom**, choose 100%, 110%, 125%, 150%,
 175%, or 200%. Changes apply immediately to Kallax labels, game and collection
 row text, covers and spacing, and the rest of the interface where supported.

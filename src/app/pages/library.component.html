@@ -279,12 +279,18 @@
                     <mat-icon>close</mat-icon>
                 </button>
             </header>
-            <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y px-2 sm:px-4">
-                <div class="mx-auto grid max-w-[1100px] divide-y divide-line">
+            <p class="sr-only" role="status" aria-live="polite">{{ cubeOrderStatus() }}</p>
+            <div cdkScrollable class="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y px-2 sm:px-4">
+                <div cdkDropList [cdkDropListData]="selectedGames" [cdkDropListDisabled]="savingCubeOrder()"
+                     (cdkDropListDropped)="dropSelectedCube($event)" cdkDropListOrientation="vertical"
+                     class="mx-auto grid max-w-[1100px] divide-y divide-line" aria-label="Games in cube; drag handles to reorder">
                     @for (game of selectedGames; track game.id) {
                         <app-game-list-row [name]="game.name" [year]="game.release_year" [link]="['/games', game.id]"
                             [imageUrl]="game.image_url" [favorite]="game.favorite" [secondaryText]="cubeGameInfo(game, box)"
                             [cubeActions]="true" [rotateLabel]="faceLabel(game, box, true)"
+                            [reorderable]="true" [dragData]="game.id" [cubeBusy]="savingCubeOrder()"
+                            class="[&.cdk-drag-preview]:bg-surface [&.cdk-drag-preview]:shadow-xl [&.cdk-drag-placeholder]:opacity-25"
+                            (reorderStep)="reorderCube(game.id, $index + $event)"
                             (rotate)="rotateGame(game)" (unassign)="move(game.id, null)"/>
                     } @empty {
                         <p class="px-3 py-6 text-base text-muted">This cube is empty. Close this view and drag a game here from Unassigned.</p>

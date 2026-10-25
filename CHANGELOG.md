@@ -4,6 +4,8 @@
 
 ### Added
 
+- Drag handles in the focused cube bottom sheet reorder games and save their shelf positions immediately. The same handles support Arrow Up/Down for one-position moves, with failed-save rollback and normal touch scrolling outside the grip.
+
 - Owned game pages show the library's colored chip beside the stored-in cube name.
 
 - A label toggle beside Kallax zoom controls reveals spine artwork. The preference is saved in this browser and also applies to shared shelves.
