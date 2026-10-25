@@ -47,6 +47,8 @@
 
 ### Fixed
 
+- Game rows allow normal mobile scrolling, including when dragging is disabled. Touch scrolling is only blocked during an active drag or on a cube reorder grip.
+
 - Kallax title fonts, padding, and borders scale with spine thickness in both orientations; long names still truncate with an ellipsis.
 
 - Kallax spines use box depth as their visible thickness: upright boxes render depth × height, and horizontal boxes render width × depth, in personal and shared shelves.
@@ -63,6 +65,8 @@
 - Public profile requests have a 15-second network timeout.
 
 ### Changed
+
+- Profile handles are editable directly under “Signed in as,” above the smaller email address. A save icon beside the handle saves handle changes, and stays disabled until availability is confirmed. Other settings save automatically, and an edit badge on the avatar opens picture selection.
 
 - Selected cube contents reuse Browse row sizing and display zoom, with per-copy face/dimensions and rotate/unassign controls. Cube selection opens an enlarged preview and a bottom sheet covering other controls; closing restores the existing shelf zoom and position, with keyboard and reduced-motion support.
 

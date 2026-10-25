@@ -241,6 +241,10 @@ Incoming requests appear under Followers; sent requests appear under Followed.
 Approved friends appear in both tabs because their connection is mutual.
 
 Set your handle, profile picture, and connection preference under **Profile**.
+Edit the borderless handle under **Signed in as**, with your private email below.
+The save icon beside the handle saves handle changes; it stays disabled while
+checking availability or when the handle is unavailable or unchanged. Other
+settings save automatically. Select the edit badge on your avatar to change it.
 Pictures accept JPG, PNG, or WebP files up to 5 MB. They are stored in the public
 `profile-pictures` bucket, with uploads restricted to each user's own folder.
 `20261022134355_profile_pictures.sql` adds the avatar field and upload policy.

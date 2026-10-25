@@ -25,16 +25,49 @@
 
     <section class="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
         <div class="flex items-center gap-4 border-b border-line p-6 sm:p-8">
-            <app-profile-avatar [profile]="publicProfile()"/>
-            <div class="min-w-0">
-                <p class="text-sm text-muted">Signed in as</p>
-                <strong class="block truncate text-lg">{{ auth.session()?.user?.email ?? 'Board game collector' }}</strong>
-                <input #avatarFile type="file" hidden accept="image/jpeg,image/png,image/webp"
-                       (change)="uploadAvatar($event)" [disabled]="avatarUploading() || !socialReady()">
-                <button mat-button type="button" [disabled]="avatarUploading() || !socialReady()"
-                        (click)="avatarFile.click()">
-                    {{ avatarUploading() ? 'Uploading picture…' : 'Change profile picture' }}
-                </button>
+            <input #avatarFile type="file" hidden accept="image/jpeg,image/png,image/webp"
+                   (change)="uploadAvatar($event)" [disabled]="avatarUploading() || saving() || !socialReady()">
+            <button type="button" class="relative shrink-0 rounded-full disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    [disabled]="avatarUploading() || saving() || !socialReady()" (click)="avatarFile.click()"
+                    [attr.aria-label]="avatarUploading() ? 'Uploading profile picture' : 'Change profile picture'"
+                    title="Change profile picture">
+                <app-profile-avatar [profile]="publicProfile()"/>
+                <span class="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-accent text-white shadow-sm">
+                    <mat-icon class="!size-4 !text-base !leading-none">{{ avatarUploading() ? 'hourglass_top' : 'edit' }}</mat-icon>
+                </span>
+            </button>
+            <div class="min-w-0 flex-1">
+                <label for="profile-handle" class="block text-sm text-muted">Signed in as</label>
+                <div class="flex items-center gap-2">
+                    <input id="profile-handle" class="block w-full min-w-0 flex-1 border-0 bg-transparent p-0 text-lg font-bold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                           name="handle" [ngModel]="handle" (ngModelChange)="changeHandle($event)"
+                           [disabled]="!socialReady() || saving()" autocomplete="username" autocapitalize="none"
+                           spellcheck="false" required minlength="3" maxlength="40" pattern="[a-z0-9.]{3,40}"
+                           [attr.aria-invalid]="handleStatus() === 'invalid' || handleStatus() === 'taken'"
+                           aria-describedby="handle-status">
+                    <button mat-icon-button type="button" class="shrink-0" (click)="saveSocialProfile()"
+                            [disabled]="saving() || avatarUploading() || !socialReady() || handleStatus() !== 'available' || handle.trim() === publicProfile()?.handle"
+                            [attr.aria-label]="saving() ? 'Saving handle' : 'Save handle'" title="Save handle">
+                        <mat-icon>save</mat-icon>
+                    </button>
+                </div>
+                <p class="mt-1 truncate text-sm text-muted">{{ auth.session()?.user?.email }}</p>
+                <p id="handle-status" role="status" class="mt-1 text-xs text-muted">
+                    @if (socialReady()) {
+                        @switch (handleStatus()) {
+                            @case ('checking') { Checking handle availability… }
+                            @case ('taken') { That handle is already taken. Choose another one. }
+                            @case ('invalid') { Use 3–40 letters, numbers, or dots. }
+                            @case ('error') { Unable to check availability. }
+                            @case ('available') {
+                                {{ handle.trim() === publicProfile()?.handle ? 'Your current handle.' : 'This handle is available.' }}
+                            }
+                        }
+                    }
+                </p>
+                @if (handleStatus() === 'error') {
+                    <button mat-button type="button" (click)="changeHandle(handle)">Retry handle check</button>
+                }
             </div>
         </div>
 
@@ -63,25 +96,11 @@
         @if (socialLoading()) {
             <p role="status" class="mt-4">Loading profile…</p>
         } @else if (socialReady()) {
-            <form #handleForm="ngForm" (ngSubmit)="saveSocialProfile()" class="mt-5 flex flex-wrap items-end gap-3">
-                <label class="min-w-0 flex-1">Your handle
-                    <input class="mt-2 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
-                           focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid"
-                           name="handle" [ngModel]="handle" (ngModelChange)="handle = $event.toLowerCase()"
-                           autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3"
-                           maxlength="40" pattern="[a-z0-9.]{3,40}" aria-describedby="handle-hint">
-                </label>
-                <button mat-flat-button type="submit"
-                        [disabled]="saving() || handleForm.invalid">{{ saving() ? 'Saving…' : 'Save handle' }}
-                </button>
-                <p id="handle-hint" class="w-full text-sm text-muted">3–40 letters, numbers, or dots. Your handle is
-                    unique.</p>
-            </form>
             <label class="mt-5 block">How people connect with you
                 <select class="mt-2 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2
                        focus-visible:outline-offset-2 focus-visible:outline-brand focus-visible:outline-solid"
                         name="connectionMode" [ngModel]="connectionMode"
-                        (ngModelChange)="changeConnectionMode($event)" [disabled]="saving()">
+                        (ngModelChange)="changeConnectionMode($event)" [disabled]="saving() || avatarUploading()">
                     <option value="approval">Friend requests — I approve first</option>
                     <option value="follow">Followers — no approval needed</option>
                 </select>
