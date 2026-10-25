@@ -66,6 +66,8 @@
 
 ### Changed
 
+- Discovery keeps only the search bar pinned on an opaque theme background while sorting and category tags scroll out of view.
+
 - Profile handles are editable directly under “Signed in as,” above the smaller email address. A save icon beside the handle saves handle changes, and stays disabled until availability is confirmed. Other settings save automatically, and an edit badge on the avatar opens picture selection.
 
 - Selected cube contents reuse Browse row sizing and display zoom, with per-copy face/dimensions and rotate/unassign controls. Cube selection opens an enlarged preview and a bottom sheet covering other controls; closing restores the existing shelf zoom and position, with keyboard and reduced-motion support.

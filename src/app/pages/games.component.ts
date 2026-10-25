@@ -1,4 +1,5 @@
 import {Component, OnDestroy, OnInit, computed, signal} from '@angular/core';
+import {AuthService} from '../services/auth.service';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -30,7 +31,7 @@ export class GamesComponent implements OnInit, OnDestroy {
     readonly adding = signal<Record<number, boolean>>({});
 
     constructor(readonly library: LibraryService, readonly covers: GameCoverService, private readonly gameCatalog: GameCatalogService,
-                private readonly collectionAdd: CollectionAddService, private readonly snackBar: MatSnackBar) {
+                private readonly collectionAdd: CollectionAddService, private readonly snackBar: MatSnackBar, readonly auth: AuthService) {
     }
 
     async add(game: BggGameMetadata, special = false): Promise<void> {

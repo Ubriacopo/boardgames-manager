@@ -3,22 +3,23 @@
         <p class="mb-3 text-xs font-bold tracking-[.14em] text-accent uppercase">Discover</p>
     </header>
 
-    <section class="sticky top-0 z-10 mb-7 grid gap-4 bg-canvas/95 py-3 backdrop-blur">
-        <div class="flex flex-col gap-3 sm:flex-row">
-            <label class="flex flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4 focus-within:border-brand">
-                <mat-icon>search</mat-icon>
-                <input class="w-full bg-transparent py-3 outline-none" type="search" [ngModel]="query()"
-                       (ngModelChange)="setQuery($event)"
-                       placeholder="Search every board game">
-            </label>
-            <select class="rounded-xl border border-line bg-surface px-4 py-3" [ngModel]="sort()"
-                    (ngModelChange)="sort.set($event)">
-                <option value="rank">Best ranked</option>
-                <option value="rating">Highest rating</option>
-                <option value="popular">Most popular</option>
-                <option value="newest">Newest</option>
-            </select>
-        </div>
+    <div class="sticky top-0 z-20 -mx-5 bg-canvas px-5 py-3 lg:-mx-16 lg:px-16" [class.lg:top-19]="auth.session()">
+        <label class="flex items-center gap-2 rounded-xl border border-line bg-surface px-4 focus-within:border-brand">
+            <mat-icon>search</mat-icon>
+            <input class="w-full bg-transparent py-3 outline-none" type="search" [ngModel]="query()"
+                   (ngModelChange)="setQuery($event)" aria-label="Search every board game"
+                   placeholder="Search every board game">
+        </label>
+    </div>
+
+    <section class="mb-7 grid gap-4 pb-3">
+        <select class="rounded-xl border border-line bg-surface px-4 py-3 sm:justify-self-start" [ngModel]="sort()"
+                (ngModelChange)="sort.set($event)" aria-label="Sort games">
+            <option value="rank">Best ranked</option>
+            <option value="rating">Highest rating</option>
+            <option value="popular">Most popular</option>
+            <option value="newest">Newest</option>
+        </select>
         <div class="flex gap-2 overflow-x-auto pb-1">
             @for (item of categories; track item) {
                 <button mat-stroked-button type="button" class="shrink-0"
