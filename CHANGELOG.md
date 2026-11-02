@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Load the bundled BGG catalog relative to the application base URL so discovery works under the GitHub Pages subpath.
+
 ### Added
 
 - Drag handles in the focused cube bottom sheet reorder games and save their shelf positions immediately. The same handles support Arrow Up/Down for one-position moves, with failed-save rollback and normal touch scrolling outside the grip.

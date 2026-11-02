@@ -112,7 +112,7 @@ function getAllBggMetadata() {
 }
 
 async function loadAllBggMetadata() {
-    const gamesRows = await fetchCsv('/bgg-data/boardgames_ranks.csv');
+    const gamesRows = await fetchCsv('bgg-data/boardgames_ranks.csv');
     const metadataById = new Map<number, BggGameMetadata>();
 
     gamesRows.forEach((row) => {
