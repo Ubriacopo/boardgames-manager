@@ -7,7 +7,7 @@ Kallboard is a platform for managing and tracking your board game collection.
 ### Now: complete the Supabase integration
 
 - [ ] Make the database reproducible with migrations for profiles, libraries,
-  reviews, voting sessions, and votes.
+  voting sessions, and votes.
 - [ ] Add and verify Row Level Security policies for every user-owned resource.
 - [ ] Finish authentication and profile flows, including session recovery and
   useful loading and error states.
@@ -26,7 +26,6 @@ Kallboard is a platform for managing and tracking your board game collection.
 
 ### Later: community features
 
-- [ ] Finish game reviews.
 - [ ] Complete Spotify Jam-style sessions for voting on which game to play.
 - [ ] Add event organization and lobbies.
 - [ ] Add groups, with clans considered after the core social flows are proven.
@@ -42,21 +41,21 @@ from custom server-side logic while retaining Supabase where it remains useful.
 - [ ] Implement, deploy, and monitor the service.
 - [ ] Migrate features incrementally without disrupting the existing app.
 
-### Later: review topic modelling
+### Deferred: reviews and review topic modelling
 
-Integrate the ABAE-based model from
-[boardgames-aspect-extraction](https://github.com/Ubriacopo/boardgames-aspect-extraction)
-to recognize the aspects discussed in board game reviews. Extracted topics will
-help organize and filter reviews by themes such as components, mechanics, and
-complexity.
+Reviews are disabled for now to keep Kallboard focused on organizing collections,
+sharing shelves, and choosing what to play. Game pages retain BGG ratings and a
+BoardGameGeek link for reviews and further information. Existing review URLs
+redirect to the game overview; review components, services, and stored data are
+retained for possible future use.
 
-- [ ] Package preprocessing and ABAE inference as a reproducible service.
-- [ ] Define a stable topic taxonomy and map model outputs to readable labels.
-- [ ] Run topic extraction when reviews are created or updated.
-- [ ] Store topic assignments and confidence scores in Supabase.
-- [ ] Add topic filters and summaries to the review UI.
-- [ ] Evaluate predictions on real reviews before enabling the feature by
-  default.
+These ideas are deferred, with no commitment to implement or re-enable them:
+
+- [ ] Reconsider in-app review reading, writing, and community ratings.
+- [ ] Track review state on owned games if reviews return.
+- [ ] Reconsider ABAE-based review topic extraction from
+  [boardgames-aspect-extraction](https://github.com/Ubriacopo/boardgames-aspect-extraction),
+  including a topic taxonomy, inference service, stored assignments, and topic filters.
 
 ## Setup
 

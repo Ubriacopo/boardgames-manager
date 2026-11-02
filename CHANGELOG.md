@@ -66,6 +66,8 @@
 
 ### Changed
 
+- Disabled in-app reviews, community ratings, and embedded BGG comments. Game pages retain BGG rating/rank metadata and the external BGG link. Existing review URLs redirect to the game overview; review code and data are retained.
+
 - Discovery keeps only the search bar pinned on an opaque theme background while sorting and category tags scroll out of view.
 
 - Profile handles are editable directly under “Signed in as,” above the smaller email address. A save icon beside the handle saves handle changes, and stays disabled until availability is confirmed. Other settings save automatically, and an edit badge on the avatar opens picture selection.
@@ -108,9 +110,13 @@
 
 - Render each Kallax cube as a filled shelf using game-box spine artwork when it is available, with a generated visual fallback when it is not.
 - Add a game-image catalog that records trusted cover and spine image sources, attribution, and user overrides.
-- Track reviews as part of the owned-game record and show review state from the collection.
 - Record play history, including play date, player count, participants when desired, and preferred player counts for each game.
 
+
+### Deferred
+
+- In-app reviews and community ratings, including owned-game review state.
+- ABAE review topic modelling and review topic filters. Reconsider only if they support the core collection and game-selection experience.
 
 ## HUGE
 - Change from supabase to sqllite so that a user can use it offline.

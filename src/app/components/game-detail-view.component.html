@@ -70,13 +70,6 @@
                             [class.!text-white]="detailTab === 'overview'" (click)="detailTab = 'overview'">
                         Overview
                     </button>
-                    <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'ratings'"
-                            [class.!text-white]="detailTab === 'ratings'" (click)="detailTab = 'ratings'">
-                        Reviews
-                        @if (localSummary.count) {
-                            <span>{{ localSummary.count }}</span>
-                        }
-                    </button>
                     @if (owned) {
                         <button mat-stroked-button type="button" [class.!bg-accent]="detailTab === 'dimensions'"
                                 [class.!text-white]="detailTab === 'dimensions'" (click)="detailTab = 'dimensions'">
@@ -86,41 +79,22 @@
                 </nav>
 
                 @if (detailTab === 'overview') {
-                    <div class="mb-6 grid grid-cols-3 gap-3 border-y border-line py-5 text-center">
-          <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
-            <mat-icon class="text-accent">star</mat-icon>
-            <strong class="font-display text-xl text-ink">
-              {{ localSummary.average === null ? '—' : (localSummary.average | number:'1.1-1') }}
-            </strong>
-            Rating
-              @if (metadata; as meta) {
-                  <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
-                    BGG {{ meta.avgRating === null ? '—' : (meta.avgRating | number:'1.1-1') }}
-                </small>
-              }
-          </span>
-                        <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
-            <mat-icon class="text-accent">leaderboard</mat-icon>
-            <strong class="font-display text-xl text-ink">#{{ localSummary.rank ?? '—' }}</strong>
-            Rank
-                            @if (metadata; as meta) {
-                                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">BGG #{{ meta.rank ?? '—' }}</small>
-                            }
-          </span>
-                        <button type="button" (click)="detailTab = 'ratings'"
-                                class="grid min-w-0 justify-items-center gap-1 rounded-lg text-xs text-muted transition hover:bg-mint focus:outline-2
-                                   focus:outline-accent"
-                                aria-label="View ratings and reviews">
-                            <mat-icon class="text-accent">reviews</mat-icon>
-                            <strong class="font-display text-xl text-ink">{{ localSummary.count }}</strong>
-                            Ratings
-                            @if (metadata; as meta) {
-                                <small class="text-[.65rem] font-bold tracking-wide text-muted uppercase">
-                                    BGG {{ meta.usersRated === null ? '—' : (meta.usersRated | number) }}
-                                </small>
-                            }
-                        </button>
-                    </div>
+                    @if (metadata; as meta) {
+                        <div class="mb-6 grid grid-cols-2 gap-3 border-y border-line py-5 text-center">
+                            <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
+                                <mat-icon class="text-accent">star</mat-icon>
+                                <strong class="font-display text-xl text-ink">
+                                    {{ meta.avgRating === null ? '—' : (meta.avgRating | number:'1.1-1') }}
+                                </strong>
+                                BGG rating
+                            </span>
+                            <span class="grid min-w-0 justify-items-center gap-1 text-xs text-muted">
+                                <mat-icon class="text-accent">leaderboard</mat-icon>
+                                <strong class="font-display text-xl text-ink">#{{ meta.rank ?? '—' }}</strong>
+                                BGG rank
+                            </span>
+                        </div>
+                    }
 
                     @if (metadata; as meta) {
                         <div class="my-5 flex flex-wrap gap-2">
@@ -146,12 +120,6 @@
 
                     <div class="flex flex-wrap gap-3">
                         @if (owned) {
-                            <a mat-flat-button
-                               class="[--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]"
-                               [routerLink]="['/reviews', bggId, 'write']">
-                                <mat-icon>rate_review</mat-icon>
-                                Leave a review
-                            </a>
                             <button mat-stroked-button type="button" [disabled]="actionDisabled"
                                     (click)="primaryAction.emit()">
                                 <mat-icon>library_add</mat-icon>
@@ -165,71 +133,6 @@
                             </button>
                         }
                     </div>
-                } @else if (detailTab === 'ratings') {
-                    <section aria-label="BoardGameGeek comments">
-                        <header class="mb-5 border-b border-line pb-4">
-                            <div>
-                                <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">
-                                    BoardGameGeek</p>
-                                <h2 class="font-display text-3xl">Community comments</h2>
-                            </div>
-                        </header>
-                        <div class="grid gap-3">
-                            @for (review of bggReviews; track review.username + review.comment) {
-                                <article class="rounded-xl border border-line bg-surface p-4">
-                                    <div class="mb-2 flex items-center justify-between gap-3">
-                                        <strong>{{ review.username }}</strong>
-                                        @if (review.rating !== null) {
-                                            <span class="text-accent">★ {{ review.rating }}/10</span>
-                                        }
-                                    </div>
-                                    <p class="leading-6 text-muted">{{ review.comment }}</p>
-                                </article>
-                            } @empty {
-                                <p class="rounded-xl bg-mint p-4 text-muted">No BoardGameGeek comments are available
-                                    right now.</p>
-                            }
-                        </div>
-                    </section>
-
-                    <section class="mt-10" aria-label="Meeple House reviews">
-                        <header class="mb-5 border-b border-line pb-4">
-                            <div>
-                                <p class="mb-0 text-xs font-bold tracking-[.14em] text-accent uppercase">Meeple
-                                    House</p>
-                                <h2 class="font-display text-3xl">Reviews</h2>
-                            </div>
-                        </header>
-                        <div class="grid gap-3">
-                            @for (review of localSummary.reviews; track review.id) {
-                                <article class="rounded-xl border border-line bg-surface p-4">
-                                    <div class="mb-2 flex items-center justify-between gap-3">
-                                        <strong>Meeple House member</strong>
-                                        <span class="text-accent">★ {{ review.rating }}/10</span>
-                                    </div>
-                                    <div class="mb-3 leading-6 text-muted [&_>_:first-child]:mt-0 [&_>_:last-child]:mb-0 [&_a]:text-accent [&_a]:underline
-                                       [&_blockquote]:ml-0 [&_blockquote]:border-l-3 [&_blockquote]:border-l-accent [&_blockquote]:pl-3
-                                       [&_code]:rounded [&_code]:bg-mint [&_code]:px-1 [&_code]:py-px [&_pre]:overflow-x-auto [&_pre]:rounded-lg
-                                       [&_pre]:bg-mint [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0"
-                                         [innerHTML]="renderReview(review.body)"></div>
-                                    <time class="text-xs text-muted" [attr.datetime]="review.updated_at">
-                                        Updated {{ review.updated_at | date:'mediumDate' }}
-                                    </time>
-                                </article>
-                            } @empty {
-                                <p class="rounded-xl bg-mint p-4 text-muted">No reviews yet. Be the first to review
-                                    it.</p>
-                            }
-                        </div>
-                        @if (owned) {
-                            <a mat-flat-button
-                               class="mt-5 [--mdc-filled-button-container-color:var(--coral)] [--mdc-filled-button-label-text-color:white]"
-                               [routerLink]="['/reviews', bggId, 'write']">
-                                <mat-icon>rate_review</mat-icon>
-                                Leave a review
-                            </a>
-                        }
-                    </section>
                 } @else {
                     <section aria-label="Box dimensions">
                         <header class="mb-5 border-b border-line pb-4">

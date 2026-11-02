@@ -35,16 +35,9 @@ export const routes: Routes = [
         canActivate: [libraryGuard],
         loadComponent: () => import('./pages/game-detail.component').then((m) => m.GameDetailComponent)
     },
-    {
-        path: 'reviews/:bggId/write',
-        canActivate: [libraryGuard],
-        loadComponent: () => import('./pages/review-composer.component').then((m) => m.ReviewComposerComponent)
-    },
-    {
-        path: 'reviews/:bggId',
-        canActivate: [libraryGuard],
-        loadComponent: () => import('./pages/reviews.component').then((m) => m.GameReviewsComponent)
-    },
+    // Reviews are deferred; existing bookmarks open the game's overview instead.
+    {path: 'reviews/:bggId/write', redirectTo: 'games/discover/:bggId', pathMatch: 'full'},
+    {path: 'reviews/:bggId', redirectTo: 'games/discover/:bggId', pathMatch: 'full'},
     {
         path: 'friends',
         canActivate: [libraryGuard],

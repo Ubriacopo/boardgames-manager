@@ -1,7 +1,7 @@
 import type {BoxDimensions, BoxSizeSelection} from '../../entities/BoardGame';
 import {GameBoxSizeFormComponent} from './game-box-size-form.component';
 import {LibraryChipComponent} from './library-chip.component';
-import {DatePipe, DecimalPipe} from '@angular/common';
+import {DecimalPipe} from '@angular/common';
 import {
     ChangeDetectorRef,
     Component,
@@ -14,13 +14,10 @@ import {
 } from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {RouterLink} from '@angular/router';
 import {
     getBggOverview,
-    getBggReviews,
     type BggGameMetadata,
     type BggOverview,
-    type BggReview,
 } from '../../utils/bggData';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {AuthService} from '../services/auth.service';
@@ -28,13 +25,11 @@ import {GameCoverService} from '../services/game-cover.service';
 import {GameCatalogService} from '../services/game-catalog.service';
 import {GameAdminEditorComponent} from './game-admin-editor.component';
 import {getBggGameId} from '../../utils/bggData';
-import {renderMarkdown} from '../../utils/renderMarkdown';
-import {ReviewService, type LocalReviewSummary} from '../services/review.service';
 
 @Component({
     selector: 'app-game-detail-view',
     standalone: true,
-    imports: [GameBoxSizeFormComponent, LibraryChipComponent, DatePipe, DecimalPipe, MatButtonModule, MatIconModule, MatDialogModule, RouterLink],
+    imports: [GameBoxSizeFormComponent, LibraryChipComponent, DecimalPipe, MatButtonModule, MatIconModule, MatDialogModule],
     templateUrl: './game-detail-view.component.html',
 })
 export class GameDetailViewComponent implements OnChanges {
@@ -62,14 +57,12 @@ export class GameDetailViewComponent implements OnChanges {
     @Output() readonly specialAction = new EventEmitter<void>();
     @Output() readonly boxSizeSave = new EventEmitter<BoxSizeSelection>();
 
-    localSummary: LocalReviewSummary = {average: null, count: 0, rank: null, reviews: []};
-    bggReviews: BggReview[] = [];
     bggOverview?: BggOverview;
     private readonly logoRatio = signal(1);
     readonly definitionError = signal('');
-    detailTab: 'overview' | 'ratings' | 'dimensions' = 'overview';
+    detailTab: 'overview' | 'dimensions' = 'overview';
 
-    constructor(private readonly reviews: ReviewService, readonly auth: AuthService, private readonly covers: GameCoverService, private readonly catalog: GameCatalogService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
+    constructor(readonly auth: AuthService, private readonly covers: GameCoverService, private readonly catalog: GameCatalogService, private readonly dialog: MatDialog, private readonly changeDetector: ChangeDetectorRef) {
     }
 
     get coverGameId(): number {
@@ -128,7 +121,7 @@ export class GameDetailViewComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['bggId'] && this.bggId) void this.loadReviews();
+        if (changes['bggId'] && this.bggId) void this.loadOverview();
         if (changes['bggId'] || changes['bggUrl'] || changes['gameDefinitionId']) void this.loadDefinition();
     }
 
@@ -146,20 +139,10 @@ export class GameDetailViewComponent implements OnChanges {
         }
     }
 
-    renderReview(markdown: string): string {
-        return renderMarkdown(markdown);
-    }
-
-    private async loadReviews(): Promise<void> {
+    private async loadOverview(): Promise<void> {
         await Promise.allSettled([
-            this.loadLocalReviews(),
             getBggOverview(this.bggId).then((overview) => this.bggOverview = overview),
-            getBggReviews(this.bggId).then((reviews) => this.bggReviews = reviews),
         ]);
         this.changeDetector.markForCheck();
-    }
-
-    private async loadLocalReviews(): Promise<void> {
-        this.localSummary = await this.reviews.summary(this.bggId);
     }
 }
